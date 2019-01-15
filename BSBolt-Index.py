@@ -6,7 +6,7 @@ from BSB_Index.RRBSGenomeBuild import RRBSGenomeIndexBuild
 from BSB_Index.WholeGenomeBuild import WholeGenomeIndexBuild
 from BSB_Utils.BSB_UtilityFunctions import check_bowtie2_path
 
-parser = argparse.ArgumentParser(description='Bisulfite Index Generation Tool')
+parser = argparse.ArgumentParser(description='BSBot Index Generation Module')
 
 parser.add_argument('-G', type=str, required=True,
                     help='Path for reference genome fasta file, fasta file should contain all contigs')
@@ -14,8 +14,8 @@ parser.add_argument('-DB', type=str, required=True,
                     help='Path to index directory, will create directory if folder does not exist')
 parser.add_argument('-BT2', type=str, default='bowtie2', help='Path to bowtie2 executable')
 parser.add_argument('-BT2-p', type=int, default=2, help='Number of threads for Bowtie2 to use')
-parser.add_argument('-rrbs', action="store_true", default=False, help='Reduced Representative Bisulfite Sequencing '
-                                                                      'Index')
+parser.add_argument('-rrbs', action="store_true", default=False, help='Generate Reduced Representative'
+                                                                      ' Bisulfite Sequencing Index')
 parser.add_argument('-rrbs-cut-format', default='C-CGG', help='Cut format to use for generation of RRBS database, '
                                                               'default= C-CGG (MSPI), input multiple enzymes as a '
                                                               'comma seperate string, C-CGG,C-CGG,...')

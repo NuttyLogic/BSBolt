@@ -5,7 +5,7 @@ import os
 from BSB_Simulate.SimulateMethylatedReads import SimulateMethylatedReads
 
 
-parser = argparse.ArgumentParser(description='Simulate Methylation Illumina Reads')
+parser = argparse.ArgumentParser(description='BSBolt Modules to Simulate Bisulfite Treated Illumina Reads')
 
 parser.add_argument('-G', type=str, required=True,
                     help='Path for reference genome fasta file, fasta file should contain all contigs')

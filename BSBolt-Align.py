@@ -44,7 +44,7 @@ def process_mapping_statistics(mapping_dict):
     return processed_list
 
 
-parser = argparse.ArgumentParser(description='BS-Bolt Sequencing Alignment Tool')
+parser = argparse.ArgumentParser(description='BSBolt Sequencing Alignment Module')
 
 parser.add_argument('-F1', type=str, default=None, help='Path to fastq 1', required=True)
 parser.add_argument('-F2', type=str, default=None, help='Path to fastq 2')
