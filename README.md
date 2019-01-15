@@ -10,13 +10,13 @@ bisulfite sequencing experiments.
 ## BSBolt Content
 1. [Overview](#Overview)
     1. [Installation](##Installation)
-2. [Read Alignment](#Read Alignment)
-    1. [Data Preprocessing](#Data Preprocessing)
-    2. [BSB-Index](##BSB-Index)
-    3. [BSB-Algin](##BSB-Align)
+2. [Read Alignment](#Read_Alignment)
+    1. [Data Preprocessing](#Data_Preprocessing)
+    2. [BSB-Index](#BSB-Index)
+    3. [BSB-Algin](#BSB-Align)
 3. [BSB-Call-Methylation](#BSB-Call-Methylation)
 4. [BSB-Simulate](#BSB-Simulate)
-5. [Methylation Matrix Assembly](#Methylation Matrix Asssembly)
+5. [Methylation Matrix Assembly](#Methylation_Matrix_Asssembly)
 
 ## Overview
 BSBolt provides support for processing and simulation of *Whole Genome Bisulfite Sequencing* (WGBS), *Reduced 
