@@ -114,7 +114,7 @@ Following index generation alignment of *RRBS* and *WGBS* follows the same pipel
 -BT2-X                Bowtie2, maximum fragment length for a valid paired-
                       end alignment
 ```
-**Paried End Alignment**
+**Paired End Alignment**
 ```bash
 # Paired End Alignment Using Default Commands
 python3 BSBolt-Align.py -DB ~/Tests/TestData/BSB_Test_DB -BT2 bowtie2 -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/Tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/Tests/BSB_pe_test -S
@@ -155,7 +155,7 @@ python3 BSBolt-Call-Methylation.py -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/
 BSB-Call-Methylation outputs ATCGmap, CGmap, and wig files by default.
 
 ## BSB-Simulate
-**BSB-Simulate-Methylated-Reads Commands**
+**BSB-Simulate Commands**
 ```bash
 -h, --help  show this help message and exit
 -G          Path for reference genome fasta file, fasta file should contain
@@ -169,7 +169,7 @@ BSB-Call-Methylation outputs ATCGmap, CGmap, and wig files by default.
 ```
 **Simulate Paired End, Undirectional Methylation Reads**
 ```bash
-python3 BSBolt-Simulate-Methylated-Reads.py -G ~/Tests/TestData/BSB_test.fa -A ~/art_bin_MountRainier/art_illumina -O ~/Tests/TestSimulations/BSB_pe -U -PE
+python3 BSBolt-Simulate.py -G ~/Tests/TestData/BSB_test.fa -A ~/art_bin_MountRainier/art_illumina -O ~/Tests/TestSimulations/BSB_pe -U -PE
 ```
 
 ## Methylation Matrix Assembly

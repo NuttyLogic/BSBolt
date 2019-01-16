@@ -13,7 +13,7 @@ bowtie2_path = 'bowtie2'
 art_path = '/art_bin_MountRainier/art_illumina'
 print('Generating Simulated Methylation Reads')
 # generate simulated reads
-bsb_simulate_commands = ['python3', f'{bsb_directory}BSBolt-Simulate-Methylated-Reads.py',
+bsb_simulate_commands = ['python3', f'{bsb_directory}BSBolt-Simulate.py',
                          '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
                          '-A', art_path, '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-U', '-PE']
 subprocess.run(bsb_simulate_commands)
