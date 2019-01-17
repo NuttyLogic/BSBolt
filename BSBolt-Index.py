@@ -30,7 +30,7 @@ if __name__ == "__main__":
     if arguments.rrbs:
         print(f'Generating RRBS Database at {arguments.DB}: '
               f'lower bound {arguments.rrbs_lower}, upper bound {arguments.rrbs_upper}: '
-              f'Cut Format {arguments.cut_format}')
+              f'Cut Format {arguments.rrbs_cut_format}')
         index = RRBSGenomeIndexBuild(reference_file=arguments.G,
                                      genome_database=arguments.DB,
                                      bowtie2_path=arguments.BT2,
