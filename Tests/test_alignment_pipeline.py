@@ -10,7 +10,7 @@ import numpy as np
 test_directory = os.path.dirname(os.path.realpath(__file__))
 bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
 bowtie2_path = 'bowtie2'
-art_path = '/art_bin_MountRainier/art_illumina'
+art_path = '/Users/colinfarrell/Downloads/art_bin_MountRainier/art_illumina'
 print('Generating Simulated Methylation Reads')
 # generate simulated reads
 bsb_simulate_commands = ['python3', f'{bsb_directory}BSBolt-Simulate.py',
@@ -42,7 +42,7 @@ bs_call_methylation_args = ['python3', f'{bsb_directory}BSBolt-Call-Methylation.
                             f'{bsb_directory}Tests/BSB_pe_test.sorted.bam',
                             '-O', f'{bsb_directory}Tests/BSB_pe_test',
                             '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB',
-                            '-t', '2', '-verbose']
+                            '-t', '4', '-verbose']
 subprocess.run(bs_call_methylation_args)
 print('Methylation Values Called')
 
