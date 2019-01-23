@@ -15,7 +15,7 @@ class AggregateMatrix:
                             else labels taken from sample names
         min_site_coverage (int): minimum read coverage for a CpG site to be considered for matrix
         site_proportion_threshold (float): proprotion of samples that must have valid non-null 
-                                           methylation calls for a site to be incldued in matrix
+                                           methylation calls for a site to be included in matrix
         output_path (str): path to output file
         cg_only (bool): consider all cystosines or only CpG sites
         verbose (bool): verbose matrix assembly, tqdm output
@@ -25,7 +25,7 @@ class AggregateMatrix:
                            else labels taken from sample names
        self.min_site_coverage (int): minimum read coverage for a CpG site to be considered for matrix
        self.site_proportion_threshold (float): proprotion of samples that must have valid non-null 
-                                          methylation calls for a site to be incldued in matrix
+                                          methylation calls for a site to be included in matrix
        self.output_path (str): path to output file
        self.cg_only (bool): consider all cystosines or only CpG sites
        self.disable_tqdm (bool): disable tqdm

@@ -1,4 +1,5 @@
 import subprocess
+import sys
 from distutils.version import LooseVersion
 
 
@@ -52,3 +53,7 @@ def check_bowtie2_path(bowtie2_path='bowtie2'):
         bowtie2_version = version_line.replace('\n', '').split(' ')[-1]
         if LooseVersion(bowtie2_version) < LooseVersion('2.2.9'):
             raise RuntimeWarning('BSeeker-R Performance not evaluated on Bowtie2 Versions < 2.2.9')
+
+def check_python_version():
+    if sys.version_info < (2, 6):
+        raise 'Python must be >= 3.6.0'

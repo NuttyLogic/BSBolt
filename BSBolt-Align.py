@@ -4,7 +4,7 @@ import subprocess
 import time
 import pysam
 from BSB_Align.BSB_Align import BisulfiteAlignmentAndProcessing
-from BSB_Utils.BSB_UtilityFunctions import check_bowtie2_path
+from BSB_Utils.BSB_UtilityFunctions import check_bowtie2_path, check_python_version
 
 
 def align_bisulfite(alignment_kwargs):
@@ -72,6 +72,7 @@ parser.add_argument('-BT2-X', type=int, default=500, help='Bowtie2, maximum frag
 
 
 if __name__ == "__main__":
+    check_python_version()
     arguments = parser.parse_args()
     bsseeker_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
     arg_order = ['F1', 'F2', 'U', 'BT2', 'O', 'DB', 'CP', 'CT', 'M',  'BT2_D', 'BT2_I', 'BT2_L',

@@ -48,11 +48,7 @@ class StreamTab:
         try:
             version_command = subprocess.Popen([python_path, '--version'], stdout=subprocess.PIPE)
         except FileNotFoundError:
-            python_path = 'python2'
-            version_command = subprocess.Popen(['python', '--version'], stdout=subprocess.PIPE)
-        version = version_command.stdout.readline().decode('UTF-8').replace('\n', '').split(' ')[1]
-        if StrictVersion(version) < StrictVersion('3.6.0'):
-            raise AssertionError('Python must be >= 3.6.0')
+            python_path = 'python'
         return python_path
 
     @property
