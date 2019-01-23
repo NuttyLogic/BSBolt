@@ -1,6 +1,6 @@
 import argparse
-
 from BSB_CallMethylation.ProcessContigs import ProcessContigs
+from BSB_Utils.BSB_UtilityFunctions import check_python_version
 
 
 parser = argparse.ArgumentParser(description='BSBolt Module to Call Methylation Values from Sorted BAM Files')
@@ -25,6 +25,7 @@ parser.add_argument('-t', type=int, default=1, help='Number of threads to use wh
 
 
 if __name__ == "__main__":
+    check_python_version()
     arguments = parser.parse_args()
     processed_contigs = ProcessContigs(input_file=arguments.I,
                                        genome_database=arguments.DB,

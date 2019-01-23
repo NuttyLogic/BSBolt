@@ -3,6 +3,7 @@
 import argparse
 import os
 from BSB_Simulate.SimulateMethylatedReads import SimulateMethylatedReads
+from BSB_Utils.BSB_UtilityFunctions import check_python_version
 
 
 parser = argparse.ArgumentParser(description='BSBolt Modules to Simulate Bisulfite Treated Illumina Reads')
@@ -17,6 +18,7 @@ parser.add_argument('-RD', type=int, default=20, help='Simulated Read Depth')
 parser.add_argument('-U', default=False, action='store_true', help='Simulate Undirectional Reads, default=Directional')
 
 if __name__ == "__main__":
+    check_python_version()
     arguments = parser.parse_args()
     if os.path.isfile(arguments.A):
         read_simulation = SimulateMethylatedReads(reference_file=arguments.G, art_path=arguments.A,
