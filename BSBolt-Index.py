@@ -1,10 +1,9 @@
 #! /usr/bin/env python3
 
 import argparse
-
 from BSB_Index.RRBSGenomeBuild import RRBSGenomeIndexBuild
 from BSB_Index.WholeGenomeBuild import WholeGenomeIndexBuild
-from BSB_Utils.BSB_UtilityFunctions import check_bowtie2_path
+from BSB_Utils.BSB_UtilityFunctions import check_bowtie2_path, check_python_version
 
 parser = argparse.ArgumentParser(description='BSBot Index Generation Module')
 
@@ -25,6 +24,7 @@ parser.add_argument('-rrbs-upper', type=int, default=500, help='Upper bound frag
                                                                'generation, default = 500')
 
 if __name__ == "__main__":
+    check_python_version()
     arguments = parser.parse_args()
     check_bowtie2_path(bowtie2_path=arguments.BT2)
     if arguments.rrbs:

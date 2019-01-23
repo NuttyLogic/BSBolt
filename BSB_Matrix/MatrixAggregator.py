@@ -9,9 +9,30 @@ from BSB_Utils.CGmapIterator import OpenCGmap
 class AggregateMatrix:
     """
     Class to aggregate CGMap files into combined methylation matrix
+    Keyword Arguments:
+        file_list (list): list of file CGmap files
+        sample_list (list): if passed, sample labels for CGmaps files, 
+                            else labels taken from sample names
+        min_site_coverage (int): minimum read coverage for a CpG site to be considered for matrix
+        site_proportion_threshold (float): proprotion of samples that must have valid non-null 
+                                           methylation calls for a site to be included in matrix
+        output_path (str): path to output file
+        cg_only (bool): consider all cystosines or only CpG sites
+        verbose (bool): verbose matrix assembly, tqdm output
+    Attributes:
+       self.file_list (list): list of file CGmap files
+       self.sample_list (list): if passed, sample labels for CGmaps files, 
+                           else labels taken from sample names
+       self.min_site_coverage (int): minimum read coverage for a CpG site to be considered for matrix
+       self.site_proportion_threshold (float): proprotion of samples that must have valid non-null 
+                                          methylation calls for a site to be included in matrix
+       self.output_path (str): path to output file
+       self.cg_only (bool): consider all cystosines or only CpG sites
+       self.disable_tqdm (bool): disable tqdm
+       self.site_dict (dict): dict to store methylation values 
     """
 
-    def __init__(self, file_list=None, sample_list=None, min_site_coverage=10, known_locations=None,
+    def __init__(self, file_list=None, sample_list=None, min_site_coverage=10,
                  site_proportion_threshold=0.9, output_path=None, cg_only=True, verbose=True):
         self.file_list = file_list
         self.sample_list = sample_list
@@ -20,7 +41,6 @@ class AggregateMatrix:
             for file in self.file_list:
                 self.sample_list.append(file.split('/')[-1])
         self.min_coverage = min_site_coverage
-        self.known_locations = known_locations
         self.site_dict = None
         self.collapsed_matrix = None
         self.disable_tqdm = False if verbose else True
@@ -75,22 +95,22 @@ class AggregateMatrix:
         self.collapsed_matrix = {}
         for key, value in tqdm(self.site_dict.items(), desc='Getting Methylation Sites', total=len(self.site_dict)):
             if value >= site_count_threshold:
-                self.collapsed_matrix[key] = ['nan' for _ in range(len(self.sample_list))]
+                site_values: np.array = np.zeros(len(self.sample_list))
+                site_values.fill(np.nan)
+                self.collapsed_matrix[key] = site_values
         del self.site_dict
 
     def set_matrix_sites(self):
         """Append sites to site list"""
-        for count, file in tqdm(enumerate(self.file_list), desc='Setting Methylation Values',
-                                total=len(self.file_list)):
+        for sample_index, file in tqdm(enumerate(self.file_list), desc='Setting Methylation Values',
+                                       total=len(self.file_list)):
             for line_info in OpenCGmap(cgmap=file):
                 site_label = f'{line_info[0]}:{line_info[2]}'
-                site_values = self.collapsed_matrix.get(site_label, False)
-                if site_values:
-                    if int(line_info[7]) >= self.min_coverage:
-                        site_values[count] = line_info[5]
+                if int(line_info[7]) >= self.min_coverage:
+                    self.collapsed_matrix[site_label][sample_index] = float(line_info[5])
 
     def check_cg(self, nucleotide_context):
-        if self.check_cg:
+        if self.check_cg
             if nucleotide_context == 'CG':
                 return True
             return False
