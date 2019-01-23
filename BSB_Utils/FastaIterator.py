@@ -21,10 +21,11 @@ class OpenFasta:
                 line = fasta.readline()
                 if not line:
                     break
-                if '>' in line:
-                    yield True, self.process_line(line)
+                processed_line = self.process_line(line)  
+                if '>' in processed_line:
+                    yield True, processed_line
                 else:
-                    yield False, self.process_line(line)
+                    yield False, processed_line
 
     @staticmethod
     def process_line(line):
