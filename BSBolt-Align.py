@@ -107,5 +107,3 @@ if __name__ == "__main__":
         pysam.sort('-o', f'{arguments.O}.sorted.bam', f'{arguments.O}.bam')
         subprocess.run(['rm', f'{arguments.O}.bam'])
         pysam.index(f'{arguments.O}.sorted.bam')
-    else:
-        pysam.index(f'{arguments.O}.bam')

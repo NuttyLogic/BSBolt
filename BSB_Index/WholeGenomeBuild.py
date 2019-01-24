@@ -46,7 +46,7 @@ class WholeGenomeIndexBuild:
                     self.contig_size_dict[contig_id] = len(contig_str)
                     contig_sequence = []
                 # reset contig_id
-                contig_id = sequence.replace('>', '')
+                contig_id = sequence.replace('>', '').split(' ')[0]
             else:
                 contig_sequence.append(sequence)
         # process remaining contig sequence
