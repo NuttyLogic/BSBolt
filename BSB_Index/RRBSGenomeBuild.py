@@ -60,7 +60,7 @@ class RRBSGenomeIndexBuild:
                     self.process_contig_region(contig_id, contig_sequence)
                     contig_sequence = []
                 # set contig_id
-                contig_id = sequence.replace('>', '')
+                contig_id = sequence.replace('>', '').split(' ')[0]
             else:
                 contig_sequence.append(sequence.upper())
         # process remaining sequence after iterator exhausted
