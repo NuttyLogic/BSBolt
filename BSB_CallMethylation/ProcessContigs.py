@@ -36,6 +36,7 @@ class ProcessContigs:
         min_read_depth (int): default = 1
         max_read_depth (int): default = 8000
         threads (int): 1, if one watcher and processing on same thread else separated
+        min_base_quality (int): minimum base quality for base to be considered
     Attributes:
         self.input_file (str): path to input bam/sam file
         self.input_bam (pysam.Samfile): pysam object to retrieve pileup information from .bam file
@@ -51,7 +52,7 @@ class ProcessContigs:
 
     def __init__(self, input_file=None, genome_database=None, output_prefix=None,
                  remove_sx_reads=True, ignore_overlap=False, text_output=False, remove_ccgg=False,
-                 min_read_depth=10, max_read_depth=8000, threads=1, verbose=True):
+                 min_read_depth=10, max_read_depth=8000, threads=1, verbose=True, min_base_quality=0):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(text_output, bool), 'Not valid bool'
         assert isinstance(threads, int), 'Threads must be specified with integer'
@@ -68,7 +69,8 @@ class ProcessContigs:
                                             ignore_overlap=ignore_overlap,
                                             remove_ccgg=remove_ccgg,
                                             min_read_depth=min_read_depth,
-                                            max_read_depth=max_read_depth)
+                                            max_read_depth=max_read_depth,
+                                            min_base_quality=min_base_quality)
         self.min_read_depth = min_read_depth
         self.contigs = self.get_contigs
         self.return_dict = None
