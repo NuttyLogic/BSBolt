@@ -42,7 +42,7 @@ bs_call_methylation_args = ['python3', f'{bsb_directory}BSBolt-Call-Methylation.
                             f'{bsb_directory}Tests/BSB_pe_test.sorted.bam',
                             '-O', f'{bsb_directory}Tests/BSB_pe_test',
                             '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB',
-                            '-t', '4', '-verbose']
+                            '-t', '4', '-verbose', '-min-qual', '10']
 subprocess.run(bs_call_methylation_args)
 print('Methylation Values Called')
 
