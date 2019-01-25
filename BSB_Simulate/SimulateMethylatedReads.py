@@ -56,7 +56,7 @@ class SimulateMethylatedReads:
                 if contig_id:
                     contig_dict[contig_id] = ''.join(contig_sequence)
                     contig_sequence = []
-                contig_id = line.replace('>', '').split(' ')[0]
+                contig_id = line.replace('>', '').split()[0]
             else:
                 contig_sequence.append(line)
         # join contig and add to dict after iteration finishes

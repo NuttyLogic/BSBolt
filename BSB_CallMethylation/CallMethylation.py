@@ -20,6 +20,7 @@ class CallMethylation:
         min_read_depth (int): default = 1
         max_read_depth (int): default = 8000
         contig (str): contig to process
+        min_base_quality (int): minimum quality for a base to be reported for methylation calling
     Attributes:
         self.input_file (str): path to input bam/sam file
         self.input_bam (pysam.Samfile): pysam.Samfile object to retrieve pileup information
@@ -30,12 +31,13 @@ class CallMethylation:
         self.min_read_depth (int): default = 1
         self.max_read_depth (int): default = 8000
         self.contig (str): contig to process
+        self.min_base_quality (int): minimum quality for a base to be reported for methylation calling
         self.context_tables (dict): dict of dicts listing nucleotide context
     """
 
     def __init__(self, input_file=None, genome_database=None,
                  remove_sx_reads=True, ignore_overlap=False, remove_ccgg=False,
-                 min_read_depth=10, max_read_depth=8000, contig=None):
+                 min_read_depth=10, max_read_depth=8000, contig=None, min_base_quality=0):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(genome_database, str), 'Path to genome database not valid'
         assert isinstance(remove_sx_reads, bool), 'Not valid bool'
@@ -55,6 +57,7 @@ class CallMethylation:
         self.min_read_depth = min_read_depth
         self.max_read_depth = max_read_depth
         self.contig = contig
+        self.min_base_quality = min_base_quality
         self.context_tables = self.get_context_tables
         self.return_list = []
         self.counting_dict = {}
@@ -91,8 +94,10 @@ class CallMethylation:
         # load serialized reference sequence
         chrom_seq = self.get_reference_sequence(f'{self.genome_database}{self.contig}.pkl')
         # iterate through pileup
-        for pileup_col in self.input_bam.pileup(max_depth=self.max_read_depth, contig=self.contig,
-                                                ignore_overlaps=self.ignore_overlap):
+        for pileup_col in self.input_bam.pileup(max_depth=self.max_read_depth, 
+                                                contig=self.contig,
+                                                ignore_overlaps=self.ignore_overlap, 
+                                                min_base_quality=self.min_base_quality):
             # initialize count dictionaries for pileup sites
             ATCG_forward = {'A': 0, 'T': 0, 'C': 0, 'G': 0, 'N': 0}
             ATCG_reverse = {'A': 0, 'T': 0, 'C': 0, 'G': 0, 'N': 0}
