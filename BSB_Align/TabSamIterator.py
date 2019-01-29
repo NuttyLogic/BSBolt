@@ -28,6 +28,7 @@ class TabSamIterator:
             for read_id, read_sequence in line[0].items():
                 if self.paired_end:
                     read_id = read_id.split('/')[0]
+                    read_id = read_id.split(' ')[0]
                     read_id = f'{read_id}_{read_count}'
                 output_dict = {'read_sequence': read_sequence}
                 for reference_type, read_dictionary in zip(self.iteration_order, line[1:]):
