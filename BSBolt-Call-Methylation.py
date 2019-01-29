@@ -22,7 +22,7 @@ parser.add_argument('-ignore-overlap', action="store_true", default=False, help=
 parser.add_argument('-max', type=int, default=8000, help='Max read depth to call methylation')
 parser.add_argument('-min', type=int, default=10, help='Minimum read depth required to report methylation site')
 parser.add_argument('-t', type=int, default=1, help='Number of threads to use when calling methylation values')
-parser.add_argument('-min-qual', type=int, default=0, help='Minimum base quality for a base to considered for' 
+parser.add_argument('-min-qual', type=int, default=0, help='Minimum base quality for a base to considered for'
                                                             'methylation calling')
 
 
