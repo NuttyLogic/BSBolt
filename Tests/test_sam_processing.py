@@ -23,7 +23,7 @@ test_reads = [test_read_1, test_read_2, test_read_3, test_read_4, test_read_5, t
 
 processed_sam_reads = {}
 
-bseeker_db = f'{test_directory}/TestData/test_bsseeker_db/'
+bseeker_db = f'{test_directory}/TestData/BSB_Test_DB/'
 
 for count, read in enumerate(test_reads):
     processed_sam_reads[f'Read_{count + 1}'] = ProcessSamAlignment(sam_line_dict=read,
