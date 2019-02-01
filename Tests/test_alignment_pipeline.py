@@ -16,7 +16,7 @@ print('Generating Simulated Methylation Reads')
 bsb_simulate_commands = ['python3', f'{bsb_directory}BSBolt-Simulate.py',
                          '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
                          '-A', art_path, '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-U', '-PE']
-#subprocess.run(bsb_simulate_commands)
+subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
 # map simulated reads
@@ -24,7 +24,7 @@ print('Reads Simulated')
 print('Building Methylation Index')
 bsb_index_commands = ['python3', f'{bsb_directory}BSBolt-Index.py', '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
                       '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB', '-BT2', bowtie2_path]
-#subprocess.run(bsb_index_commands)
+subprocess.run(bsb_index_commands)
 print('BSB Index Built')
 
 
@@ -43,7 +43,7 @@ bs_call_methylation_args = ['python3', f'{bsb_directory}BSBolt-Call-Methylation.
                             '-O', f'{bsb_directory}Tests/BSB_pe_test',
                             '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB',
                             '-t', '4', '-verbose', '-min-qual', '10']
-#subprocess.run(bs_call_methylation_args)
+subprocess.run(bs_call_methylation_args)
 print('Methylation Values Called')
 
 
