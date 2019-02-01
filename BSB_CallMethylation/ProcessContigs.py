@@ -3,8 +3,8 @@ import gzip
 import pysam
 import time
 from tqdm import tqdm
-#from BSB_CallMethylation.CallMethylation import CallMethylation
-from BSB_Index.IndexOutput import IndexOutput
+from BSB_CallMethylation.CallMethylation import CallMethylation
+
 
 class MethylationCallingError(Exception):
     """Error in methylation calling process"""
