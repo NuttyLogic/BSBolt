@@ -20,7 +20,7 @@ def call_contig_methylation(return_dict, call_methylation_kwargs):
     contig_methylation_call = CallMethylation(**call_methylation_kwargs)
     contig_methylation_call.call_methylation()
     assert isinstance(contig_methylation_call, CallMethylation)
-    return_dict[call_methylation_kwargs['contig']] = contig_methylation_call.return_list
+    return_dict[call_methylation_kwargs['contig']] = 1
 
 
 class ProcessContigs:
@@ -72,8 +72,10 @@ class ProcessContigs:
                                             max_read_depth=max_read_depth,
                                             min_base_quality=min_base_quality)
         self.min_read_depth = min_read_depth
+        self.methylation_calling = True
         self.contigs = self.get_contigs
         self.return_dict = None
+        self.return_list = None
         self.pool = None
         self.verbose = verbose
         self.output_objects = self.get_output_objects
@@ -93,6 +95,7 @@ class ProcessContigs:
         # initialize manager
         manager = multiprocessing.Manager()
         # get return dictionary
+        self.return_list = manager.list()
         self.return_dict = manager.dict()
         # threads for methylation calling, if one thread use thread for calling and watching
         pool_threads = self.threads - 1 if self.threads != 1 else 1
@@ -101,39 +104,42 @@ class ProcessContigs:
         # for contig call methylation and return values to dict
         for contig in self.contigs:
             contig_kwargs = dict(self.call_methylation_kwargs)
-            contig_kwargs.update(dict(contig=contig))
+            contig_kwargs.update(dict(contig=contig, return_list=self.return_list))
             self.pool.apply_async(call_contig_methylation,
                                   args=[self.return_dict, contig_kwargs],
                                   error_callback=self.methylation_process_error)
+            #self.pool.apply(call_contig_methylation, args=[self.return_dict, self.return_list, contig_kwargs])
         self.pool.close()
 
     def methylation_process_error(self, error):
         """Raise if exception thrown in methylation calling process"""
-        self.contigs = None
+        self.methylation_calling = False
         raise MethylationCallingError(error)
 
     def watch_pool(self):
         """Watch self.return_dict and process return methylation values. Contigs are processed in order so buffer can
         become large if first contig is large, ie. Human Chr1
         """
+        completed_contigs = set()
         if self.verbose:
             pbar = tqdm(total=len(self.contigs), desc='Processing Contigs')
-        while self.contigs:
+        while self.methylation_calling:
             try:
-                methylation_lines: list = self.return_dict[self.contigs[0]]
-            except KeyError:
+                methylation_lines: list = self.return_list.pop(0)
+            except IndexError:
                 # if contig is missing sleep
-                time.sleep(5)
+                if len(self.return_dict) == len(self.contigs) and not self.return_list:
+                    self.methylation_calling = False
+                else:
+                    for contig in self.return_dict:
+                        if contig not in completed_contigs:
+                            if self.verbose:
+                                pbar.update(1)
+                            completed_contigs.add(contig)
+                time.sleep(2)
             else:
                 # write output
                 self.write_output(methylation_lines, self.contigs[0])
-                # clear methylation values from memory
-                self.return_dict[self.contigs[0]] = 'Done'
-                # remove contigs from list of contigs to process
-                self.contigs.remove(self.contigs[0])
-                # update status
-                if self.verbose:
-                    pbar.update(1)
         if self.verbose:
             pbar.close()
 
