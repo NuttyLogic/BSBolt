@@ -1,6 +1,8 @@
+#!/bin/python
+
+
 import subprocess
 import os
-from distutils.version import StrictVersion
 
 
 class StreamTab:
@@ -46,7 +48,7 @@ class StreamTab:
     def get_python_version(self):
         python_path = 'python3'
         try:
-            version_command = subprocess.Popen([python_path, '--version'], stdout=subprocess.PIPE)
+            subprocess.Popen([python_path, '--version'], stdout=subprocess.PIPE)
         except FileNotFoundError:
             python_path = 'python'
         return python_path
@@ -72,5 +74,6 @@ class StreamTab:
     def convert_tab_format(self, tab_line):
         tab_split: list = tab_line.replace('\n', '').split('\t')
         if self.fastq2:
-            return {f'{tab_split[0]}/1': [tab_split[1], tab_split[2]], f'{tab_split[3]}/2': [tab_split[4], tab_split[5]]}
+            return {f'{tab_split[0]}/1': [tab_split[1], tab_split[2]],
+                    f'{tab_split[3]}/2': [tab_split[4], tab_split[5]]}
         return {tab_split[0]: [tab_split[1], tab_split[2]]}
