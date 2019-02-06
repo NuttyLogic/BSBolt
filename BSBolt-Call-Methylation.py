@@ -1,3 +1,4 @@
+#! /usr/bin/env python3
 import argparse
 from BSB_CallMethylation.ProcessContigs import ProcessContigs
 from BSB_Utils.BSB_UtilityFunctions import check_python_version

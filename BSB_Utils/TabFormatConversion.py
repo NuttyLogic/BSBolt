@@ -1,5 +1,10 @@
+#! /usr/bin/env python3
+
 import argparse
 from FastqIterator import OpenFastq
+from BSB_UtilityFunctions import check_python_version
+
+check_python_version()
 
 
 class ConvertFastq:
@@ -78,7 +83,8 @@ class ConvertFastq:
 
 
 # simple argparse to launch externally
-parser = argparse.ArgumentParser(description='test_file')
+parser = argparse.ArgumentParser(description='Iterate through fastq files, while yielding in-silico '
+                                             'bisulfite converted reads')
 
 parser.add_argument('-fq1', type=str, default=None)
 parser.add_argument('-fq2', type=str, default=None)

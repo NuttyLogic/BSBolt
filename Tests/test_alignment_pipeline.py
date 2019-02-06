@@ -10,7 +10,7 @@ import numpy as np
 test_directory = os.path.dirname(os.path.realpath(__file__))
 bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
 bowtie2_path = 'bowtie2'
-art_path = '/media/colin/Linux_Data/bsseeker_project/art_bin_MountRainier/art_illumina'
+art_path = '/Users/colinfarrell/Downloads/art_bin_MountRainier/art_illumina'
 print('Generating Simulated Methylation Reads')
 # generate simulated reads
 bsb_simulate_commands = ['python3', f'{bsb_directory}BSBolt-Simulate.py',
