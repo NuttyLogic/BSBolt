@@ -108,7 +108,6 @@ class ProcessContigs:
             self.pool.apply_async(call_contig_methylation,
                                   args=[self.return_dict, contig_kwargs],
                                   error_callback=self.methylation_process_error)
-            #self.pool.apply(call_contig_methylation, args=[self.return_dict, self.return_list, contig_kwargs])
         self.pool.close()
 
     def methylation_process_error(self, error):
@@ -131,25 +130,27 @@ class ProcessContigs:
                 if len(self.return_dict) == len(self.contigs) and not self.return_list:
                     self.methylation_calling = False
                 else:
-                    for contig in self.return_dict:
-                        if contig not in completed_contigs:
-                            if self.verbose:
-                                pbar.update(1)
+                    if self.return_dict:
+                        for contig in self.return_dict:
+                            if contig not in completed_contigs:
+                                if self.verbose:
+                                    pbar.update(1)
                             completed_contigs.add(contig)
                 time.sleep(2)
             else:
                 # write output
-                self.write_output(methylation_lines, self.contigs[0])
+                self.write_output(methylation_lines)
         if self.verbose:
             pbar.close()
 
-    def write_output(self, methylation_lines, contig):
+    def write_output(self, methylation_lines):
         """Give a list of methylation call dicts, output formatted line
         Arguments:
             methylation_lines (list): list of dict containing methylation call information
             contig (str): contig label
         """
         # write wig contig designation
+        contig = 'test'
         self.write_line(self.output_objects['wig'], f'variableStep chrom={contig}\n')
         for meth_line in methylation_lines:
             # write ATCGmap line
