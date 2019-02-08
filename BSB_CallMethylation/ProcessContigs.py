@@ -108,7 +108,6 @@ class ProcessContigs:
             self.pool.apply_async(call_contig_methylation,
                                   args=[self.return_dict, contig_kwargs],
                                   error_callback=self.methylation_process_error)
-            #self.pool.apply(call_contig_methylation, args=[self.return_dict, self.return_list, contig_kwargs])
         self.pool.close()
 
     def methylation_process_error(self, error):
@@ -125,7 +124,8 @@ class ProcessContigs:
             pbar = tqdm(total=len(self.contigs), desc='Processing Contigs')
         while self.methylation_calling:
             try:
-                methylation_lines: list = self.return_list.pop(0)
+                if self.return_list:
+                    methylation_lines: list = self.return_list.pop(0)
             except IndexError:
                 # if contig is missing sleep
                 if len(self.return_dict) == len(self.contigs) and not self.return_list:
