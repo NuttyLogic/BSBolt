@@ -124,32 +124,33 @@ class ProcessContigs:
             pbar = tqdm(total=len(self.contigs), desc='Processing Contigs')
         while self.methylation_calling:
             try:
-                if self.return_list:
-                    methylation_lines: list = self.return_list.pop(0)
+                methylation_lines: list = self.return_list.pop(0)
             except IndexError:
                 # if contig is missing sleep
                 if len(self.return_dict) == len(self.contigs) and not self.return_list:
                     self.methylation_calling = False
                 else:
-                    for contig in self.return_dict:
-                        if contig not in completed_contigs:
-                            if self.verbose:
-                                pbar.update(1)
+                    if self.return_dict:
+                        for contig in self.return_dict:
+                            if contig not in completed_contigs:
+                                if self.verbose:
+                                    pbar.update(1)
                             completed_contigs.add(contig)
                 time.sleep(2)
             else:
                 # write output
-                self.write_output(methylation_lines, self.contigs[0])
+                self.write_output(methylation_lines)
         if self.verbose:
             pbar.close()
 
-    def write_output(self, methylation_lines, contig):
+    def write_output(self, methylation_lines):
         """Give a list of methylation call dicts, output formatted line
         Arguments:
             methylation_lines (list): list of dict containing methylation call information
             contig (str): contig label
         """
         # write wig contig designation
+        contig = 'test'
         self.write_line(self.output_objects['wig'], f'variableStep chrom={contig}\n')
         for meth_line in methylation_lines:
             # write ATCGmap line
