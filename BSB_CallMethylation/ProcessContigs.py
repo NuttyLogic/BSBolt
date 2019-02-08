@@ -123,9 +123,8 @@ class ProcessContigs:
         if self.verbose:
             pbar = tqdm(total=len(self.contigs), desc='Processing Contigs')
         while self.methylation_calling:
-            try:
+            if self.return_list:
                 methylation_lines: list = self.return_list.pop(0)
-            except IndexError:
                 # if contig is missing sleep
                 if len(self.return_dict) == len(self.contigs) and not self.return_list:
                     self.methylation_calling = False
@@ -136,9 +135,6 @@ class ProcessContigs:
                                 if self.verbose:
                                     pbar.update(1)
                             completed_contigs.add(contig)
-                time.sleep(2)
-            else:
-                # write output
                 self.write_output(methylation_lines)
         if self.verbose:
             pbar.close()
