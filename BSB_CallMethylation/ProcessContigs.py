@@ -1,7 +1,6 @@
 import multiprocessing
 import gzip
 import pysam
-import time
 from tqdm import tqdm
 from BSB_CallMethylation.CallMethylation import CallMethylation
 
@@ -11,7 +10,7 @@ class MethylationCallingError(Exception):
     pass
 
 
-def call_contig_methylation(return_dict, call_methylation_kwargs):
+def call_contig_methylation(completed_contigs, call_methylation_kwargs):
     """ Wrapper to initialize methylation calling
     Arguments:
         return_dict (multiprocessing.mangager.dict): Dictionary to return processed methylation calls
@@ -20,7 +19,7 @@ def call_contig_methylation(return_dict, call_methylation_kwargs):
     contig_methylation_call = CallMethylation(**call_methylation_kwargs)
     contig_methylation_call.call_methylation()
     assert isinstance(contig_methylation_call, CallMethylation)
-    return_dict[call_methylation_kwargs['contig']] = 1
+    completed_contigs.append(call_methylation_kwargs['contig'])
 
 
 class ProcessContigs:
@@ -74,7 +73,7 @@ class ProcessContigs:
         self.min_read_depth = min_read_depth
         self.methylation_calling = True
         self.contigs = self.get_contigs
-        self.return_dict = None
+        self.completed_contigs = None
         self.return_list = None
         self.pool = None
         self.verbose = verbose
@@ -96,7 +95,7 @@ class ProcessContigs:
         manager = multiprocessing.Manager()
         # get return dictionary
         self.return_list = manager.list()
-        self.return_dict = manager.dict()
+        self.completed_contigs = manager.list()
         # threads for methylation calling, if one thread use thread for calling and watching
         pool_threads = self.threads - 1 if self.threads != 1 else 1
         # start pool
@@ -106,7 +105,7 @@ class ProcessContigs:
             contig_kwargs = dict(self.call_methylation_kwargs)
             contig_kwargs.update(dict(contig=contig, return_list=self.return_list))
             self.pool.apply_async(call_contig_methylation,
-                                  args=[self.return_dict, contig_kwargs],
+                                  args=[self.completed_contigs, contig_kwargs],
                                   error_callback=self.methylation_process_error)
         self.pool.close()
 
@@ -119,22 +118,21 @@ class ProcessContigs:
         """Watch self.return_dict and process return methylation values. Contigs are processed in order so buffer can
         become large if first contig is large, ie. Human Chr1
         """
-        completed_contigs = set()
+        contigs_complete = 0
         if self.verbose:
             pbar = tqdm(total=len(self.contigs), desc='Processing Contigs')
         while self.methylation_calling:
             if self.return_list:
                 methylation_lines: list = self.return_list.pop(0)
                 # if contig is missing sleep
-                if len(self.return_dict) == len(self.contigs) and not self.return_list:
+                if len(self.completed_contigs) == len(self.contigs) and not self.return_list:
                     self.methylation_calling = False
                 else:
-                    if self.return_dict:
-                        for contig in self.return_dict:
-                            if contig not in completed_contigs:
-                                if self.verbose:
-                                    pbar.update(1)
-                            completed_contigs.add(contig)
+                    if self.verbose:
+                        if len(self.completed_contigs) != contigs_complete:
+                            update_number = len(self.completed_contigs) - contigs_complete
+                            contigs_complete = len(self.completed_contigs)
+                            pbar.update(update_number)
                 self.write_output(methylation_lines)
         if self.verbose:
             pbar.close()
