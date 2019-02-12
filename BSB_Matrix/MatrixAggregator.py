@@ -1,7 +1,6 @@
 #! /usr/env python3
 
-import time
-import numpy as np 
+import numpy as np
 from tqdm import tqdm
 from BSB_Utils.CGmapIterator import OpenCGmap
 
@@ -51,14 +50,11 @@ class AggregateMatrix:
 
     def aggregate_matrix(self):
         """Collapse matrix"""
-        start_final = time.time()
         self.get_site_counts()
         self.get_matrix_sites()
         self.set_matrix_sites()
         if self.output_path:
             self.output_matrix()
-        end_final = time.time()
-        print(round((end_final - start_final) / 60, 2))
 
     @staticmethod
     def sort_sites(key_list):
@@ -110,7 +106,7 @@ class AggregateMatrix:
                     self.collapsed_matrix[site_label][sample_index] = float(line_info[5])
 
     def check_cg(self, nucleotide_context):
-        if self.check_cg
+        if self.check_cg:
             if nucleotide_context == 'CG':
                 return True
             return False
