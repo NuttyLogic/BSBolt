@@ -47,3 +47,4 @@ if __name__ == "__main__":
                              output_path=arguments.O,
                              cg_only=arguments.CG,
                              verbose=arguments.verbose)
+    matrix.aggregate_matrix()
