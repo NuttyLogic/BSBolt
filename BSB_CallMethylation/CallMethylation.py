@@ -97,7 +97,7 @@ class CallMethylation:
         # iterate through pileup
         line_count = 0
         contig_chunk = []
-        for pileup_col in self.input_bam.pileup(max_depth=self.max_read_depth, 
+        for pileup_col in self.input_bam.pileup(max_depth=self.max_read_depth,
                                                 contig=self.contig,
                                                 ignore_overlaps=self.ignore_overlap, 
                                                 min_base_quality=self.min_base_quality):

@@ -77,6 +77,6 @@ def write_bam_line(sam_line=None, output_object=None):
     output_values = list(sam_line.values())
     sam1 = '\t'.join(output_values[:-1])
     sam2 = '\t'.join(output_values[-1])
-    formatted_read = f'{sam1}\t{sam2}\n'
+    formatted_read = f'{sam1}\t{sam2}'
     bam_line = pysam.AlignedSegment.fromstring(formatted_read, output_object.header)
     output_object.write(bam_line)
