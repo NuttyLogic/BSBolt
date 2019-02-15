@@ -124,16 +124,14 @@ class ProcessContigs:
         while self.methylation_calling:
             if self.return_list:
                 methylation_lines: list = self.return_list.pop(0)
-                # if contig is missing sleep
-                if len(self.completed_contigs) == len(self.contigs) and not self.return_list:
-                    self.methylation_calling = False
-                else:
-                    if self.verbose:
-                        if len(self.completed_contigs) != contigs_complete:
-                            update_number = len(self.completed_contigs) - contigs_complete
-                            contigs_complete = len(self.completed_contigs)
-                            pbar.update(update_number)
+                if self.verbose:
+                    if len(self.completed_contigs) != contigs_complete:
+                        update_number = len(self.completed_contigs) - contigs_complete
+                        contigs_complete = len(self.completed_contigs)
+                        pbar.update(update_number)
                 self.write_output(methylation_lines)
+            if len(self.completed_contigs) == len(self.contigs) and not self.return_list:
+                self.methylation_calling = False
         if self.verbose:
             pbar.close()
 
