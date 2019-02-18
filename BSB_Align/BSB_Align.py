@@ -94,7 +94,7 @@ class BisulfiteAlignmentAndProcessing:
         # add chromosome information to bam header
         for chromosome, chromosome_length in genome_index.items():
             sam_header['SQ'].append({'LN': chromosome_length, 'SN': chromosome})
-        #sam_header['PG'] = {'ID': '01', 'PN': 'BSBolt', 'CL': self.command_line_arg}
+        # sam_header['PG'] = {'ID': '01', 'PN': 'BSBolt', 'CL': self.command_line_arg}
         sam_out = pysam.AlignmentFile(f'{self.output_path}.bam', 'wb', header=sam_header)
         return sam_out
 
