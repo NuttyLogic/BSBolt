@@ -1,12 +1,5 @@
 import pickle
 import pysam
-import time
-
-
-def time_function(start, message):
-    total_time = time.time() - start
-    print(f'{message} {total_time}')
-    return time.time()
 
 
 class CallMethylation:

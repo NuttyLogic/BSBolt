@@ -1,7 +1,8 @@
 import unittest
+import pysam
+from BSB.BSB_CallMethylation.CallMethylation import CallMethylation
 
 
-# import original calls
 
 
 
