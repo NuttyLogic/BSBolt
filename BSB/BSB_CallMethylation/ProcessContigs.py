@@ -46,7 +46,8 @@ class ProcessContigs:
         self.min_read_depth (int): default = 1, minimum read depth to output values
         self.contigs (list): list of contigs in self.input_bam
         self.return_dict (multiprocessing.manager.dict): thread safer dictionary
-        self.output_objects (Dict[str, TextIO]): dict of output objects
+        self.output_objects (dict[str, TextIO]): dict of output objects
+        self.methylation_stats (dict): global methylation statistics
     """
 
     def __init__(self, input_file=None, genome_database=None, output_prefix=None,
@@ -78,6 +79,7 @@ class ProcessContigs:
         self.pool = None
         self.verbose = verbose
         self.output_objects = self.get_output_objects
+        self.methylation_stats = {'CG_meth': 0, 'CG_all': 0, 'CH_meth': 0, 'CH_all': 0}
 
     @property
     def get_contigs(self):
@@ -117,6 +119,7 @@ class ProcessContigs:
         become large if first contig is large, ie. Human Chr1
         """
         contigs_complete = 0
+        pbar = None
         if self.verbose:
             pbar = tqdm(total=len(self.contigs), desc='Processing Contigs')
         while self.methylation_calling:
@@ -132,6 +135,7 @@ class ProcessContigs:
                 self.methylation_calling = False
         if self.verbose:
             pbar.close()
+        self.print_stats()
 
     def write_output(self, methylation_lines):
         """Give a list of methylation call dicts, output formatted line
@@ -140,9 +144,11 @@ class ProcessContigs:
             contig (str): contig label
         """
         # write wig contig designation
-        contig = 'test'
+        contig = methylation_lines[0]['chrom']
         self.write_line(self.output_objects['wig'], f'variableStep chrom={contig}\n')
         for meth_line in methylation_lines:
+            # collect methylation stats
+            self.collect_stats(meth_line)
             # write ATCGmap line
             self.write_line(self.output_objects['ATCGmap'], self.format_atcg(meth_line))
             # if methylation level greater than or equal to min_read_depth output CGmap and wig lines
@@ -205,3 +211,23 @@ class ProcessContigs:
             output_object.write(line)
         else:
             output_object.write(line.encode('utf-8'))
+
+    def collect_stats(self, meth_line):
+        """Collect global methylation statistics"""
+        if meth_line['subcontext'] == 'CG':
+            self.methylation_stats['CG_all'] += meth_line['all_cytosines']
+            self.methylation_stats['CG_meth'] += meth_line['meth_cytosines']
+        else:
+            self.methylation_stats['CH_all'] += meth_line['all_cytosines']
+            self.methylation_stats['CH_meth'] += meth_line['meth_cytosines']
+
+    def print_stats(self):
+        """Print global methylation statistics"""
+        print(f'Methylated CpG Cytosines: {self.methylation_stats["CG_meth"]}')
+        print(f'Total Observed CpG Cytosines: {self.methylation_stats["CG_all"]}')
+        cpg_percentage = (self.methylation_stats["CG_meth"] / self.methylation_stats["CG_all"]) * 100
+        print(f'Methylated / Total Observed CpG Cytosines: {cpg_percentage:.2f} %')
+        print(f'Methylated CH Cytosines: {self.methylation_stats["CH_meth"]}')
+        print(f'Total Observed CH Cytosines: {self.methylation_stats["CH_all"]}')
+        ch_percentage = (self.methylation_stats["CH_meth"] / self.methylation_stats["CH_all"]) * 100
+        print(f'Methylated / Total Observed CH Cytosines: {ch_percentage:.2f}%')

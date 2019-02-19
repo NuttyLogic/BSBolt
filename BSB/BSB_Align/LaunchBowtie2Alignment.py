@@ -13,13 +13,13 @@ class Bowtie2Align:
             bowtie2_commands (list of str): commands to use for bowtie2 alignment
             replacement_base1 (str): base to replace for fastq1 read
             replacement_base2 (str): base to replace for fastq2 read
-            bsseeker_database(str): path to bsseeker 2 directory with specific mapping reference suffix
+            bsb_database(str): path to bsb 2 directory with specific mapping reference suffix
             bowtie2_path(str): path to bowtie2 executable
         Attributes:
             self.fastq1 (str): path to fastq file
             self.fastq2 (str): path to fastq1 mate pair
             self.bowtie2_commands (list of str): commands to use for bowtie2 alignment
-            self.bsseeker_database(str): path to bsseeker 2 directory
+            self.bsb_database(str): path to bsb 2 directory
             self.tab_commands (dict): dict of str, listing paths and replacement bases to stream fastq(s) for alignment
             self.paired_end (bool): paired end fastq files
             self.replacement_base2 = Base to replace for fastq2 read

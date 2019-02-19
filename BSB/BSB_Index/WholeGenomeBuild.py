@@ -26,7 +26,7 @@ class WholeGenomeIndexBuild:
         assert isinstance(self.index_output, IndexOutput)
         self.contig_size_dict = {}
 
-    def generate_bsseeker_database(self):
+    def generate_bsb_database(self):
         """ Wrapper for class functions to process and build mapping indices. Loops through fasta file and processes
         complete contig sequences.
         """

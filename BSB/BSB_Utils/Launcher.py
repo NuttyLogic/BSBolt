@@ -32,7 +32,7 @@ def launch_index(arguments):
                                       genome_database=arguments.DB,
                                       bowtie2_path=arguments.BT2,
                                       bowtie2_threads=arguments.BT2_p)
-        index.generate_bsseeker_database()
+        index.generate_bsb_database()
 
 
 def align_bisulfite(alignment_kwargs):
@@ -74,7 +74,7 @@ def process_mapping_statistics(mapping_dict):
 
 def launch_alignment(arguments):
     check_bowtie2_path(bowtie2_path=arguments.BT2)
-    bsseeker_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
+    bsb_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
     arg_order = ['F1', 'F2', 'U', 'BT2', 'O', 'DB', 'CP', 'CT', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
                  'BT2_X', 'BT2_k', 'BT2_local', 'BT2_p', 'BT2_score_min']
     bowtie2_commands = ['--quiet', '--norc', '--no-mixed', '--no-discordant', '--sam-nohead', '--reorder',
@@ -95,9 +95,9 @@ def launch_alignment(arguments):
         bowtie2_commands.extend(pe_commands)
     if not arguments.DB.endswith('/'):
         arguments.DB = f'{arguments.DB}/'
-    command_line_arg = 'BSBolt Align ' + ' '.join([f'-{arg} {bsseeker_command_dict[arg]}' for arg in arg_order])
+    command_line_arg = 'BSBolt Align ' + ' '.join([f'-{arg} {bsb_command_dict[arg]}' for arg in arg_order])
     aligment_kwargs = dict(fastq1=arguments.F1, fastq2=arguments.F2, undirectional_library=arguments.U,
-                           bowtie2_commands=bowtie2_commands, bsseeker_database=arguments.DB,
+                           bowtie2_commands=bowtie2_commands, bsb_database=arguments.DB,
                            bowtie2_path=arguments.BT2, output_path=arguments.O,
                            conversion_threshold=(arguments.CP, arguments.CT), mismatch_threshold=arguments.M,
                            command_line_arg=command_line_arg)

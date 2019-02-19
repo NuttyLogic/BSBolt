@@ -153,7 +153,7 @@ To ensure efficient methylation calling BSB-Call-Methylation only supports sorte
 **Methylation Calling**
 ```bash
 # Methylation Calling with 2 threads, 
-python3 BSBolt.py CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose
+python3 BSBolt.py CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose > methylaiton_stats.txt
 ```
 **Output Files**
 BSB CallMethylation outputs ATCGmap, CGmap, and wig files by default.
