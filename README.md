@@ -29,20 +29,11 @@ Representative Bisulfite Sequencing* (RRBS), and targeted bisulfite sequencing d
 Illumina reads. 
 
 ### Installation
-BSBolt requries python3.6 or greater to run, with the external *pysam*, *numpy*, and *tqdm* packages. BSBolt checks the 
-system path for Bowtie2 by default. A path to a Bowtie2 executable can also be provided through the BSB-Align and 
-BSB-Index commandline interface. A bowtie2 executable can be downloaded from the 
-[bowtie2 home page]( http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml). BSB-Simulate requires ART-Illumina, which 
-can be downloaded as part of the 
-[ART Binary Package](https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm). An automated 
-installation process is under development.  
-- Requirements 
-    - [python](python.org) >= 3.6 w/
-        - [pysam](https://github.com/pysam-developers/pysam) >= 0.15.0
-        - [numpy](numpy.org) >= 1.14.2
-        - [tqdm](https://pypi.org/project/tqdm/) >= 4.28.1
-    - [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml) >= 2.2.9
-    - [ART](https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm) = MountRainier-2016-06-05
+BSBolt requries python3.6 or greater to run, with the external *pysam*, *numpy*, and *tqdm* packages. BSBolt is 
+distributed with [Bowtie2]( http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml)
+and [ART Read Simulation Tools](https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm) 
+under the terms of the [GPLv3 License](https://www.gnu.org/licenses/gpl-3.0.html). BSBolt is implemented for Unix like
+operating systems (MacOS, Linux); Windows support is untested. 
 
 ## Read Alignment
 
@@ -153,7 +144,7 @@ To ensure efficient methylation calling BSB-Call-Methylation only supports sorte
 **Methylation Calling**
 ```bash
 # Methylation Calling with 2 threads, 
-python3 BSBolt.py CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose > methylaiton_stats.txt
+python3 BSBolt.py CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose > methylation_stats.txt
 ```
 **Output Files**
 BSB CallMethylation outputs ATCGmap, CGmap, and wig files by default.

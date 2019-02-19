@@ -13,7 +13,7 @@ class MethylationCallingError(Exception):
 def call_contig_methylation(completed_contigs, call_methylation_kwargs):
     """ Wrapper to initialize methylation calling
     Arguments:
-        return_dict (multiprocessing.mangager.dict): Dictionary to return processed methylation calls
+        completed_contigs (multiprocessing.mangager.list): List of contigs with completed methylation calls
         call_methylation_kwargs (dict): dict of argument for CallMethylation class
     """
     contig_methylation_call = CallMethylation(**call_methylation_kwargs)
@@ -141,20 +141,20 @@ class ProcessContigs:
         """Give a list of methylation call dicts, output formatted line
         Arguments:
             methylation_lines (list): list of dict containing methylation call information
-            contig (str): contig label
         """
         # write wig contig designation
-        contig = methylation_lines[0]['chrom']
-        self.write_line(self.output_objects['wig'], f'variableStep chrom={contig}\n')
-        for meth_line in methylation_lines:
-            # collect methylation stats
-            self.collect_stats(meth_line)
-            # write ATCGmap line
-            self.write_line(self.output_objects['ATCGmap'], self.format_atcg(meth_line))
-            # if methylation level greater than or equal to min_read_depth output CGmap and wig lines
-            if meth_line['all_cytosines'] >= self.min_read_depth:
-                self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
-                self.write_line(self.output_objects['wig'], self.format_wig(meth_line))
+        if methylation_lines:
+            contig = methylation_lines[0]['chrom']
+            self.write_line(self.output_objects['wig'], f'variableStep chrom={contig}\n')
+            for meth_line in methylation_lines:
+                # collect methylation stats
+                self.collect_stats(meth_line)
+                # write ATCGmap line
+                self.write_line(self.output_objects['ATCGmap'], self.format_atcg(meth_line))
+                # if methylation level greater than or equal to min_read_depth output CGmap and wig lines
+                if meth_line['all_cytosines'] >= self.min_read_depth:
+                    self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
+                    self.write_line(self.output_objects['wig'], self.format_wig(meth_line))
 
     @staticmethod
     def format_atcg(meth_line):
