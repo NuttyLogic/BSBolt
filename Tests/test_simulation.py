@@ -1,7 +1,7 @@
 import os
 import unittest
-from BSB_Simulate.SimulateMethylatedReads import SimulateMethylatedReads
-from BSB_Utils.BSB_UtilityFunctions import reverse_complement
+from BSB.BSB_Simulate.SimulateMethylatedReads import SimulateMethylatedReads
+from BSB.BSB_Utils import reverse_complement
 
 # hold read simulation data to test functions
 

@@ -1,9 +1,6 @@
-import subprocess
-import time
 import unittest
 
-from BSB_CallMethylation.ProcessContigs import ProcessContigs
-from BSB_CallMethylation.CallMethylation import CallMethylation
+
 # import original calls
 
 

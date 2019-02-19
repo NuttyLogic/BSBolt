@@ -1,10 +1,10 @@
 from distutils.core import setup
 
 setup(name='BiSulfiteBolt',
-      version='0.0.1',
+      version='0.0.2',
       description='Bisulfite Sequencing Processing Platform',
       author='Colin Farrell',
       author_email='colinpfarrell@gmail.com',
-      license='MIT',
+      license='GPLv3',
       packages=['BSBolt'],
       requires=['pysam', 'numpy', 'tqdm'])

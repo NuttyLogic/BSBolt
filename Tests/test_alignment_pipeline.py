@@ -9,27 +9,28 @@ import numpy as np
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
+bsbolt = f'{bsb_directory}BSBolt.py'
+print(bsbolt)
 bowtie2_path = 'bowtie2'
-art_path = '/Users/colinfarrell/Downloads/art_bin_MountRainier/art_illumina'
 print('Generating Simulated Methylation Reads')
 # generate simulated reads
-bsb_simulate_commands = ['python3', f'{bsb_directory}BSBolt-Simulate.py',
+bsb_simulate_commands = ['python3', bsbolt, 'Simulate',
                          '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
-                         '-A', art_path, '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-U', '-PE']
+                         '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-U', '-PE']
 subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
 # map simulated reads
 
 print('Building Methylation Index')
-bsb_index_commands = ['python3', f'{bsb_directory}BSBolt-Index.py', '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
-                      '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB', '-BT2', bowtie2_path]
+bsb_index_commands = ['python3', bsbolt, 'Index', '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
+                      '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB']
 subprocess.run(bsb_index_commands)
 print('BSB Index Built')
 
 
-bsb_align_commands = ['python3', f'{bsb_directory}BSBolt-Align.py',
-                      '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB', '-BT2', bowtie2_path, '-F1',
+bsb_align_commands = ['python3', bsbolt, 'Align',
+                      '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
                       f'{bsb_directory}Tests/BSB_pe_test', '-S']
@@ -38,7 +39,7 @@ subprocess.run(bsb_align_commands)
 
 print('Calling Methylation')
 
-bs_call_methylation_args = ['python3', f'{bsb_directory}BSBolt-Call-Methylation.py', '-I',
+bs_call_methylation_args = ['python3', bsbolt, 'CallMethylation', '-I',
                             f'{bsb_directory}Tests/BSB_pe_test.sorted.bam',
                             '-O', f'{bsb_directory}Tests/BSB_pe_test',
                             '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB',
