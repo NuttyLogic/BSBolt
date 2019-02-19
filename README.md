@@ -1,6 +1,6 @@
 # BSBolt (BiSulfite Bolt)
 ## A fast and safe read alignment platform for bisulfite sequencing data
-*BSBolt is under active developement and documentation is not finalized*
+*BSBolt is in pre-release, all documentation and feature usage is not finalized*
 
 BSBolt is fast and safe bisulfite sequencing processing platform. BSBolt offers support for bisulfite sequencing 
 read simulation, read alignment, methylation calling, and methylation matrix assembly. BSBolt is 
@@ -50,11 +50,11 @@ installation process is under development.
 Adapter sequences should be trimmed before alignment with BSBolt. We recommend using 
 [CutAdapt](https://cutadapt.readthedocs.io/en/stable/) to trim sequencing adapters. If aligning un-trimmed FASTQ files 
 align reads using Bowtie2 local mode for best performance.
-### BSB-Index 
+### BSB Index 
 Read alignment requires a BSBolt index to proceed. Alignment indexes for *RRBS* and 
 *WGBS* must be generated separately.
  
-**BSB-Index Commands**
+**BSB Index Commands**
 ```bash
 -h, --help          show this help message and exit
 -G                  Path for reference genome fasta file, fasta file
@@ -76,20 +76,20 @@ Read alignment requires a BSBolt index to proceed. Alignment indexes for *RRBS* 
 **WGBS Index Generation Example**
 ```bash
 # WGBS Index with 4 BT2 Threads
-python3 BSBolt-Index.py -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2 bowtie2 -BT2-p 4
+python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2 bowtie2 -BT2-p 4
 ```
 
 **RRBS Index Generation Example**
 ```bash
 # RRBS Index Using 4 BT2 Threads, MSPI Cut Format, 40bp Lower Fragment Bound, and 400bp Upper Fragment Bound
-python3 BSBolt-Index.py -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2 bowtie2 -BT2-p 4 -rrbs -rrbs-cut-format C-CGG -rrbs-lower 40 -rrbs-upper 400
+python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2 bowtie2 -BT2-p 4 -rrbs -rrbs-cut-format C-CGG -rrbs-lower 40 -rrbs-upper 400
 ```
 
 
-### BSB-Align
+### BSB Align
 Following index generation alignment of *RRBS* and *WGBS* follows the same pipeline.
 
-**BSB-Align Commands**
+**BSB Align Commands**
 ```bash
 -h, --help            show this help message and exit
 -F1                   Path to fastq 1
@@ -120,18 +120,18 @@ Following index generation alignment of *RRBS* and *WGBS* follows the same pipel
 **Paired End Alignment**
 ```bash
 # Paired End Alignment Using Default Commands
-python3 BSBolt-Align.py -DB ~/Tests/TestData/BSB_Test_DB -BT2 bowtie2 -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/Tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/Tests/BSB_pe_test -S
+python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -BT2 bowtie2 -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/Tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/Tests/BSB_pe_test -S
 ```
 
 **Single End Alignment**
 ```bash
 # Single End Alignment Using Default Commands
-python3 BSBolt-Align.py -DB ~/Tests/TestData/BSB_Test_DB -BT2 bowtie2 -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/Tests/BSB_pe_test -S
+python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -BT2 bowtie2 -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/Tests/BSB_pe_test -S
 ```
 
-## BSB-Call-Methylation
+## BSB CallMethylation
 To ensure efficient methylation calling BSB-Call-Methylation only supports sorted BAM files as the alignment input.
-**BSB-Call-Methylation Commands**
+**BSB CallMethylation Commands**
 ```bash
 -h, --help       show this help message and exit
 -I               Input BAM, input file must be in BAM format
@@ -153,13 +153,13 @@ To ensure efficient methylation calling BSB-Call-Methylation only supports sorte
 **Methylation Calling**
 ```bash
 # Methylation Calling with 2 threads, 
-python3 BSBolt-Call-Methylation.py -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose
+python3 BSBolt.py CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose
 ```
 **Output Files**
-BSB-Call-Methylation outputs ATCGmap, CGmap, and wig files by default.
+BSB CallMethylation outputs ATCGmap, CGmap, and wig files by default.
 
-## BSB-Simulate
-**BSB-Simulate Commands**
+## BSB Simulate
+**BSB Simulate Commands**
 ```bash
 -h, --help  show this help message and exit
 -G          Path for reference genome fasta file, fasta file should contain
@@ -173,11 +173,11 @@ BSB-Call-Methylation outputs ATCGmap, CGmap, and wig files by default.
 ```
 **Simulate Paired End, Undirectional Methylation Reads**
 ```bash
-python3 BSBolt-Simulate.py -G ~/Tests/TestData/BSB_test.fa -A ~/art_bin_MountRainier/art_illumina -O ~/Tests/TestSimulations/BSB_pe -U -PE
+python3 BSBolt.py Simulate -G ~/Tests/TestData/BSB_test.fa -A ~/art_bin_MountRainier/art_illumina -O ~/Tests/TestSimulations/BSB_pe -U -PE
 ```
 
 ## Methylation Matrix Assembly
-**BSBolt-Matrix Commands**
+**BSBolt AggregateMatrix Commands**
 ```bash
 optional arguments:
   -h, --help            show this help message and exit
@@ -199,16 +199,16 @@ optional arguments:
 **Aggregate Matrix Default Settings**
 
 ```bash
-python3 BSBolt-Matrix.py -F cgmap_1,cgmap_2,cgmap_3 -O ~/test_matrix.txt
+python3 BSBolt.py AggregateMatrix -F cgmap_1,cgmap_2,cgmap_3 -O ~/test_matrix.txt
 ```
 **Aggregate Matrix Default Settings - File List**
 
 ```bash
-python3 BSBolt-Matrix.py -F cgmap_file_list.txt -O ~/test_matrix.txt
+python3 BSBolt.py AggregateMatrix -F cgmap_file_list.txt -O ~/test_matrix.txt
 ```
 
 **Aggregate Matrix Default Settings - File List, Sample Labels, Verbose**
 
 ```bash
-python3 BSBolt-Matrix.py -F cgmap_file_list.txt -S sample1,sample2,sample3 -O ~/test_matrix.txt -verbose
+python3 BSBolt.py AggregateMatrix -F cgmap_file_list.txt -S sample1,sample2,sample3 -O ~/test_matrix.txt -verbose
 ```

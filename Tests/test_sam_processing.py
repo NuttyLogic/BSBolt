@@ -1,6 +1,6 @@
 import unittest
 import os
-from BSB_Align.ProcessSamReads import ProcessSamAlignment
+from BSB.BSB_Align.ProcessSamReads import ProcessSamAlignment
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 
