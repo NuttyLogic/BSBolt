@@ -18,7 +18,7 @@ class BisulfiteAlignmentAndProcessing:
         fastq2 (str): path to fastq1 mate pair
         undirectional_library (bool): perform undirectional alignment
         bowtie2_commands (list of str): commands to use for bowtie2 alignment
-        bsseeker_database(str): path to bsseeker 2 directory
+        bsb_database(str): path to bsb 2 directory
         bowtie2_path(str): path to bowtie2 executable
         output_path(str): output prefix of output file
         conversion_threshold (tuple (float, int)): proportion of unconverted CHH sites and minimum number of CHH sites
@@ -30,7 +30,7 @@ class BisulfiteAlignmentAndProcessing:
         self.fastq1 (str): path to fastq file
         self.fastq2 (str): path to fastq1 mate pair
         self.undirectional_library (bool): perform undirectional alignment
-        self.bsseeker_database(str): path to bsseeker 2 directory
+        self.bsb_database(str): path to bsb database directory
         self.paired_end (bool): paired end reads
         self.output_path (str): output prefix of output file
         self.self.sam_tuple (tuple): tuple of temporary output files
@@ -46,13 +46,13 @@ class BisulfiteAlignmentAndProcessing:
     """
 
     def __init__(self, fastq1=None, fastq2=None, undirectional_library=False, bowtie2_commands=None,
-                 bsseeker_database=None, bowtie2_path=None, output_path=None, conversion_threshold=(0.5, 5),
+                 bsb_database=None, bowtie2_path=None, output_path=None, conversion_threshold=(0.5, 5),
                  mismatch_threshold=None, command_line_arg=None):
         self.bowtie2_mapping = dict(fastq1=fastq1, fastq2=fastq2, undirectional_library=undirectional_library,
                                     bowtie2_commands=bowtie2_commands, bowtie2_path=bowtie2_path,
-                                    output_path=output_path, bsseeker_database=bsseeker_database)
+                                    output_path=output_path, bsb_database=bsb_database)
         assert isinstance(undirectional_library, bool)
-        self.bsseeker_database = bsseeker_database
+        self.bsb_database = bsb_database
         self.undirectional_library = undirectional_library
         self.fastq1 = fastq1
         self.fastq2 = fastq2
@@ -62,7 +62,6 @@ class BisulfiteAlignmentAndProcessing:
         if self.fastq2:
             self.paired_end = True
         self.output_path = output_path
-        self.bsseeker_database = bsseeker_database
         self.sam_tuple: tuple = self.get_sam_tuple
         self.conversion_threshold = conversion_threshold
         self.mismatch_threshold = mismatch_threshold
@@ -88,13 +87,13 @@ class BisulfiteAlignmentAndProcessing:
         Returns: TextIO instance to output processed sam reads
         """
         # load contig len dictionary
-        with open(f'{self.bsseeker_database}genome_index.pkl', 'rb') as index:
+        with open(f'{self.bsb_database}genome_index.pkl', 'rb') as index:
             genome_index: dict = pickle.load(index)
         sam_header = {'HD': {'VN': '1.0'}, 'SQ': []}
         # add chromosome information to bam header
         for chromosome, chromosome_length in genome_index.items():
             sam_header['SQ'].append({'LN': chromosome_length, 'SN': chromosome})
-        # sam_header['PG'] = {'ID': '01', 'PN': 'BSBolt', 'CL': self.command_line_arg}
+        sam_header['PG'] = [{'ID': '01', 'PN': 'BSBolt', 'CL': self.command_line_arg, 'VN': '0.0.2'}]
         sam_out = pysam.AlignmentFile(f'{self.output_path}.bam', 'wb', header=sam_header)
         return sam_out
 
@@ -182,7 +181,7 @@ class BisulfiteAlignmentAndProcessing:
             sam_reads (list): list of sam_read dictionaries and fastq lists"""
         process_sam = ProcessSamAlignment(sam_line_dict=sam_reads,
                                           contig_dict=self.contig_sequence_dict,
-                                          bsseeker_database=self.bsseeker_database,
+                                          bsb_database=self.bsb_database,
                                           conversion_threshold=self.conversion_threshold,
                                           mismatch_threshold=self.mismatch_threshold)
         mapping_number, processed_read, bisulfite_strand = process_sam.output_read

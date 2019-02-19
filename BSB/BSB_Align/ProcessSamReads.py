@@ -10,14 +10,14 @@ class ProcessSamAlignment:
     Keyword Arguments:
             sam_line_dict (dict): dict of import sam and fastq reads
             contig_dict (dict): dict of contig sequences, version of reference genome loaded in memory
-            bsseeker_database (str): path to directory where bsseeker database generated
+            bsb_database (str): path to directory where bsb database generated
             conversion_threshold (tuple): conversion proprotion, conversion threshold to consider an incompletely
                                         converted read
             mismatch_threshold (int): number of mismatches allowed for a read to be considered
     Attributes:
         self.sam_line_dict (dict): dict of import sam and fastq reads
         self.contig_dict (dict): dict of contig sequences, version of reference genome loaded in memory
-        self.bsseeker_database (str): path to directory where bsseeker database generated
+        self.bsb_database (str): path to directory where bsb database generated
         self.conversion_threshold (tuple): conversion proprotion, conversion threshold to consider an incompletely
                                     converted read
        self.mismatch_threshold (int): number of mismatches allowed for a read to be considered
@@ -27,14 +27,14 @@ class ProcessSamAlignment:
 
     """
 
-    def __init__(self, sam_line_dict=None, contig_dict=None, bsseeker_database=None,
+    def __init__(self, sam_line_dict=None, contig_dict=None, bsb_database=None,
                  conversion_threshold=(0.5, 5), mismatch_threshold=4):
         assert isinstance(contig_dict, dict)
         self.contig_dict = contig_dict
         self.conversion_threshold = conversion_threshold
         self.mismatch_threshold = mismatch_threshold
         self.sam_line_dict = sam_line_dict
-        self.bsseeker_database = bsseeker_database
+        self.bsb_database = bsb_database
         self.read_strand_info = (('W_C2T', '+FW', False, False), ('C_C2T', '-FW', True, True),
                                  ('W_G2A', '-RC', False, False), ('C_G2A', '+RC', True, True))
         self.good_flags = {'0', '99', '147'}
@@ -242,7 +242,7 @@ class ProcessSamAlignment:
         try:
             contig_sequence = self.contig_dict[contig_id]
         except KeyError:
-            with open(f'{self.bsseeker_database}{contig_id}.pkl', 'rb') as contig:
+            with open(f'{self.bsb_database}{contig_id}.pkl', 'rb') as contig:
                 contig_sequence = pickle.load(contig)
                 self.contig_dict[contig_id] = contig_sequence
                 return contig_sequence

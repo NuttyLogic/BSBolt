@@ -10,9 +10,6 @@ import numpy as np
 test_directory = os.path.dirname(os.path.realpath(__file__))
 bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
 bsbolt = f'{bsb_directory}BSBolt.py'
-print(bsbolt)
-bowtie2_path = 'bowtie2'
-print('Generating Simulated Methylation Reads')
 # generate simulated reads
 bsb_simulate_commands = ['python3', bsbolt, 'Simulate',
                          '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
