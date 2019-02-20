@@ -1,6 +1,7 @@
 #! /usr/env python3
 
 import gzip
+import io
 
 
 class OpenAln:
@@ -12,7 +13,7 @@ class OpenAln:
 
     def __init__(self, fastq=None):
         if fastq.endswith(".gz"):
-            self.f = gzip.open(fastq, 'rb')
+            self.f = io.BufferedReader(gzip.open(fastq, 'rb'))
         else:
             self.f = open(fastq, 'r')
 

@@ -1,6 +1,7 @@
 #! /usr/env python3
 
 import gzip
+import io
 
 
 class OpenFasta:
@@ -11,7 +12,7 @@ class OpenFasta:
 
     def __init__(self, fasta=None):
         if fasta.endswith(".gz"):
-            self.f = gzip.open(fasta, 'rb')
+            self.f = io.BufferedReader(gzip.open(fasta, 'rb'))
         else:
             self.f = open(fasta, 'r')
 

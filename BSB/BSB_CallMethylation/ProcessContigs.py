@@ -1,5 +1,6 @@
-import multiprocessing
+import io
 import gzip
+import multiprocessing
 import pysam
 from tqdm import tqdm
 from BSB.BSB_CallMethylation.CallMethylation import CallMethylation
@@ -36,6 +37,7 @@ class ProcessContigs:
         max_read_depth (int): default = 8000
         threads (int): 1, if one watcher and processing on same thread else separated
         min_base_quality (int): minimum base quality for base to be considered
+        wig (bool): write out wig file
     Attributes:
         self.input_file (str): path to input bam/sam file
         self.input_bam (pysam.Samfile): pysam object to retrieve pileup information from .bam file
@@ -48,11 +50,12 @@ class ProcessContigs:
         self.return_dict (multiprocessing.manager.dict): thread safer dictionary
         self.output_objects (dict[str, TextIO]): dict of output objects
         self.methylation_stats (dict): global methylation statistics
+        self.wit (bool): write out wig file
     """
 
     def __init__(self, input_file=None, genome_database=None, output_prefix=None,
                  remove_sx_reads=True, ignore_overlap=False, text_output=False, remove_ccgg=False,
-                 min_read_depth=10, max_read_depth=8000, threads=1, verbose=True, min_base_quality=0):
+                 min_read_depth=10, max_read_depth=8000, threads=1, verbose=True, min_base_quality=0, wig=False):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(text_output, bool), 'Not valid bool'
         assert isinstance(threads, int), 'Threads must be specified with integer'
@@ -72,6 +75,7 @@ class ProcessContigs:
                                             max_read_depth=max_read_depth,
                                             min_base_quality=min_base_quality)
         self.min_read_depth = min_read_depth
+        self.wig = wig
         self.methylation_calling = True
         self.contigs = self.get_contigs
         self.completed_contigs = None
@@ -131,7 +135,10 @@ class ProcessContigs:
                         contigs_complete = len(self.completed_contigs)
                         pbar.update(update_number)
                 self.write_output(methylation_lines)
+            if len(self.completed_contigs) == len(self.contigs) and self.return_list:
+                print(len(self.return_list))
             if len(self.completed_contigs) == len(self.contigs) and not self.return_list:
+                print('here')
                 self.methylation_calling = False
         if self.verbose:
             pbar.close()
@@ -145,7 +152,8 @@ class ProcessContigs:
         # write wig contig designation
         if methylation_lines:
             contig = methylation_lines[0]['chrom']
-            self.write_line(self.output_objects['wig'], f'variableStep chrom={contig}\n')
+            if self.wig:
+                self.write_line(self.output_objects['wig'], f'variableStep chrom={contig}\n')
             for meth_line in methylation_lines:
                 # collect methylation stats
                 self.collect_stats(meth_line)
@@ -154,7 +162,8 @@ class ProcessContigs:
                 # if methylation level greater than or equal to min_read_depth output CGmap and wig lines
                 if meth_line['all_cytosines'] >= self.min_read_depth:
                     self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
-                    self.write_line(self.output_objects['wig'], self.format_wig(meth_line))
+                    if self.wig:
+                        self.write_line(self.output_objects['wig'], self.format_wig(meth_line))
 
     @staticmethod
     def format_atcg(meth_line):
@@ -192,13 +201,15 @@ class ProcessContigs:
         if self.text_output:
             output_objects['ATCGmap'] = open(f'{output_path}.ATCGmap', 'w')
             output_objects['CGmap'] = open(f'{output_path}.CGmap', 'w')
-            output_objects['wig'] = open(f'{output_path}.wig', 'w')
-            output_objects['wig'].write('track type=wiggle_o\n')
+            if self.wig:
+                output_objects['wig'] = open(f'{output_path}.wig', 'w')
+                output_objects['wig'].write('track type=wiggle_o\n')
         else:
-            output_objects['ATCGmap'] = gzip.open(f'{output_path}.ATCGmap.gz', 'wb')
-            output_objects['CGmap'] = gzip.open(f'{output_path}.CGmap.gz', 'wb')
-            output_objects['wig'] = gzip.open(f'{output_path}.wig.gz', 'wb')
-            output_objects['wig'].write('track type=wiggle_o\n'.encode('utf-8'))
+            output_objects['ATCGmap'] = io.BufferedWriter(gzip.open(f'{output_path}.ATCGmap.gz', 'wb'))
+            output_objects['CGmap'] = io.BufferedWriter(gzip.open(f'{output_path}.CGmap.gz', 'wb'))
+            if self.wig:
+                output_objects['wig'] = io.BufferedWriter(gzip.open(f'{output_path}.wig.gz', 'wb'))
+                output_objects['wig'].write('track type=wiggle_o\n'.encode('utf-8'))
         return output_objects
 
     def write_line(self, output_object, line):
@@ -223,11 +234,15 @@ class ProcessContigs:
 
     def print_stats(self):
         """Print global methylation statistics"""
+        try:
+            cpg_percentage = (self.methylation_stats["CG_meth"] / self.methylation_stats["CG_all"]) * 100
+            ch_percentage = (self.methylation_stats["CH_meth"] / self.methylation_stats["CH_all"]) * 100
+        except ZeroDivisionError:
+            print('Warning! No SAM reads passed quality control metrics')
+            raise MethylationCallingError
         print(f'Methylated CpG Cytosines: {self.methylation_stats["CG_meth"]}')
         print(f'Total Observed CpG Cytosines: {self.methylation_stats["CG_all"]}')
-        cpg_percentage = (self.methylation_stats["CG_meth"] / self.methylation_stats["CG_all"]) * 100
         print(f'Methylated / Total Observed CpG Cytosines: {cpg_percentage:.2f} %')
         print(f'Methylated CH Cytosines: {self.methylation_stats["CH_meth"]}')
         print(f'Total Observed CH Cytosines: {self.methylation_stats["CH_all"]}')
-        ch_percentage = (self.methylation_stats["CH_meth"] / self.methylation_stats["CH_all"]) * 100
         print(f'Methylated / Total Observed CH Cytosines: {ch_percentage:.2f}%')
