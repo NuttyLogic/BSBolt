@@ -94,7 +94,7 @@ class ProcessSamAlignment:
             # unpack read processing instructions
             mapping_label, strand, mapping_reverse, reverse_comp = read_instruction
             # retrieve original read sequence, should always be present even is unmapped / multi-mapped
-            orignal_sequence = self.sam_line_dict['read_sequence'][0]
+            orignal_sequence = self.sam_line_dict['read_sequence']
             try:
                 # retrieve read
                 read = self.sam_line_dict[read_instruction[0]]

@@ -81,12 +81,20 @@ class CallMethylation:
         return context_tables
 
     def call_methylation(self):
+        try:
+            chrom_seq = self.get_reference_sequence(f'{self.genome_database}{self.contig}.pkl')
+        except FileNotFoundError:
+            self.return_queue.put([])
+            print(f'{self.contig} not found in BSBolt DB, Methylation Calls for {self.contig} skipped. Methylation '
+                  f'values should be called using the same DB used for alignment.')
+            self.return_queue.put([])
+        else:
+            self.call_contig(chrom_seq)
+
+    def call_contig(self, chrom_seq):
         """Iterates through bam pileup, calling methylation values if the reference nucleotide is a C or G. Pileup reads
-        are bufferend and accessed as needed then deleted when they exit the scope.
-        @return:
+        are buffered and accessed as needed then deleted when they exit the scope.
         """
-        # load serialized reference sequence
-        chrom_seq = self.get_reference_sequence(f'{self.genome_database}{self.contig}.pkl')
         # iterate through pileup
         line_count = 0
         contig_chunk = []

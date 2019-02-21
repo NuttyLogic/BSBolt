@@ -1,6 +1,5 @@
 #! /usr/env python3
 
-from BSB.BSB_Align.StreamTabFormat import StreamTab
 from BSB.BSB_Utils.SamIterator import OpenSam
 
 
@@ -12,7 +11,6 @@ class TabSamIterator:
         self.paired_end = False
         if fastq2:
             self.paired_end = True
-        self.tab_iterator = StreamTab(fastq1=fastq1, fastq2=fastq2)
         self.sam_iterators = self.get_sam_iterator(sam_tuple=sam_tuple)
         self.iteration_order = ('W_C2T', 'C_C2T', 'W_G2A', 'C_G2A')
 
@@ -24,19 +22,20 @@ class TabSamIterator:
 
     @staticmethod
     def process_read_id(read_identifier):
-        read_id = read_identifier.split('/')[0]
+        read_id = read_identifier.split('_BSBolt_')[0]
+        read_id = read_id.split('/')[0]
         read_id = read_id.split(' ')[0]
         return read_id
 
     def __iter__(self):
-        for line in zip(self.tab_iterator, *self.sam_iterators):
-            read_count = 1
-            for read_id, read_sequence in line[0].items():
-                read_id = self.process_read_id(read_id)
-                if self.paired_end:
-                    read_id = f'{read_id}_{read_count}'
-                output_dict = {'read_sequence': read_sequence}
-                for reference_type, read_dictionary in zip(self.iteration_order, line[1:]):
-                    output_dict.update({reference_type: read_dictionary[read_id]})
-                yield output_dict
-                read_count += 1
+        for line in zip(*self.sam_iterators):
+            output_dicts = [dict(read_sequence=None), dict(read_sequence=None)]
+            for reference_type, read_dictionary in zip(self.iteration_order, line):
+                for index, sam_info in enumerate(read_dictionary.values()):
+                    if not output_dicts[index]['read_sequence']:
+                        output_dicts[index]['read_sequence'] = str(sam_info['original_sequence'])
+                    del sam_info['original_sequence']
+                    output_dicts[index].update({reference_type: sam_info})
+            yield output_dicts[0]
+            if len(output_dicts[1]) > 1:
+                yield output_dicts[1]

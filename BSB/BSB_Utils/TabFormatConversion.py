@@ -64,11 +64,12 @@ class ConvertFastq:
     @staticmethod
     def tab_conversion(fastq_line, replacement_rule):
         # strip fastq specific formatting
-        name = fastq_line[0].replace('@', '').split('/')[0]
         sequence = fastq_line[1]
+        name = fastq_line[0].replace('@', '').split('/')[0]
+        name = f'{name.split(" ")[0]}_BSBolt_{sequence}'
         quality = fastq_line[3]
         if replacement_rule:
-            sequence = sequence.replace(replacement_rule[0], replacement_rule[1])
+            sequence = sequence.replace(replacement_rule[0], replacement_rule[1].lower())
         return f'{name}\t{sequence}\t{quality}'
 
     @staticmethod
