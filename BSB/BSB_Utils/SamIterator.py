@@ -43,9 +43,10 @@ class OpenSam:
     def process_sam_line(sam_line):
         if sam_line:
             processed_sam_line: list = sam_line.replace('\n', '').split('\t')
-            QNAME, FLAG, RNAME, POS, MAPQ, CIGAR, RNEXT, PNEXT, TLEN, SEQ, QUAL = processed_sam_line[0:11]
+            QNAME, original_sequence = processed_sam_line[0].split('_BSBolt_')
+            FLAG, RNAME, POS, MAPQ, CIGAR, RNEXT, PNEXT, TLEN, SEQ, QUAL = processed_sam_line[1:11]
             SAM_TAGS = None
             if len(sam_line) > 11:
                 SAM_TAGS = processed_sam_line[11:]
             return dict(QNAME=QNAME, FLAG=FLAG, RNAME=RNAME, POS=POS, MAPQ=MAPQ, CIGAR=CIGAR, RNEXT=RNEXT, PNEXT=PNEXT,
-                        TLEN=TLEN, SEQ=SEQ, QUAL=QUAL, SAM_TAGS=SAM_TAGS)
+                        TLEN=TLEN, SEQ=SEQ, QUAL=QUAL, SAM_TAGS=SAM_TAGS, original_sequence=original_sequence)
