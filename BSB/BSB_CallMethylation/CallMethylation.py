@@ -30,7 +30,7 @@ class CallMethylation:
 
     def __init__(self, input_file=None, genome_database=None,
                  remove_sx_reads=True, ignore_overlap=False, remove_ccgg=False,
-                 min_read_depth=10, max_read_depth=8000, contig=None, min_base_quality=0, return_list=None):
+                 min_read_depth=10, max_read_depth=8000, contig=None, min_base_quality=0, return_queue=None):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(genome_database, str), 'Path to genome database not valid'
         assert isinstance(remove_sx_reads, bool), 'Not valid bool'
@@ -53,7 +53,7 @@ class CallMethylation:
         self.min_base_quality = min_base_quality
         self.chunk_size = 10000
         self.context_tables = self.get_context_tables
-        self.return_list = return_list
+        self.return_queue = return_queue
         self.counting_dict = {}
 
     @property
@@ -125,10 +125,10 @@ class CallMethylation:
                 contig_chunk.append(meth_line)
                 line_count += 1
                 if line_count == self.chunk_size - 1:
-                    self.return_list.append(contig_chunk)
+                    self.return_queue.put(contig_chunk)
                     contig_chunk = []
                     line_count = 0
-        self.return_list.append(contig_chunk)
+        self.return_queue.put(contig_chunk)
 
     def check_read(self, pileup_read):
         """Check if read converted and pileup_read location and indel

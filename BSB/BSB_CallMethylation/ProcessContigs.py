@@ -47,7 +47,7 @@ class ProcessContigs:
         self.call_methylation_kwargs (dict): dict of kwargs to pass to CallMethylation class
         self.min_read_depth (int): default = 1, minimum read depth to output values
         self.contigs (list): list of contigs in self.input_bam
-        self.return_dict (multiprocessing.manager.dict): thread safer dictionary
+        self.return_queue (multiprocessing.manager.Queue): object to return methylation calls
         self.output_objects (dict[str, TextIO]): dict of output objects
         self.methylation_stats (dict): global methylation statistics
         self.wit (bool): write out wig file
@@ -79,7 +79,7 @@ class ProcessContigs:
         self.methylation_calling = True
         self.contigs = self.get_contigs
         self.completed_contigs = None
-        self.return_list = None
+        self.return_queue = None
         self.pool = None
         self.verbose = verbose
         self.output_objects = self.get_output_objects
@@ -98,7 +98,7 @@ class ProcessContigs:
         # initialize manager
         manager = multiprocessing.Manager()
         # get return dictionary
-        self.return_list = manager.list()
+        self.return_queue = manager.Queue()
         self.completed_contigs = manager.list()
         # threads for methylation calling, if one thread use thread for calling and watching
         pool_threads = self.threads - 1 if self.threads != 1 else 1
@@ -107,7 +107,7 @@ class ProcessContigs:
         # for contig call methylation and return values to dict
         for contig in self.contigs:
             contig_kwargs = dict(self.call_methylation_kwargs)
-            contig_kwargs.update(dict(contig=contig, return_list=self.return_list))
+            contig_kwargs.update(dict(contig=contig, return_queue=self.return_queue))
             self.pool.apply_async(call_contig_methylation,
                                   args=[self.completed_contigs, contig_kwargs],
                                   error_callback=self.methylation_process_error)
@@ -127,18 +127,15 @@ class ProcessContigs:
         if self.verbose:
             pbar = tqdm(total=len(self.contigs), desc='Processing Contigs')
         while self.methylation_calling:
-            if self.return_list:
-                methylation_lines: list = self.return_list.pop(0)
+            if not self.return_queue.empty():
+                methylation_lines: list = self.return_queue.get()
                 if self.verbose:
                     if len(self.completed_contigs) != contigs_complete:
                         update_number = len(self.completed_contigs) - contigs_complete
                         contigs_complete = len(self.completed_contigs)
                         pbar.update(update_number)
                 self.write_output(methylation_lines)
-            if len(self.completed_contigs) == len(self.contigs) and self.return_list:
-                print(len(self.return_list))
-            if len(self.completed_contigs) == len(self.contigs) and not self.return_list:
-                print('here')
+            if len(self.completed_contigs) == len(self.contigs) and self.return_queue.empty():
                 self.methylation_calling = False
         if self.verbose:
             pbar.close()
@@ -242,7 +239,7 @@ class ProcessContigs:
             raise MethylationCallingError
         print(f'Methylated CpG Cytosines: {self.methylation_stats["CG_meth"]}')
         print(f'Total Observed CpG Cytosines: {self.methylation_stats["CG_all"]}')
-        print(f'Methylated / Total Observed CpG Cytosines: {cpg_percentage:.2f} %')
+        print(f'Methylated / Total Observed CpG Cytosines: {cpg_percentage:.2f}%')
         print(f'Methylated CH Cytosines: {self.methylation_stats["CH_meth"]}')
         print(f'Total Observed CH Cytosines: {self.methylation_stats["CH_all"]}')
         print(f'Methylated / Total Observed CH Cytosines: {ch_percentage:.2f}%')
