@@ -88,7 +88,7 @@ Following index generation alignment of *RRBS* and *WGBS* follows the same pipel
 -U                    Library undirectioinal, default=True
 -BT2                  Path to bowtie2 aligner
 -O                    Path to Output Prefix
--DB                   Path to BSSeeker Database
+-DB                   Path to BSBolt Database
 -CP                   Proportion threshold to label read not fully converted
 -CT                   Number of mCH that must be observed to label a read
                       unconverted
@@ -132,7 +132,7 @@ To ensure efficient methylation calling BSB-Call-Methylation only supports sorte
 -verbose         Verbose Output, default=False
 -text            Output plain text files, default=False
 -remove-sx       Remove methylation calls from reads marked as incompletely
-                 by BSSeeker-Align, default=True
+                 by BSBolt Align, default=True
 -ignore-overlap  Only consider higher quality base when paired end reads
                  overlap, default=True
 -max             Max read depth to call methylation
