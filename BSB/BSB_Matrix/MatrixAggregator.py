@@ -102,7 +102,7 @@ class AggregateMatrix:
                                        total=len(self.file_list)):
             for line_info in OpenCGmap(cgmap=file):
                 site_label = f'{line_info[0]}:{line_info[2]}'
-                if int(line_info[7]) >= self.min_coverage:
+                if int(line_info[7]) >= self.min_coverage and site_label in self.collapsed_matrix:
                     self.collapsed_matrix[site_label][sample_index] = float(line_info[5])
 
     def check_cg(self, nucleotide_context):
