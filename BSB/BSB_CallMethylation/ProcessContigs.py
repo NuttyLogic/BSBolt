@@ -148,10 +148,12 @@ class ProcessContigs:
         """
         # write wig contig designation
         if methylation_lines:
-            contig = methylation_lines[0]['chrom']
+            contig = self.unpack_meth_line(methylation_lines[0])['chrom']
             if self.wig:
                 self.write_line(self.output_objects['wig'], f'variableStep chrom={contig}\n')
-            for meth_line in methylation_lines:
+            for meth_tuple in methylation_lines:
+                # unpack methylation data
+                meth_line = self.unpack_meth_line(meth_tuple)
                 # collect methylation stats
                 self.collect_stats(meth_line)
                 # write ATCGmap line
@@ -161,6 +163,11 @@ class ProcessContigs:
                     self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
                     if self.wig:
                         self.write_line(self.output_objects['wig'], self.format_wig(meth_line))
+
+    @staticmethod
+    def unpack_meth_line(meth_line):
+        meth_keys = ['nucleotide', 'meth_cytosines', 'unmeth_cytosines', 'all_cytosines', 'meth_level', 'forward_counts', 'reverse_counts', 'pos', 'chrom', 'context', 'subcontext']
+        return {key: value for key, value in zip(meth_keys, meth_line)}
 
     @staticmethod
     def format_atcg(meth_line):

@@ -51,7 +51,7 @@ class CallMethylation:
         self.max_read_depth = max_read_depth
         self.contig = contig
         self.min_base_quality = min_base_quality
-        self.chunk_size = 10000
+        self.chunk_size = 100000
         self.context_tables = self.get_context_tables
         self.return_queue = return_queue
         self.counting_dict = {}
@@ -130,7 +130,7 @@ class CallMethylation:
                 meth_line = self.get_methylation_call(nucleotide, ATCG_forward, ATCG_reverse)
                 meth_line.update({'pos': pileup_col.reference_pos + 1, 'chrom': self.contig,
                                   'context': context, 'subcontext': subcontext})
-                contig_chunk.append(meth_line)
+                contig_chunk.append(tuple(meth_line.values()))
                 line_count += 1
                 if line_count == self.chunk_size - 1:
                     self.return_queue.put(contig_chunk)
