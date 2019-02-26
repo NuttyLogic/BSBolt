@@ -88,6 +88,9 @@ class RRBSGenomeIndexBuild:
         self.index_output.output_contig_sequence(contig_id, contig_str)
         # retrieve list of mappable regions
         contig_regions: list = self.process_rrbs_sequence(contig_str)
+        # check if contig regions empty, if so unmask first 80 bases to makes sure bt2 indexing is successful
+        if not contig_regions:
+            contig_regions.append((1, 80))
         # get masked contig sequence
         masked_contig_sequence: str = self.mask_unmappable_sites(contig_id, contig_str, contig_regions)
         # perform sanity check, if AssertionError the region designation process is bad
