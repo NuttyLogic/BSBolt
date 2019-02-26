@@ -51,7 +51,7 @@ class CallMethylation:
         self.max_read_depth = max_read_depth
         self.contig = contig
         self.min_base_quality = min_base_quality
-        self.chunk_size = 100000
+        self.chunk_size = 10000
         self.context_tables = self.get_context_tables
         self.return_queue = return_queue
         self.counting_dict = {}
