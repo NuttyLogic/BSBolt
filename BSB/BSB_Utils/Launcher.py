@@ -39,7 +39,7 @@ def align_bisulfite(alignment_kwargs):
     start = time.time()
     print(f'Aligning {alignment_kwargs["fastq1"]} {alignment_kwargs["fastq2"]}')
     bs_alignment = BisulfiteAlignmentAndProcessing(**alignment_kwargs)
-    #bs_alignment.launch_bisulfite_aligment()
+    bs_alignment.launch_bisulfite_aligment()
     alignment_time = datetime.timedelta(seconds=round(time.time() - start))
     print(f'Alignment Complete: Time {alignment_time}')
     start = time.time()
