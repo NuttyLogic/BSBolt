@@ -39,7 +39,7 @@ def align_bisulfite(alignment_kwargs):
     start = time.time()
     print(f'Aligning {alignment_kwargs["fastq1"]} {alignment_kwargs["fastq2"]}')
     bs_alignment = BisulfiteAlignmentAndProcessing(**alignment_kwargs)
-    bs_alignment.launch_bisulfite_aligment()
+    #bs_alignment.launch_bisulfite_aligment()
     alignment_time = datetime.timedelta(seconds=round(time.time() - start))
     print(f'Alignment Complete: Time {alignment_time}')
     start = time.time()
@@ -75,7 +75,7 @@ def process_mapping_statistics(mapping_dict):
 def launch_alignment(arguments):
     check_bowtie2_path(bowtie2_path=arguments.BT2)
     bsb_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
-    arg_order = ['F1', 'F2', 'U', 'BT2', 'O', 'DB', 'CP', 'CT', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
+    arg_order = ['F1', 'F2', 'U', 'BT2', 'NC', 'O', 'DB', 'CP', 'CT', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
                  'BT2_X', 'BT2_k', 'BT2_local', 'BT2_p', 'BT2_score_min']
     bowtie2_commands = ['--quiet', '--norc', '--no-mixed', '--no-discordant', '--sam-nohead', '--reorder',
                         '-k', str(arguments.BT2_k),
@@ -100,7 +100,7 @@ def launch_alignment(arguments):
                            bowtie2_commands=bowtie2_commands, bsb_database=arguments.DB,
                            bowtie2_path=arguments.BT2, output_path=arguments.O,
                            conversion_threshold=(arguments.CP, arguments.CT), mismatch_threshold=arguments.M,
-                           command_line_arg=command_line_arg)
+                           command_line_arg=command_line_arg, non_converted_output=arguments.NC)
     align_bisulfite(aligment_kwargs)
     if arguments.S:
         pysam.sort('-o', f'{arguments.O}.sorted.bam', f'{arguments.O}.bam')
