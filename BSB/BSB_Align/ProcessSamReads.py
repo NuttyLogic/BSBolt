@@ -43,19 +43,23 @@ class ProcessSamAlignment:
     @property
     def get_combined_bisulfite_read(self):
         # get number of correctly maped reads
-        mapped_read_number = self.check_read_mapping
+        mapped_read_number, mapped_strands = self.check_read_mapping
         # if read uniquely mapped continue
         if mapped_read_number == 1:
             # process and return read
             bisulfite_sam_read, bisulfite_strand = self.process_reads
             return mapped_read_number, bisulfite_sam_read, bisulfite_strand
         # else return mapped read number and a null bisulfite strand
-        return mapped_read_number, self.sam_line_dict['read_sequence'], None
+        return mapped_read_number, [self.sam_line_dict['read_sequence'],
+                                    self.sam_line_dict['W_C2T']['QNAME'],
+                                    self.sam_line_dict['W_C2T']['QUAL'],
+                                    mapped_strands], None
 
     @property
     def check_read_mapping(self):
         mapped_read_number = 0
         # processing assumes standard input order
+        mapped_strands = []
         for read_instruction in self.read_strand_info:
             try:
                 read = self.sam_line_dict[read_instruction[0]]
@@ -66,7 +70,8 @@ class ProcessSamAlignment:
                 if read['FLAG'] in self.good_flags:
                     if self.check_mismatch(read):
                         mapped_read_number += 1
-        return mapped_read_number
+                        mapped_strands.append(read_instruction[0])
+        return mapped_read_number, mapped_strands
 
     def check_mismatch(self, read):
         """ Arguments:

@@ -25,6 +25,7 @@ sim_parser = subparsers.add_parser('Simulate', help='BSBolt Illumina Read Simula
 align_parser.add_argument('-F1', type=str, default=None, help='Path to fastq 1', required=True)
 align_parser.add_argument('-F2', type=str, default=None, help='Path to fastq 2')
 align_parser.add_argument('-NC', action='store_true', default=False, help='Aligned unconverted bisulfite reads')
+align_parser.add_argument('-OU', action='store_true', default=False, help='Output unmapped reads')
 align_parser.add_argument('-U', action="store_false", default=True, help='Library undirectioinal, default=True')
 align_parser.add_argument('-BT2', type=str, default=bt2_path, help='Path to bowtie2 aligner, default = bundled '
                                                                    'bowtie2')

@@ -100,7 +100,8 @@ def launch_alignment(arguments):
                            bowtie2_commands=bowtie2_commands, bsb_database=arguments.DB,
                            bowtie2_path=arguments.BT2, output_path=arguments.O,
                            conversion_threshold=(arguments.CP, arguments.CT), mismatch_threshold=arguments.M,
-                           command_line_arg=command_line_arg, non_converted_output=arguments.NC)
+                           command_line_arg=command_line_arg, non_converted_output=arguments.NC,
+                           output_unmapped=arguments.OU)
     align_bisulfite(aligment_kwargs)
     if arguments.S:
         pysam.sort('-o', f'{arguments.O}.sorted.bam', f'{arguments.O}.bam')
