@@ -27,15 +27,34 @@ class TabSamIterator:
         read_id = read_id.split(' ')[0]
         return read_id
 
+    @staticmethod
+    def get_ordered_reads(sam_reads, max_read_number):
+        ordered_reads = []
+        for read_index in range(max_read_number):
+            ordered_sam_reads = []
+            for sam_index, sam_grouping in enumerate(sam_reads):
+                try:
+                    ordered_sam_reads.append(sam_grouping[read_index])
+                except IndexError:
+                    ordered_sam_reads.append(sam_grouping[0])
+            ordered_reads.append(ordered_sam_reads)
+        return ordered_reads
+
     def __iter__(self):
         for line in zip(*self.sam_iterators):
-            output_dicts = [dict(read_sequence=None), dict(read_sequence=None)]
-            for reference_type, read_dictionary in zip(self.iteration_order, line):
-                for index, sam_info in enumerate(read_dictionary.values()):
-                    if not output_dicts[index]['read_sequence']:
-                        output_dicts[index]['read_sequence'] = str(sam_info['original_sequence'])
-                    del sam_info['original_sequence']
-                    output_dicts[index].update({reference_type: sam_info})
-            yield output_dicts[0]
-            if len(output_dicts[1]) > 1:
-                yield output_dicts[1]
+            max_read_number = max([len(reference_read) for reference_read in line])
+            ordered_reads = self.get_ordered_reads(line, max_read_number)
+            original_sequence = None
+            for sam_reads in ordered_reads:
+                output_dicts = [dict(read_sequence=None), dict(read_sequence=None)]
+                for reference_type, read_dictionary in zip(self.iteration_order, sam_reads):
+                    for index, sam_info in enumerate(read_dictionary.values()):
+                        if 'original_sequence' in sam_info:
+                            original_sequence = str(sam_info['original_sequence'])
+                            del sam_info['original_sequence']
+                        if not output_dicts[index]['read_sequence']:
+                            output_dicts[index]['read_sequence'] = original_sequence
+                        output_dicts[index].update({reference_type: sam_info})
+                yield output_dicts[0]
+                if len(output_dicts[1]) > 1:
+                    yield output_dicts[1]

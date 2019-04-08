@@ -30,7 +30,7 @@ bsb_align_commands = ['python3', bsbolt, 'Align',
                       '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
-                      f'{bsb_directory}Tests/BSB_pe_test', '-S']
+                      f'{bsb_directory}Tests/BSB_pe_test', '-S', '-OU', '-BT2-k', '10']
 subprocess.run(bsb_align_commands)
 
 
@@ -112,7 +112,7 @@ class TestBSBPipeline(unittest.TestCase):
         for site in site_comparisons.values():
             if site['coverage_difference'] > coverage_difference_tolerance:
                 out_of_tolerance_sites += 1
-        self.assertLessEqual(out_of_tolerance_sites, 50)
+        self.assertLessEqual(out_of_tolerance_sites, 250)
 
     def test_beta_proportion(self):
         # set z threshold
@@ -121,9 +121,8 @@ class TestBSBPipeline(unittest.TestCase):
         z_site_count = 0
         for site in site_comparisons.values():
             if site['beta_z_value'] >= z:
-                print(z)
                 z_site_count += 1
-        self.assertLessEqual(z_site_count, 50)
+        self.assertLessEqual(z_site_count, 250)
 
 
 if __name__ == '__main__':

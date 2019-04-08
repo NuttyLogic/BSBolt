@@ -52,13 +52,13 @@ def align_bisulfite(alignment_kwargs):
     print(f'Total Run Time: {alignment_time + processing_time}')
     print('------------------------------')
     mapping_stats = process_mapping_statistics(bs_alignment.mapping_statistics)
-    for stat in mapping_stats:
-        print(stat)
+    print(mapping_stats)
 
 
 def process_mapping_statistics(mapping_dict):
     processed_list = [f'Total Reads: {mapping_dict["total_reads"]}',
                       f'Multi-mapped Reads: {mapping_dict["multimapped_reads"]}',
+                      f'Multi-reference Reads: {mapping_dict["multireference_reads"]}',
                       f'Unmapped Reads: {mapping_dict["unmapped_reads"]}']
     mapped_reads = mapping_dict["total_reads"] - mapping_dict["multimapped_reads"] - mapping_dict["unmapped_reads"]
     mappability = mapped_reads / mapping_dict["total_reads"]
@@ -69,13 +69,13 @@ def process_mapping_statistics(mapping_dict):
     if 'W_G2A' in mapping_dict:
         processed_list.append(f'Reads Mapped to Watson_G2A: {mapping_dict["W_G2A"]}')
         processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict["C_G2A"]}')
-    return processed_list
+    return '\n'.join(processed_list)
 
 
 def launch_alignment(arguments):
     check_bowtie2_path(bowtie2_path=arguments.BT2)
     bsb_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
-    arg_order = ['F1', 'F2', 'U', 'BT2', 'O', 'DB', 'CP', 'CT', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
+    arg_order = ['F1', 'F2', 'U', 'BT2', 'NC', 'O', 'DB', 'CP', 'CT', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
                  'BT2_X', 'BT2_k', 'BT2_local', 'BT2_p', 'BT2_score_min']
     bowtie2_commands = ['--quiet', '--norc', '--no-mixed', '--no-discordant', '--sam-nohead', '--reorder',
                         '-k', str(arguments.BT2_k),
@@ -100,7 +100,8 @@ def launch_alignment(arguments):
                            bowtie2_commands=bowtie2_commands, bsb_database=arguments.DB,
                            bowtie2_path=arguments.BT2, output_path=arguments.O,
                            conversion_threshold=(arguments.CP, arguments.CT), mismatch_threshold=arguments.M,
-                           command_line_arg=command_line_arg)
+                           command_line_arg=command_line_arg, non_converted_output=arguments.NC,
+                           output_unmapped=arguments.OU)
     align_bisulfite(aligment_kwargs)
     if arguments.S:
         pysam.sort('-o', f'{arguments.O}.sorted.bam', f'{arguments.O}.bam')

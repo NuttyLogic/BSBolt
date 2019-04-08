@@ -3,10 +3,6 @@ import pysam
 from BSB.BSB_CallMethylation.CallMethylation import CallMethylation
 
 
-
-
-
-
 class TestMethylationCalling(unittest.TestCase):
 
     def setUp(self):

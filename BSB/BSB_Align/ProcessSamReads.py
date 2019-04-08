@@ -43,19 +43,23 @@ class ProcessSamAlignment:
     @property
     def get_combined_bisulfite_read(self):
         # get number of correctly maped reads
-        mapped_read_number = self.check_read_mapping
+        mapped_read_number, mapped_strands = self.check_read_mapping
         # if read uniquely mapped continue
         if mapped_read_number == 1:
             # process and return read
             bisulfite_sam_read, bisulfite_strand = self.process_reads
             return mapped_read_number, bisulfite_sam_read, bisulfite_strand
         # else return mapped read number and a null bisulfite strand
-        return mapped_read_number, self.sam_line_dict['read_sequence'], None
+        return mapped_read_number, [self.sam_line_dict['read_sequence'],
+                                    self.sam_line_dict['W_C2T']['QNAME'],
+                                    self.sam_line_dict['W_C2T']['QUAL'],
+                                    mapped_strands], None
 
     @property
     def check_read_mapping(self):
         mapped_read_number = 0
         # processing assumes standard input order
+        mapped_strands = []
         for read_instruction in self.read_strand_info:
             try:
                 read = self.sam_line_dict[read_instruction[0]]
@@ -66,7 +70,8 @@ class ProcessSamAlignment:
                 if read['FLAG'] in self.good_flags:
                     if self.check_mismatch(read):
                         mapped_read_number += 1
-        return mapped_read_number
+                        mapped_strands.append(read_instruction[0])
+        return mapped_read_number, mapped_strands
 
     def check_mismatch(self, read):
         """ Arguments:
@@ -94,7 +99,7 @@ class ProcessSamAlignment:
             # unpack read processing instructions
             mapping_label, strand, mapping_reverse, reverse_comp = read_instruction
             # retrieve original read sequence, should always be present even is unmapped / multi-mapped
-            orignal_sequence = self.sam_line_dict['read_sequence']
+            original_sequence = self.sam_line_dict['read_sequence']
             try:
                 # retrieve read
                 read = self.sam_line_dict[read_instruction[0]]
@@ -119,14 +124,14 @@ class ProcessSamAlignment:
                         else:
                             reverse_comp = False
                     if reverse_comp:
-                        orignal_sequence = reverse_complement(orignal_sequence)
+                        original_sequence = reverse_complement(original_sequence)
                         # reverse cigar tuple,
                         cigar_tuple = cigar_tuple[::-1]
                         quality = quality[::-1]
                     if mapping_reverse:
                         mapping_loc = contig_len - mapping_loc - mapping_length + 2
                     mapping_genomic_sequence = contig_sequence[mapping_loc - 2: mapping_loc + len(read['SEQ'])]
-                    filtered_sequence, xs, alpha_cigar = self.process_cigar_genomic_sequence(orignal_sequence,
+                    filtered_sequence, xs, alpha_cigar = self.process_cigar_genomic_sequence(original_sequence,
                                                                                              mapping_genomic_sequence,
                                                                                              cigar_tuple,
                                                                                              strand)

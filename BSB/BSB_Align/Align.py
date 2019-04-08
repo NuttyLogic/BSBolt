@@ -47,10 +47,11 @@ class BisulfiteAlignmentAndProcessing:
 
     def __init__(self, fastq1=None, fastq2=None, undirectional_library=False, bowtie2_commands=None,
                  bsb_database=None, bowtie2_path=None, output_path=None, conversion_threshold=(0.5, 5),
-                 mismatch_threshold=None, command_line_arg=None):
+                 mismatch_threshold=None, command_line_arg=None, non_converted_output=False, output_unmapped=False):
         self.bowtie2_mapping = dict(fastq1=fastq1, fastq2=fastq2, undirectional_library=undirectional_library,
                                     bowtie2_commands=bowtie2_commands, bowtie2_path=bowtie2_path,
-                                    output_path=output_path, bsb_database=bsb_database)
+                                    output_path=output_path, bsb_database=bsb_database,
+                                    non_converted_output=non_converted_output)
         assert isinstance(undirectional_library, bool)
         self.bsb_database = bsb_database
         self.undirectional_library = undirectional_library
@@ -65,13 +66,25 @@ class BisulfiteAlignmentAndProcessing:
         self.sam_tuple: tuple = self.get_sam_tuple
         self.conversion_threshold = conversion_threshold
         self.mismatch_threshold = mismatch_threshold
+        self.unmapped_output_object = None
+        if output_unmapped:
+            self.unmapped_output_object = self.get_unmapped_outputs
+        self.output_unmapped = output_unmapped
         self.contig_sequence_dict = {}
         self.sam_output = self.get_output_object
-        self.mapping_statistics = dict(total_reads=0, multimapped_reads=0, unmapped_reads=0)
+        self.mapping_statistics = dict(total_reads=0, multimapped_reads=0, unmapped_reads=0, multireference_reads=0)
         self.flag_correction = {'W_C2T': {'99': '67', '147': '131'},
                                 'W_G2A': {'99': '115', '147': '179'},
                                 'C_C2T': {'99': '179', '147': '115'},
                                 'C_G2A': {'99': '131', '147': '67'}}
+
+    @property
+    def get_unmapped_outputs(self):
+        output_range = 1
+        if self.paired_end:
+            output_range = 2
+        unmapped_output = [open(f'{self.output_path}.unmapped_{count + 1}.fastq', 'w') for count in range(output_range)]
+        return unmapped_output
 
     @property
     def get_sam_tuple(self):
@@ -108,6 +121,8 @@ class BisulfiteAlignmentAndProcessing:
         # instance iterator to go through fastq lines and sam lines together, this assumes the order is identical for
         # all alignment files (if this isn't true alignment processing will quickly break)
         tab_sam_iterator = iter(TabSamIterator(fastq1=self.fastq1, fastq2=self.fastq2, sam_tuple=self.sam_tuple))
+        previous_readname = None
+        multimapped = 0
         while True:
             # get next line or break
             try:
@@ -117,6 +132,10 @@ class BisulfiteAlignmentAndProcessing:
             else:
                 # get sam read information for first reads
                 mapping_number, processed_read, bisulfite_strand = self.process_sam_reads(sam_reads)
+                if self.format_unmapped_read(processed_read)[1] == previous_readname:
+                    multimapped += 1
+                else:
+                    multimapped = 0
                 # if paired end get second read information and perform PE specific processing
                 if self.paired_end:
                     # if pe sam_read_2 should always be present
@@ -135,13 +154,32 @@ class BisulfiteAlignmentAndProcessing:
                         self.correct_paired_end_flag(bisulfite_strand, processed_read, processed_read_2)
                         # output lines
                         self.output_sam_lines(bisulfite_strand, processed_read, bisulfite_strand_2, processed_read_2)
-                    self.update_mapping_statistics(mapping_number_2, bisulfite_strand_2)
+                    else:
+                        p1, p2 = self.format_unmapped_read(processed_read), self.format_unmapped_read(processed_read_2)
+                        if p1[1] != previous_readname:
+                            self.output_multimapped_reads(mapping_number, p1, p2)
+                    self.update_mapping_statistics(mapping_number_2, bisulfite_strand_2, multimapped)
                 else:
                     # output se line
                     self.output_sam_lines(bisulfite_strand, processed_read)
-            self.update_mapping_statistics(mapping_number, bisulfite_strand)
+                    if not bisulfite_strand:
+                        p1 = self.format_unmapped_read(processed_read)
+                        if p1[1] != previous_readname:
+                            self.output_multimapped_reads(mapping_number, processed_read)
+            previous_readname = self.format_unmapped_read(processed_read)[1]
+            self.update_mapping_statistics(mapping_number, bisulfite_strand, multimapped)
         # close output file
         self.sam_output.close()
+        if self.unmapped_output_object:
+            for output in self.unmapped_output_object:
+                output.close()
+
+    @staticmethod
+    def format_unmapped_read(read):
+        if isinstance(read, list):
+            return read
+        else:
+            return [read['SEQ'], read['QNAME'], read['QUAL'], []]
 
     def output_sam_lines(self, bisulfite_strand, processed_read, bisulfite_strand_2=None, processed_read_2=None):
         """ Write out sam files if read mapped uniquely and pass quality filters. Handles PE and SE reads.
@@ -164,6 +202,19 @@ class BisulfiteAlignmentAndProcessing:
                 # correct single end flag
                 self.correct_single_end_flag(bisulfite_strand, processed_read)
                 write_bam_line(processed_read, self.sam_output)
+
+    def output_multimapped_reads(self, mapping_number=None, processed_read=None, processed_read_2=None):
+        if self.unmapped_output_object:
+            if mapping_number != 1:
+                self.unmapped_output_object[0].write(self.format_ummapped_output(processed_read))
+                if processed_read_2:
+                    self.unmapped_output_object[1].write(self.format_ummapped_output(processed_read_2))
+
+    @staticmethod
+    def format_ummapped_output(processed_read):
+        mapping_strands = ' '.join(processed_read[3])
+        fastq_id = f'@{processed_read[1]} {mapping_strands}'
+        return f'{fastq_id}\n{processed_read[0]}\n+\n{processed_read[2]}\n'
 
     def clean_temp_files(self):
         for sam_file in self.sam_tuple:
@@ -217,19 +268,22 @@ class BisulfiteAlignmentAndProcessing:
                 read_1['TLEN'] = str(read_2['TLEN'])
                 read_2['TLEN'] = tlen_1
 
-    def update_mapping_statistics(self, mapping_number, bisulfite_strand):
+    def update_mapping_statistics(self, mapping_number, bisulfite_strand, multimapped):
         """ Update mapping statistics based on the number of time read mapped
         Arguments:
             mapping_number (int): number of times read mapped
             bisulfite_strand (str or none): if one mapping bisulfite strand else None"""
-        self.mapping_statistics['total_reads'] += 1
-        if bisulfite_strand:
-            try:
-                self.mapping_statistics[bisulfite_strand] += 1
-            except KeyError:
-                self.mapping_statistics[bisulfite_strand] = 1
-        else:
-            if mapping_number < 1:
-                self.mapping_statistics['unmapped_reads'] += 1
+        if multimapped == 1:
+            self.mapping_statistics['multimapped_reads'] += 1
+        elif multimapped == 0:
+            self.mapping_statistics['total_reads'] += 1
+            if bisulfite_strand:
+                try:
+                    self.mapping_statistics[bisulfite_strand] += 1
+                except KeyError:
+                    self.mapping_statistics[bisulfite_strand] = 1
             else:
-                self.mapping_statistics['multimapped_reads'] += 1
+                if mapping_number < 1:
+                    self.mapping_statistics['unmapped_reads'] += 1
+                else:
+                    self.mapping_statistics['multireference_reads'] += 1

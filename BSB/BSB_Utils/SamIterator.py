@@ -21,6 +21,7 @@ class OpenSam:
             # keep current sam_id, if the same sam_id is encountered again don't yield this suppresses secondary
             # alignments, which is necessary to keep iteration order constant, possibly update in future versions
             sam_id = None
+            formatted_sam_lines = []
             while True:
                 sam_line1 = sam.readline()
                 # break if empty line encountered
@@ -33,11 +34,21 @@ class OpenSam:
                     sam_dict2 = self.process_sam_line(sam_line2)
                     if sam_id != sam_dict1['QNAME']:
                         sam_id = sam_dict1['QNAME']
-                        yield {f'{sam_dict1["QNAME"]}_1': sam_dict1, f'{sam_dict2["QNAME"]}_2': sam_dict2}
+                        if formatted_sam_lines:
+                            yield formatted_sam_lines
+                        formatted_sam_lines = [{f'{sam_dict1["QNAME"]}_1': sam_dict1,
+                                                f'{sam_dict2["QNAME"]}_2': sam_dict2}]
+                    else:
+                        formatted_sam_lines.append({f'{sam_dict1["QNAME"]}_1': sam_dict1,
+                                                    f'{sam_dict2["QNAME"]}_2': sam_dict2})
                 else:
                     if sam_id != sam_dict1['QNAME']:
                         sam_id = sam_dict1['QNAME']
-                        yield {sam_dict1['QNAME']: sam_dict1}
+                        if formatted_sam_lines:
+                            yield formatted_sam_lines
+                        formatted_sam_lines = [{sam_dict1['QNAME']: sam_dict1}]
+                    else:
+                        formatted_sam_lines.append({sam_dict1['QNAME']: sam_dict1})
 
     @staticmethod
     def process_sam_line(sam_line):
