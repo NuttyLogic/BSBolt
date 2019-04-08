@@ -44,13 +44,16 @@ class TabSamIterator:
         for line in zip(*self.sam_iterators):
             max_read_number = max([len(reference_read) for reference_read in line])
             ordered_reads = self.get_ordered_reads(line, max_read_number)
+            original_sequence = None
             for sam_reads in ordered_reads:
                 output_dicts = [dict(read_sequence=None), dict(read_sequence=None)]
                 for reference_type, read_dictionary in zip(self.iteration_order, sam_reads):
                     for index, sam_info in enumerate(read_dictionary.values()):
+                        if 'original_sequence' in sam_info:
+                            original_sequence = str(sam_info['original_sequence'])
+                            del sam_info['original_sequence']
                         if not output_dicts[index]['read_sequence']:
-                            output_dicts[index]['read_sequence'] = str(sam_info['original_sequence'])
-                        del sam_info['original_sequence']
+                            output_dicts[index]['read_sequence'] = original_sequence
                         output_dicts[index].update({reference_type: sam_info})
                 yield output_dicts[0]
                 if len(output_dicts[1]) > 1:

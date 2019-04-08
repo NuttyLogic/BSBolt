@@ -57,6 +57,7 @@ def align_bisulfite(alignment_kwargs):
 
 
 def process_mapping_statistics(mapping_dict):
+    print(mapping_dict)
     processed_list = [f'Total Reads: {mapping_dict["total_reads"]}',
                       f'Multi-mapped Reads: {mapping_dict["multimapped_reads"]}',
                       f'Unmapped Reads: {mapping_dict["unmapped_reads"]}']
