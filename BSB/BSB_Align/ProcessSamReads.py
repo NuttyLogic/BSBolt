@@ -99,7 +99,7 @@ class ProcessSamAlignment:
             # unpack read processing instructions
             mapping_label, strand, mapping_reverse, reverse_comp = read_instruction
             # retrieve original read sequence, should always be present even is unmapped / multi-mapped
-            orignal_sequence = self.sam_line_dict['read_sequence']
+            original_sequence = self.sam_line_dict['read_sequence']
             try:
                 # retrieve read
                 read = self.sam_line_dict[read_instruction[0]]
@@ -124,14 +124,14 @@ class ProcessSamAlignment:
                         else:
                             reverse_comp = False
                     if reverse_comp:
-                        orignal_sequence = reverse_complement(orignal_sequence)
+                        original_sequence = reverse_complement(original_sequence)
                         # reverse cigar tuple,
                         cigar_tuple = cigar_tuple[::-1]
                         quality = quality[::-1]
                     if mapping_reverse:
                         mapping_loc = contig_len - mapping_loc - mapping_length + 2
                     mapping_genomic_sequence = contig_sequence[mapping_loc - 2: mapping_loc + len(read['SEQ'])]
-                    filtered_sequence, xs, alpha_cigar = self.process_cigar_genomic_sequence(orignal_sequence,
+                    filtered_sequence, xs, alpha_cigar = self.process_cigar_genomic_sequence(original_sequence,
                                                                                              mapping_genomic_sequence,
                                                                                              cigar_tuple,
                                                                                              strand)

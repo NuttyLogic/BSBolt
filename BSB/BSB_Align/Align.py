@@ -72,7 +72,7 @@ class BisulfiteAlignmentAndProcessing:
         self.output_unmapped = output_unmapped
         self.contig_sequence_dict = {}
         self.sam_output = self.get_output_object
-        self.mapping_statistics = dict(total_reads=0, multimapped_reads=0, unmapped_reads=0)
+        self.mapping_statistics = dict(total_reads=0, multimapped_reads=0, unmapped_reads=0, multireference_reads=0)
         self.flag_correction = {'W_C2T': {'99': '67', '147': '131'},
                                 'W_G2A': {'99': '115', '147': '179'},
                                 'C_C2T': {'99': '179', '147': '115'},
@@ -121,7 +121,8 @@ class BisulfiteAlignmentAndProcessing:
         # instance iterator to go through fastq lines and sam lines together, this assumes the order is identical for
         # all alignment files (if this isn't true alignment processing will quickly break)
         tab_sam_iterator = iter(TabSamIterator(fastq1=self.fastq1, fastq2=self.fastq2, sam_tuple=self.sam_tuple))
-        previous_unmapped_read_name = None
+        previous_readname = None
+        multimapped = 0
         while True:
             # get next line or break
             try:
@@ -131,6 +132,10 @@ class BisulfiteAlignmentAndProcessing:
             else:
                 # get sam read information for first reads
                 mapping_number, processed_read, bisulfite_strand = self.process_sam_reads(sam_reads)
+                if self.format_unmapped_read(processed_read)[1] == previous_readname:
+                    multimapped += 1
+                else:
+                    multimapped = 0
                 # if paired end get second read information and perform PE specific processing
                 if self.paired_end:
                     # if pe sam_read_2 should always be present
@@ -151,18 +156,18 @@ class BisulfiteAlignmentAndProcessing:
                         self.output_sam_lines(bisulfite_strand, processed_read, bisulfite_strand_2, processed_read_2)
                     else:
                         p1, p2 = self.format_unmapped_read(processed_read), self.format_unmapped_read(processed_read_2)
-                        if p1[1] != previous_unmapped_read_name:
+                        if p1[1] != previous_readname:
                             self.output_multimapped_reads(mapping_number, p1, p2)
-                            previous_unmapped_read_name = p1[1]
-                    self.update_mapping_statistics(mapping_number_2, bisulfite_strand_2)
+                    self.update_mapping_statistics(mapping_number_2, bisulfite_strand_2, multimapped)
                 else:
                     # output se line
                     self.output_sam_lines(bisulfite_strand, processed_read)
                     if not bisulfite_strand:
-                        if processed_read[1] != previous_unmapped_read_name:
+                        p1 = self.format_unmapped_read(processed_read)
+                        if p1[1] != previous_readname:
                             self.output_multimapped_reads(mapping_number, processed_read)
-                            previous_unmapped_read_name = processed_read[1]
-            self.update_mapping_statistics(mapping_number, bisulfite_strand)
+            previous_readname = self.format_unmapped_read(processed_read)[1]
+            self.update_mapping_statistics(mapping_number, bisulfite_strand, multimapped)
         # close output file
         self.sam_output.close()
         if self.unmapped_output_object:
@@ -263,19 +268,22 @@ class BisulfiteAlignmentAndProcessing:
                 read_1['TLEN'] = str(read_2['TLEN'])
                 read_2['TLEN'] = tlen_1
 
-    def update_mapping_statistics(self, mapping_number, bisulfite_strand):
+    def update_mapping_statistics(self, mapping_number, bisulfite_strand, multimapped):
         """ Update mapping statistics based on the number of time read mapped
         Arguments:
             mapping_number (int): number of times read mapped
             bisulfite_strand (str or none): if one mapping bisulfite strand else None"""
-        self.mapping_statistics['total_reads'] += 1
-        if bisulfite_strand:
-            try:
-                self.mapping_statistics[bisulfite_strand] += 1
-            except KeyError:
-                self.mapping_statistics[bisulfite_strand] = 1
-        else:
-            if mapping_number < 1:
-                self.mapping_statistics['unmapped_reads'] += 1
+        if multimapped == 1:
+            self.mapping_statistics['multimapped_reads'] += 1
+        elif multimapped == 0:
+            self.mapping_statistics['total_reads'] += 1
+            if bisulfite_strand:
+                try:
+                    self.mapping_statistics[bisulfite_strand] += 1
+                except KeyError:
+                    self.mapping_statistics[bisulfite_strand] = 1
             else:
-                self.mapping_statistics['multimapped_reads'] += 1
+                if mapping_number < 1:
+                    self.mapping_statistics['unmapped_reads'] += 1
+                else:
+                    self.mapping_statistics['multireference_reads'] += 1

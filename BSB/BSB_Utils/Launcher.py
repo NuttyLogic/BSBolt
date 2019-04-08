@@ -52,14 +52,13 @@ def align_bisulfite(alignment_kwargs):
     print(f'Total Run Time: {alignment_time + processing_time}')
     print('------------------------------')
     mapping_stats = process_mapping_statistics(bs_alignment.mapping_statistics)
-    for stat in mapping_stats:
-        print(stat)
+    print(mapping_stats)
 
 
 def process_mapping_statistics(mapping_dict):
-    print(mapping_dict)
     processed_list = [f'Total Reads: {mapping_dict["total_reads"]}',
                       f'Multi-mapped Reads: {mapping_dict["multimapped_reads"]}',
+                      f'Multi-reference Reads: {mapping_dict["multireference_reads"]}',
                       f'Unmapped Reads: {mapping_dict["unmapped_reads"]}']
     mapped_reads = mapping_dict["total_reads"] - mapping_dict["multimapped_reads"] - mapping_dict["unmapped_reads"]
     mappability = mapped_reads / mapping_dict["total_reads"]
@@ -70,7 +69,7 @@ def process_mapping_statistics(mapping_dict):
     if 'W_G2A' in mapping_dict:
         processed_list.append(f'Reads Mapped to Watson_G2A: {mapping_dict["W_G2A"]}')
         processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict["C_G2A"]}')
-    return processed_list
+    return '\n'.join(processed_list)
 
 
 def launch_alignment(arguments):
