@@ -100,6 +100,7 @@ class ProcessSamAlignment:
             mapping_label, strand, mapping_reverse, reverse_comp = read_instruction
             # retrieve original read sequence, should always be present even is unmapped / multi-mapped
             original_sequence = self.sam_line_dict['read_sequence']
+            #print(self.sam_line_dict)
             try:
                 # retrieve read
                 read = self.sam_line_dict[read_instruction[0]]
@@ -131,17 +132,24 @@ class ProcessSamAlignment:
                     if mapping_reverse:
                         mapping_loc = contig_len - mapping_loc - mapping_length + 2
                     mapping_genomic_sequence = contig_sequence[mapping_loc - 2: mapping_loc + len(read['SEQ'])]
-                    filtered_sequence, xs, alpha_cigar = self.process_cigar_genomic_sequence(original_sequence,
+                    try:
+                        filtered_sequence, xs, alpha_cigar, filtered_qual = self.process_cigar_genomic_sequence(
+                                                                                             original_sequence,
                                                                                              mapping_genomic_sequence,
                                                                                              cigar_tuple,
-                                                                                             strand)
+                                                                                             strand,
+                                                                                             quality)
+                    except AssertionError as e:
+                        print(read['QNAME'])
+                        print(read['CIGAR'], len(original_sequence), len(read['QUAL']), len(read['QUAL']))
+                        raise e
                     read['CIGAR'] = alpha_cigar
                     read['SEQ'] = filtered_sequence
                     read['CIGAR'] = alpha_cigar
                     read['SAM_TAGS'].append(f'XS:i:{xs}')
                     read['SAM_TAGS'].append(f'XO:Z:{strand}')
                     read['POS'] = str(mapping_loc)
-                    read['QUAL'] = quality
+                    read['QUAL'] = filtered_qual
                     return dict(read), mapping_label
 
     @staticmethod
@@ -156,7 +164,7 @@ class ProcessSamAlignment:
                 mapping_length += cigar_label[1]
         return mapping_length
 
-    def process_cigar_genomic_sequence(self, read_sequence, mapping_genomic_sequence, cigar, strand):
+    def process_cigar_genomic_sequence(self, read_sequence, mapping_genomic_sequence, cigar, strand, qual):
         """Take read sequence, genomic sequence and return aligned sequence according to cigar string
         Arguments:
             read_sequence (str): SAM read sequence
@@ -166,6 +174,7 @@ class ProcessSamAlignment:
             """
         matched_read_sequence = []
         filtered_sequence = []
+        filtered_qual = []
         # bisulfite conversion flag, passing by default
         xs = 0
         end_position = 0
@@ -175,11 +184,13 @@ class ProcessSamAlignment:
             if cigar_type[0] == 0:
                 matched_read_sequence.append(read_sequence[end_position:cigar_type[1] + end_position])
                 filtered_sequence.append(read_sequence[end_position:cigar_type[1] + end_position])
+                filtered_qual.append(qual[end_position:cigar_type[1] + end_position])
                 end_position += cigar_type[1]
                 alpha_cigar += f'{cigar_type[1]}M'
             # if insertion extend filtered sequence, and advance end position skipping insertion for matched sequence
             if cigar_type[0] == 1:
                 filtered_sequence.append(read_sequence[end_position:cigar_type[1] + end_position])
+                filtered_qual.append(qual[end_position:cigar_type[1] + end_position])
                 end_position += cigar_type[1]
                 alpha_cigar += f'{cigar_type[1]}I'
             # if deletion append placeholder character to sequence
@@ -191,7 +202,9 @@ class ProcessSamAlignment:
                 end_position += cigar_type[1]
         if self.check_bisulfite_conversion(''.join(matched_read_sequence), mapping_genomic_sequence, strand):
             xs = 1
-        return ''.join(filtered_sequence), xs, alpha_cigar
+        filtered_sequence, filtered_qual = ''.join(filtered_sequence), ''.join(filtered_qual)
+        assert len(filtered_sequence) == len(filtered_qual)
+        return filtered_sequence, xs, alpha_cigar, filtered_qual
 
     def check_bisulfite_conversion(self, matched_read_sequence, mapping_genomic_sequence, strand):
         """
