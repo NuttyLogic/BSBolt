@@ -100,7 +100,6 @@ class ProcessSamAlignment:
             mapping_label, strand, mapping_reverse, reverse_comp = read_instruction
             # retrieve original read sequence, should always be present even is unmapped / multi-mapped
             original_sequence = self.sam_line_dict['read_sequence']
-            #print(self.sam_line_dict)
             try:
                 # retrieve read
                 read = self.sam_line_dict[read_instruction[0]]
@@ -132,17 +131,12 @@ class ProcessSamAlignment:
                     if mapping_reverse:
                         mapping_loc = contig_len - mapping_loc - mapping_length + 2
                     mapping_genomic_sequence = contig_sequence[mapping_loc - 2: mapping_loc + len(read['SEQ'])]
-                    try:
-                        filtered_sequence, xs, alpha_cigar, filtered_qual = self.process_cigar_genomic_sequence(
-                                                                                             original_sequence,
-                                                                                             mapping_genomic_sequence,
-                                                                                             cigar_tuple,
-                                                                                             strand,
-                                                                                             quality)
-                    except AssertionError as e:
-                        print(read['QNAME'])
-                        print(read['CIGAR'], len(original_sequence), len(read['QUAL']), len(read['QUAL']))
-                        raise e
+                    filtered_sequence, xs, alpha_cigar, filtered_qual = self.process_cigar_genomic_sequence(
+                                                                                         original_sequence,
+                                                                                         mapping_genomic_sequence,
+                                                                                         cigar_tuple,
+                                                                                         strand,
+                                                                                         quality)
                     read['CIGAR'] = alpha_cigar
                     read['SEQ'] = filtered_sequence
                     read['CIGAR'] = alpha_cigar
