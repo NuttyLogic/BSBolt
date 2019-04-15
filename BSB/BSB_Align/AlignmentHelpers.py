@@ -29,7 +29,7 @@ def convert_alpha_numeric_cigar(cigar_string):
          cigar_tuple_list (list [tuples]): list of cigar tuples
     """
     cigar_list = re.findall(r'[^\d_]+|\d+', cigar_string)
-    cigar_dict = {'M': 0,  'I': 1, 'D': 2, 'S': 4}
+    cigar_dict = {'M': 0,  'I': 1, 'D': 2, 'S': 4, 'N': 2}
     cigar_tuple_list = []
     for cigar_character, cigar_count in zip(cigar_list[1::2], cigar_list[0::2]):
         cigar_tuple_list.append((cigar_dict[cigar_character], int(cigar_count)))
