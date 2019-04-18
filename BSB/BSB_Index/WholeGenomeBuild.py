@@ -57,6 +57,8 @@ class WholeGenomeIndexBuild:
                 contig_sequence.append(sequence)
         # process remaining contig sequence
         contig_str = ''.join(contig_sequence)
+        if self.mappable_regions:
+            contig_str = self.mask_contig(contig_id, contig_str)
         self.index_output.output_contig_sequence(contig_id, contig_str)
         self.index_output.write_contig_sequence(contig_id, contig_str)
         self.index_output.close_output_objects()
@@ -82,17 +84,20 @@ class WholeGenomeIndexBuild:
         return mappable_regions
 
     def mask_contig(self, contig_id, contig_str):
-        contig_mappable_regions = iter(self.mappable_regions[contig_id])
-        start, end = next(contig_mappable_regions)
-        masked_contig = []
-        for position, bp in enumerate(contig_str):
-            if position > end:
-                try:
-                    start, end = next(contig_mappable_regions)
-                except StopIteration:
-                    pass
-            if start <= position <= end:
-                masked_contig.append(bp)
-            else:
-                masked_contig.append('-')
-        return ''.join(masked_contig)
+        if contig_id in self.mappable_regions:
+            contig_mappable_regions = iter(self.mappable_regions[contig_id])
+            start, end = next(contig_mappable_regions)
+            masked_contig = []
+            for position, bp in enumerate(contig_str):
+                if position > end:
+                    try:
+                        start, end = next(contig_mappable_regions)
+                    except StopIteration:
+                        pass
+                if start <= position <= end:
+                    masked_contig.append(bp)
+                else:
+                    masked_contig.append('-')
+            return ''.join(masked_contig)
+        else:
+            return '-' * len(contig_str)

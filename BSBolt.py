@@ -57,8 +57,7 @@ index_parser.add_argument('-G', type=str, required=True,
 index_parser.add_argument('-DB', type=str, required=True,
                           help='Path to index directory, will create directory if folder does not exist')
 index_parser.add_argument('-MR', type=str, default=None, help='Path to bed file of mappable regions, build Bowtie2 '
-                                                              'reference using a contig with seqeunce masked outside of'
-                                                              ' provided regions')
+                                                              'reference using masked contig sequence')
 index_parser.add_argument('-BT2', type=str, default=bt2_path, help='Path to bowtie2 executable, default = bundled '
                                                                    'bowtie2')
 index_parser.add_argument('-BT2-p', type=int, default=2, help='Number of threads for Bowtie2 to use')
