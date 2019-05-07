@@ -56,6 +56,8 @@ index_parser.add_argument('-G', type=str, required=True,
                           help='Path for reference genome fasta file, fasta file should contain all contigs')
 index_parser.add_argument('-DB', type=str, required=True,
                           help='Path to index directory, will create directory if folder does not exist')
+index_parser.add_argument('-MR', type=str, default=None, help='Path to bed file of mappable regions, build Bowtie2 '
+                                                              'reference using masked contig sequence')
 index_parser.add_argument('-BT2', type=str, default=bt2_path, help='Path to bowtie2 executable, default = bundled '
                                                                    'bowtie2')
 index_parser.add_argument('-BT2-p', type=int, default=2, help='Number of threads for Bowtie2 to use')
@@ -97,6 +99,10 @@ call_meth_parser.add_argument('-t', type=int, default=1,
                               help='Number of threads to use when calling methylation values')
 call_meth_parser.add_argument('-min-qual', type=int, default=0, help='Minimum base quality for a base to considered for'
                                                                      'methylation calling')
+call_meth_parser.add_argument('-CG', action="store_true", default=False, help='Only output CpG sites in CGmap file')
+call_meth_parser.add_argument('-ATCG', action="store_true", default=False, help='Output ATCGmap file')
+
+
 
 # Add Matrix Aggregation Parser Args
 

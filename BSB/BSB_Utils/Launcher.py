@@ -31,7 +31,8 @@ def launch_index(arguments):
         index = WholeGenomeIndexBuild(reference_file=arguments.G,
                                       genome_database=arguments.DB,
                                       bowtie2_path=arguments.BT2,
-                                      bowtie2_threads=arguments.BT2_p)
+                                      bowtie2_threads=arguments.BT2_p,
+                                      mappable_regions=arguments.MR)
         index.generate_bsb_database()
 
 
@@ -119,7 +120,9 @@ def launch_methylation_call(arguments):
                                       min_read_depth=arguments.min,
                                       threads=arguments.t,
                                       verbose=arguments.verbose,
-                                      min_base_quality=arguments.min_qual)
+                                      min_base_quality=arguments.min_qual,
+                                      cg_only=arguments.CG,
+                                      ATCGmap=arguments.ATCG)
     methylation_call.process_contigs()
     methylation_call.watch_pool()
 

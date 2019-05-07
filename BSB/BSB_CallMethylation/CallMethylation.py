@@ -38,7 +38,7 @@ class CallMethylation:
         assert isinstance(remove_ccgg, bool), 'Not valid bool'
         assert isinstance(min_read_depth, int), 'Minimum depth must be integer'
         assert isinstance(max_read_depth, int), 'Maximum depth must be integer'
-        assert isinstance(contig, str), 'Contig must be string'
+        assert isinstance(contig, str), 'Contig must be a string'
         self.input_file = str(input_file)
         self.input_bam = pysam.AlignmentFile(self.input_file, 'rb')
         self.genome_database = str(genome_database)
@@ -133,10 +133,10 @@ class CallMethylation:
                 contig_chunk.append(tuple(meth_line.values()))
                 line_count += 1
                 if line_count == self.chunk_size - 1:
-                    self.return_queue.put(contig_chunk)
+                    self.return_queue.put(contig_chunk, block=True)
                     contig_chunk = []
                     line_count = 0
-        self.return_queue.put(contig_chunk)
+        self.return_queue.put(contig_chunk, block=True)
 
     def check_read(self, pileup_read):
         """Check if read converted and pileup_read location and indel

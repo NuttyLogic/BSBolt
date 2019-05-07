@@ -1,6 +1,7 @@
-import subprocess
-import random
+import os
 import pickle
+import random
+import subprocess
 import numpy as np
 from BSB.BSB_Utils.FastaIterator import OpenFasta
 from BSB.BSB_Utils.FastqIterator import OpenFastq
@@ -80,7 +81,7 @@ class SimulateMethylatedReads:
         print('Serializing Methylation Value Reference')
         self.serialize_cytosine_dict()
 
-    def set_cytosine_methylation(self, methylation_cutoff=0):
+    def set_cytosine_methylation(self):
         """Iterate through reference sequence, upon encountering a Cyotsine (Watson) or Guanine (Crick):
             1. get nucleotide context
             2. pull random methylation value from appropriate distribution and store value
@@ -96,13 +97,11 @@ class SimulateMethylatedReads:
                     if nucleotide == 'C':
                         c_context = context[1:]
                         methylation_profile: dict = self.get_methylation_level(c_context, nucleotide)
-                        #if methylation_profile['methylation_level'] > methylation_cutoff:
                         self.cytosine_dict['Watson'][f'{contig}:{index}'] = methylation_profile
                     # set crick methylation
                     elif nucleotide == 'G':
                         g_context = context[0:2]
                         methylation_profile: dict = self.get_methylation_level(g_context, nucleotide)
-                        #if methylation_profile['methylation_level'] > methylation_cutoff:
                         self.cytosine_dict['Crick'][f'{contig}:{index}'] = methylation_profile
 
     def get_methylation_level(self, context, nucleotide):
