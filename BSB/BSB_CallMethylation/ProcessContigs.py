@@ -55,7 +55,8 @@ class ProcessContigs:
 
     def __init__(self, input_file=None, genome_database=None, output_prefix=None,
                  remove_sx_reads=True, ignore_overlap=False, text_output=False, remove_ccgg=False,
-                 min_read_depth=10, max_read_depth=8000, threads=1, verbose=True, min_base_quality=0, wig=False):
+                 min_read_depth=10, max_read_depth=8000, threads=1, verbose=True, min_base_quality=0, wig=False,
+                 ATCGmap=False, cg_only=True):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(text_output, bool), 'Not valid bool'
         assert isinstance(threads, int), 'Threads must be specified with integer'
@@ -76,6 +77,8 @@ class ProcessContigs:
                                             min_base_quality=min_base_quality)
         self.min_read_depth = min_read_depth
         self.wig = wig
+        self.ATCGmap = ATCGmap
+        self.cg_only = cg_only
         self.methylation_calling = True
         self.contigs = self.get_contigs
         self.completed_contigs = None
@@ -98,7 +101,7 @@ class ProcessContigs:
         # initialize manager
         manager = multiprocessing.Manager()
         # get return dictionary
-        self.return_queue = manager.Queue()
+        self.return_queue = manager.Queue(maxsize=10)
         self.completed_contigs = manager.list()
         # threads for methylation calling, if one thread use thread for calling and watching
         pool_threads = self.threads - 1 if self.threads != 1 else 1
@@ -127,14 +130,13 @@ class ProcessContigs:
         if self.verbose:
             pbar = tqdm(total=len(self.contigs), desc='Processing Contigs')
         while self.methylation_calling:
-            if not self.return_queue.empty():
-                methylation_lines: list = self.return_queue.get()
-                if self.verbose:
-                    if len(self.completed_contigs) != contigs_complete:
-                        update_number = len(self.completed_contigs) - contigs_complete
-                        contigs_complete = len(self.completed_contigs)
-                        pbar.update(update_number)
-                self.write_output(methylation_lines)
+            methylation_lines: list = self.return_queue.get(block=True)
+            if self.verbose:
+                if len(self.completed_contigs) != contigs_complete:
+                    update_number = len(self.completed_contigs) - contigs_complete
+                    contigs_complete = len(self.completed_contigs)
+                    pbar.update(update_number)
+            self.write_output(methylation_lines)
             if len(self.completed_contigs) == len(self.contigs) and self.return_queue.empty():
                 self.methylation_calling = False
         if self.verbose:
@@ -157,16 +159,22 @@ class ProcessContigs:
                 # collect methylation stats
                 self.collect_stats(meth_line)
                 # write ATCGmap line
-                self.write_line(self.output_objects['ATCGmap'], self.format_atcg(meth_line))
+                if self.ATCGmap:
+                    self.write_line(self.output_objects['ATCGmap'], self.format_atcg(meth_line))
                 # if methylation level greater than or equal to min_read_depth output CGmap and wig lines
                 if meth_line['all_cytosines'] >= self.min_read_depth:
-                    self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
+                    if self.cg_only:
+                        if meth_line['subcontext'] == 'CG':
+                            self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
+                    else:
+                        self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
                     if self.wig:
                         self.write_line(self.output_objects['wig'], self.format_wig(meth_line))
 
     @staticmethod
     def unpack_meth_line(meth_line):
-        meth_keys = ['nucleotide', 'meth_cytosines', 'unmeth_cytosines', 'all_cytosines', 'meth_level', 'forward_counts', 'reverse_counts', 'pos', 'chrom', 'context', 'subcontext']
+        meth_keys = ['nucleotide', 'meth_cytosines', 'unmeth_cytosines', 'all_cytosines', 'meth_level',
+                     'forward_counts', 'reverse_counts', 'pos', 'chrom', 'context', 'subcontext']
         return {key: value for key, value in zip(meth_keys, meth_line)}
 
     @staticmethod
@@ -203,17 +211,20 @@ class ProcessContigs:
         if self.output_prefix:
             output_path = self.output_prefix
         if self.text_output:
-            output_objects['ATCGmap'] = open(f'{output_path}.ATCGmap', 'w')
             output_objects['CGmap'] = open(f'{output_path}.CGmap', 'w')
             if self.wig:
                 output_objects['wig'] = open(f'{output_path}.wig', 'w')
                 output_objects['wig'].write('track type=wiggle_o\n')
+            if self.ATCGmap:
+                output_objects['ATCGmap'] = open(f'{output_path}.ATCGmap', 'w')
         else:
-            output_objects['ATCGmap'] = io.BufferedWriter(gzip.open(f'{output_path}.ATCGmap.gz', 'wb'))
             output_objects['CGmap'] = io.BufferedWriter(gzip.open(f'{output_path}.CGmap.gz', 'wb'))
             if self.wig:
                 output_objects['wig'] = io.BufferedWriter(gzip.open(f'{output_path}.wig.gz', 'wb'))
                 output_objects['wig'].write('track type=wiggle_o\n'.encode('utf-8'))
+            if self.ATCGmap:
+                output_objects['ATCGmap'] = io.BufferedWriter(gzip.open(f'{output_path}.ATCGmap.gz', 'wb'))
+
         return output_objects
 
     def write_line(self, output_object, line):
