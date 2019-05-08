@@ -74,11 +74,11 @@ class ProcessContigs:
                                             remove_ccgg=remove_ccgg,
                                             min_read_depth=min_read_depth,
                                             max_read_depth=max_read_depth,
-                                            min_base_quality=min_base_quality)
+                                            min_base_quality=min_base_quality,
+                                            cg_only=cg_only)
         self.min_read_depth = min_read_depth
         self.wig = wig
         self.ATCGmap = ATCGmap
-        self.cg_only = cg_only
         self.methylation_calling = True
         self.contigs = self.get_contigs
         self.completed_contigs = None
@@ -163,11 +163,7 @@ class ProcessContigs:
                     self.write_line(self.output_objects['ATCGmap'], self.format_atcg(meth_line))
                 # if methylation level greater than or equal to min_read_depth output CGmap and wig lines
                 if meth_line['all_cytosines'] >= self.min_read_depth:
-                    if self.cg_only:
-                        if meth_line['subcontext'] == 'CG':
-                            self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
-                    else:
-                        self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
+                    self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
                     if self.wig:
                         self.write_line(self.output_objects['wig'], self.format_wig(meth_line))
 
@@ -251,10 +247,13 @@ class ProcessContigs:
         """Print global methylation statistics"""
         try:
             cpg_percentage = (self.methylation_stats["CG_meth"] / self.methylation_stats["CG_all"]) * 100
-            ch_percentage = (self.methylation_stats["CH_meth"] / self.methylation_stats["CH_all"]) * 100
         except ZeroDivisionError:
             print('Warning! No SAM reads passed quality control metrics')
             raise MethylationCallingError
+        try:
+            ch_percentage = (self.methylation_stats["CH_meth"] / self.methylation_stats["CH_all"]) * 100
+        except ZeroDivisionError:
+            ch_percentage = 0.000
         print(f'Methylated CpG Cytosines: {self.methylation_stats["CG_meth"]}')
         print(f'Total Observed CpG Cytosines: {self.methylation_stats["CG_all"]}')
         print(f'Methylated / Total Observed CpG Cytosines: {cpg_percentage:.2f}%')

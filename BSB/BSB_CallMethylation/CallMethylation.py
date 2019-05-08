@@ -30,7 +30,8 @@ class CallMethylation:
 
     def __init__(self, input_file=None, genome_database=None,
                  remove_sx_reads=True, ignore_overlap=False, remove_ccgg=False,
-                 min_read_depth=10, max_read_depth=8000, contig=None, min_base_quality=0, return_queue=None):
+                 min_read_depth=10, max_read_depth=8000, contig=None, min_base_quality=0, return_queue=None,
+                 cg_only=False):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(genome_database, str), 'Path to genome database not valid'
         assert isinstance(remove_sx_reads, bool), 'Not valid bool'
@@ -52,6 +53,7 @@ class CallMethylation:
         self.contig = contig
         self.min_base_quality = min_base_quality
         self.chunk_size = 10000
+        self.cg_only = cg_only
         self.context_tables = self.get_context_tables
         self.return_queue = return_queue
         self.counting_dict = {}
@@ -113,6 +115,8 @@ class CallMethylation:
                 nucleotide = fivemer[2]
                 context, subcontext = self.get_context(nucleotide, fivemer)
 
+                if self.cg_only and subcontext != 'CG':
+                    continue
                 # check if sequence is CCGG, skip loop if filter True
                 if self.check_ccgg(reference_seq):
                     continue
