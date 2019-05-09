@@ -6,6 +6,7 @@ import numpy as np
 from BSB.BSB_Utils.FastaIterator import OpenFasta
 from BSB.BSB_Utils.FastqIterator import OpenFastq
 from BSB.BSB_Utils.AlnIterator import OpenAln
+from BSB.BSB_Simulate.SimulationOutput import SimulationOutput
 
 
 class SimulateMethylatedReads:
@@ -38,7 +39,12 @@ class SimulateMethylatedReads:
         self.undirectional = undirectional
         self.reference_dict = self.get_reference_contigs
         self.reference_contig_size = {contig: len(sequence) for contig, sequence in self.reference_dict.items()}
-        self.cytosine_dict = {'Watson': {}, 'Crick': {}}
+        self.simulation_out = SimulationOutput(simulation_output=output_path,
+                                               reference_contigs=list(self.reference_contig_size.keys()))
+        self.simulation_out.generate_simulation_directory()
+        self.simulation_out.output_contig_key()
+        self.current_contig = None
+        self.cytosine_dict = None
         self.output_objects = self.get_output_objects
         self.cpg_distribution = np.random.beta(.5, .5, size=5000)
         self.ch_distribution = np.random.beta(.01, .05, size=5000)
@@ -79,7 +85,6 @@ class SimulateMethylatedReads:
         print('Simulating Methylated Illumina Reads')
         self.simulate_methylated_reads(aln_files=aln_files, fastq_files=fastq_files)
         print('Serializing Methylation Value Reference')
-        self.serialize_cytosine_dict()
 
     def set_cytosine_methylation(self):
         """Iterate through reference sequence, upon encountering a Cyotsine (Watson) or Guanine (Crick):
@@ -88,6 +93,7 @@ class SimulateMethylatedReads:
         """
         # iterate through reference sequence
         for contig, sequence in self.reference_dict.items():
+            cytosine_dict = {'Watson': {}, 'Crick': {}}
             for index, nucleotide in enumerate(sequence):
                 # retrieve nucleotide context
                 context = sequence[index - 1: index + 2]
@@ -97,12 +103,13 @@ class SimulateMethylatedReads:
                     if nucleotide == 'C':
                         c_context = context[1:]
                         methylation_profile: dict = self.get_methylation_level(c_context, nucleotide)
-                        self.cytosine_dict['Watson'][f'{contig}:{index}'] = methylation_profile
+                        cytosine_dict['Watson'][f'{contig}:{index}'] = methylation_profile
                     # set crick methylation
                     elif nucleotide == 'G':
                         g_context = context[0:2]
                         methylation_profile: dict = self.get_methylation_level(g_context, nucleotide)
-                        self.cytosine_dict['Crick'][f'{contig}:{index}'] = methylation_profile
+                        cytosine_dict['Crick'][f'{contig}:{index}'] = methylation_profile
+            self.simulation_out.output_contig_methylation_reference(cytosine_dict, contig)
 
     def get_methylation_level(self, context, nucleotide):
         """Retrieve methylation level from distribution based on nucleotide context
@@ -157,6 +164,7 @@ class SimulateMethylatedReads:
                                                            aln1_profile['reference_strand'])
             for output, read in zip(self.output_objects, processed_reads):
                 self.write_fastq(output, read)
+        self.get_contig_methylation_reference('stop')
         # close fastq output objects
         for output in self.output_objects:
             output.close()
@@ -172,6 +180,7 @@ class SimulateMethylatedReads:
             fatst_line (list): fastq line with altered read sequence, (methylated bases set to lower case)
         """
         genome_position = aln_profile['read_index']
+        self.get_contig_methylation_reference(aln_profile['read_contig'])
         strand_cytosine: dict = self.cytosine_dict[methylation_strand]
         fastq_read = []
         for reference_nuc, read_nuc in zip(aln_profile['reference_sequence'], aln_profile['read_sequence']):
@@ -200,6 +209,14 @@ class SimulateMethylatedReads:
             fastq_read = ''.join(fastq_read)
         fastq_line[1] = fastq_read
         return fastq_line
+
+    def get_contig_methylation_reference(self, contig_id):
+        if not self.current_contig:
+            self.cytosine_dict = self.simulation_out.load_contig(contig_id)
+        elif contig_id != self.current_contig:
+            self.simulation_out.output_contig_methylation_reference(self.cytosine_dict, self.current_contig)
+            self.cytosine_dict = self.simulation_out.load_contig(contig_id)
+            self.current_contig = contig_id
 
     @staticmethod
     def nucleotide_check(nucleotide):
@@ -262,11 +279,6 @@ class SimulateMethylatedReads:
                                                       replacement_targets[target][1]).upper()
             second_line = True
         return fastq_lines
-
-    def serialize_cytosine_dict(self):
-        """Save set methylation values for downstream use"""
-        with open(f'{self.output_path}_methylation_value_dict.pkl', 'wb') as cytosine_output:
-            pickle.dump(self.cytosine_dict, cytosine_output)
 
     @property
     def pick_cpg_methylation(self):

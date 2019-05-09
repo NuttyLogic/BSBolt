@@ -111,6 +111,8 @@ def launch_alignment(arguments):
 
 
 def launch_methylation_call(arguments):
+    if arguments.CG and arguments.ATCG:
+        assert False, 'Reporting only CG sites notes compatible with .ATCGmap output'
     methylation_call = ProcessContigs(input_file=arguments.I,
                                       genome_database=arguments.DB,
                                       output_prefix=arguments.O,
