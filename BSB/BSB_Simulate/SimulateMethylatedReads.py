@@ -1,12 +1,10 @@
-import os
-import pickle
 import random
 import subprocess
 import numpy as np
-from BSB.BSB_Utils.FastaIterator import OpenFasta
+from tqdm import tqdm
 from BSB.BSB_Utils.FastqIterator import OpenFastq
 from BSB.BSB_Utils.AlnIterator import OpenAln
-from BSB.BSB_Simulate.SimulationOutput import SimulationOutput
+from BSB.BSB_Simulate.SetCyotsineMethylation import SetCytosineMethylation
 
 
 class SimulateMethylatedReads:
@@ -28,52 +26,33 @@ class SimulateMethylatedReads:
             self.ch_distribution (np.vector): binomial distribution to dra CH methylation proportions
             """
 
-    def __init__(self, reference_file=None, art_path=None, output_path=None, paired_end=False, read_length=125,
-                 read_depth=20, undirectional=False):
+    def __init__(self, reference_file=None, art_path=None, output_path=None, methylation_reference_output=None,
+                 paired_end=False, read_length=125, read_depth=20, undirectional=False, methylation_reference=None,
+                 methylation_profile=None):
         self.art_path = art_path
-        self.reference_file = reference_file
+        if not methylation_reference_output:
+            methylation_reference_output = output_path
+        self.cytosine_dict_profile_kwargs = dict(reference_file=reference_file,
+                                                 methylation_reference_output=methylation_reference_output,
+                                                 methylation_reference=methylation_reference,
+                                                 methylation_profile=methylation_profile)
+        self.simulation_out = None
         self.output_path = output_path
+        self.reference_file = reference_file
         self.paired_end = paired_end
         self.read_length = read_length
         self.read_depth = read_depth
         self.undirectional = undirectional
-        self.reference_dict = self.get_reference_contigs
-        self.reference_contig_size = {contig: len(sequence) for contig, sequence in self.reference_dict.items()}
-        self.simulation_out = SimulationOutput(simulation_output=output_path,
-                                               reference_contigs=list(self.reference_contig_size.keys()))
-        self.simulation_out.generate_simulation_directory()
-        self.simulation_out.output_contig_key()
+        self.reference_contig_size = None
         self.current_contig = None
         self.cytosine_dict = None
         self.output_objects = self.get_output_objects
-        self.cpg_distribution = np.random.beta(.5, .5, size=5000)
-        self.ch_distribution = np.random.beta(.01, .05, size=5000)
-
-    @property
-    def get_reference_contigs(self):
-        """Retrieve contig sequence from reference fasta rather than index to ensure simulation will work without
-        a generated index. """
-        # store contig_id and matching sequencing
-        contig_dict = {}
-        contig_id = None
-        contig_sequence = []
-        for contig_label, line in OpenFasta(self.reference_file):
-            if contig_label:
-                # join sequence and add to dict if new contig encounted
-                if contig_id:
-                    contig_dict[contig_id] = ''.join(contig_sequence)
-                    contig_sequence = []
-                contig_id = line.replace('>', '').split()[0]
-            else:
-                contig_sequence.append(line)
-        # join contig and add to dict after iteration finishes
-        contig_dict[contig_id] = ''.join(contig_sequence)
-        return contig_dict
 
     def run_simulation(self):
         """Commands to execute read simulation"""
         print('Setting Cytosine Methylation')
-        self.set_cytosine_methylation()
+        cytosine_profile = SetCytosineMethylation(**self.cytosine_dict_profile_kwargs)
+        self.reference_contig_size, self.simulation_out = cytosine_profile.set_simulated_methylation()
         print('Simulating Illumina Reads')
         self.simulate_illumina_reads()
         if self.paired_end:
@@ -84,49 +63,7 @@ class SimulateMethylatedReads:
             fastq_files = [f'{self.output_path}.fq']
         print('Simulating Methylated Illumina Reads')
         self.simulate_methylated_reads(aln_files=aln_files, fastq_files=fastq_files)
-        print('Serializing Methylation Value Reference')
-
-    def set_cytosine_methylation(self):
-        """Iterate through reference sequence, upon encountering a Cyotsine (Watson) or Guanine (Crick):
-            1. get nucleotide context
-            2. pull random methylation value from appropriate distribution and store value
-        """
-        # iterate through reference sequence
-        for contig, sequence in self.reference_dict.items():
-            cytosine_dict = {'Watson': {}, 'Crick': {}}
-            for index, nucleotide in enumerate(sequence):
-                # retrieve nucleotide context
-                context = sequence[index - 1: index + 2]
-                # context won't exist at ends of reference sequence
-                if context:
-                    # set watson methylation
-                    if nucleotide == 'C':
-                        c_context = context[1:]
-                        methylation_profile: dict = self.get_methylation_level(c_context, nucleotide)
-                        cytosine_dict['Watson'][f'{contig}:{index}'] = methylation_profile
-                    # set crick methylation
-                    elif nucleotide == 'G':
-                        g_context = context[0:2]
-                        methylation_profile: dict = self.get_methylation_level(g_context, nucleotide)
-                        cytosine_dict['Crick'][f'{contig}:{index}'] = methylation_profile
-            self.simulation_out.output_contig_methylation_reference(cytosine_dict, contig)
-
-    def get_methylation_level(self, context, nucleotide):
-        """Retrieve methylation level from distribution based on nucleotide context
-        Arguments:
-            context (str): 2BP nucleotide context
-            nucleotide (str): reference nucleotide
-        Return:
-            methylation_profile (dict): context, methylation level, unpopulated methylation read information
-            """
-        if nucleotide == 'G' and context == 'GC':
-            methylation_level = self.pick_cpg_methylation
-        elif nucleotide == 'G' and context == 'CG':
-            methylation_level = self.pick_cpg_methylation
-        else:
-            methylation_level = self.pick_ch_methylation
-        return dict(nucleotide=nucleotide, methylation_level=methylation_level, context=context,
-                    methylated_reads=0, unmethylated_reads=0)
+        print('Finished Simulation')
 
     def simulate_illumina_reads(self):
         """Launch external ART command to simulate illumina reads. Insertion and deletion rate set to zero
@@ -213,10 +150,12 @@ class SimulateMethylatedReads:
     def get_contig_methylation_reference(self, contig_id):
         if not self.current_contig:
             self.cytosine_dict = self.simulation_out.load_contig(contig_id)
+            self.current_contig = contig_id
         elif contig_id != self.current_contig:
             self.simulation_out.output_contig_methylation_reference(self.cytosine_dict, self.current_contig)
-            self.cytosine_dict = self.simulation_out.load_contig(contig_id)
-            self.current_contig = contig_id
+            if contig_id != 'stop':
+                self.cytosine_dict = self.simulation_out.load_contig(contig_id)
+                self.current_contig = contig_id
 
     @staticmethod
     def nucleotide_check(nucleotide):
@@ -279,16 +218,6 @@ class SimulateMethylatedReads:
                                                       replacement_targets[target][1]).upper()
             second_line = True
         return fastq_lines
-
-    @property
-    def pick_cpg_methylation(self):
-        """Sample from CpG distribution"""
-        return random.choice(self.cpg_distribution)
-
-    @property
-    def pick_ch_methylation(self):
-        """Sample from CH distribution"""
-        return random.choice(self.ch_distribution)
 
     @staticmethod
     def random_roll(proportion_positive: float = 0.1) -> bool:

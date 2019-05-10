@@ -138,6 +138,9 @@ sim_parser.add_argument('-RL', type=int, default=125, help='Simulated Read Lengh
 sim_parser.add_argument('-RD', type=int, default=20, help='Simulated Read Depth')
 sim_parser.add_argument('-U', default=False, action='store_true',
                         help='Simulate Undirectional Reads, default=Directional')
+sim_parser.add_argument('-RC', default=None, help='Path to CGmap file to generate simulation reference profile')
+sim_parser.add_argument('-RO', default=None, help='Methylation reference output directory, default = output path')
+sim_parser.add_argument('-BR', default=None, help='Path to previously generate BSB simulation reference')
 
 arguments = parser.parse_args()
 if len(sys.argv[1:]) == 0:

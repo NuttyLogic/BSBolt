@@ -159,7 +159,8 @@ def launch_simulation(arguments):
         read_simulation = SimulateMethylatedReads(reference_file=arguments.G, art_path=arguments.A,
                                                   output_path=arguments.O, paired_end=arguments.PE,
                                                   read_length=arguments.RL, read_depth=arguments.RD,
-                                                  undirectional=arguments.U)
+                                                  undirectional=arguments.U, methylation_reference_output=arguments.RO,
+                                                  methylation_reference=arguments.BR, methylation_profile=arguments.RC)
         read_simulation.run_simulation()
     else:
         print('ART Executable Path not Valid')
