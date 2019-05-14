@@ -65,11 +65,11 @@ def process_mapping_statistics(mapping_dict):
     mappability = mapped_reads / mapping_dict["total_reads"]
     processed_list.append(f'Mappability: {mappability:.3f}')
     processed_list.append('------------------------------')
-    processed_list.append(f'Reads Mapped to Watson_C2T: {mapping_dict["W_C2T"]}')
-    processed_list.append(f'Reads Mapped to Crick_C2T: {mapping_dict["C_C2T"]}')
+    processed_list.append(f'Reads Mapped to Watson_C2T: {mapping_dict.get("W_C2T", 0)}')
+    processed_list.append(f'Reads Mapped to Crick_C2T: {mapping_dict.get("C_C2T", 0)}')
     if 'W_G2A' in mapping_dict:
-        processed_list.append(f'Reads Mapped to Watson_G2A: {mapping_dict["W_G2A"]}')
-        processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict["C_G2A"]}')
+        processed_list.append(f'Reads Mapped to Watson_G2A: {mapping_dict.get("W_G2A", 0)}')
+        processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict.get("C_G2A", 0)}')
     return '\n'.join(processed_list)
 
 
