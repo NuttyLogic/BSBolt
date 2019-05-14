@@ -65,11 +65,11 @@ def process_mapping_statistics(mapping_dict):
     mappability = mapped_reads / mapping_dict["total_reads"]
     processed_list.append(f'Mappability: {mappability:.3f}')
     processed_list.append('------------------------------')
-    processed_list.append(f'Reads Mapped to Watson_C2T: {mapping_dict["W_C2T"]}')
-    processed_list.append(f'Reads Mapped to Crick_C2T: {mapping_dict["C_C2T"]}')
+    processed_list.append(f'Reads Mapped to Watson_C2T: {mapping_dict.get("W_C2T", 0)}')
+    processed_list.append(f'Reads Mapped to Crick_C2T: {mapping_dict.get("C_C2T", 0)}')
     if 'W_G2A' in mapping_dict:
-        processed_list.append(f'Reads Mapped to Watson_G2A: {mapping_dict["W_G2A"]}')
-        processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict["C_G2A"]}')
+        processed_list.append(f'Reads Mapped to Watson_G2A: {mapping_dict.get("W_G2A", 0)}')
+        processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict.get("C_G2A", 0)}')
     return '\n'.join(processed_list)
 
 
@@ -111,6 +111,8 @@ def launch_alignment(arguments):
 
 
 def launch_methylation_call(arguments):
+    if arguments.CG and arguments.ATCG:
+        assert False, 'Reporting only CG sites notes compatible with .ATCGmap output'
     methylation_call = ProcessContigs(input_file=arguments.I,
                                       genome_database=arguments.DB,
                                       output_prefix=arguments.O,
@@ -157,7 +159,8 @@ def launch_simulation(arguments):
         read_simulation = SimulateMethylatedReads(reference_file=arguments.G, art_path=arguments.A,
                                                   output_path=arguments.O, paired_end=arguments.PE,
                                                   read_length=arguments.RL, read_depth=arguments.RD,
-                                                  undirectional=arguments.U)
+                                                  undirectional=arguments.U, methylation_reference_output=arguments.RO,
+                                                  methylation_reference=arguments.BR, methylation_profile=arguments.RC)
         read_simulation.run_simulation()
     else:
         print('ART Executable Path not Valid')

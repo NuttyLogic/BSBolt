@@ -46,10 +46,14 @@ print('Methylation Values Called')
 
 
 # import methylation calling dict
+all_methylation_sites = {}
 
-with open(f'{bsb_directory}Tests/TestSimulations/BSB_pe_methylation_value_dict.pkl', 'rb') \
-        as sim_sites:
-    methylation_sites = pickle.load(sim_sites)
+output_chromosome = ['chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15']
+for chrom in output_chromosome:
+    with open(f'{bsb_directory}Tests/TestSimulations/BSB_pe.{chrom}.pkl', 'rb') as sim_sites:
+        chrom_sites = pickle.load(sim_sites)
+        all_methylation_sites.update(chrom_sites['Watson'])
+        all_methylation_sites.update(chrom_sites['Crick'])
 
 # import CGmap Calls
 cgmap_sites = {}
@@ -62,9 +66,6 @@ for line in gzip.open(f'{bsb_directory}Tests/BSB_pe_test.CGmap.gz', 'rb'):
                                                                             methylated_reads=processed_line[6],
                                                                             total_reads=processed_line[7])
 
-all_methylation_sites = dict(methylation_sites['Watson'])
-all_methylation_sites.update(methylation_sites['Crick'])
-del methylation_sites
 
 
 def z_test_of_proportion(a_yes, a_no, b_yes, b_no):

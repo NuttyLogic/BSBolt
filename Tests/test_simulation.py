@@ -1,8 +1,10 @@
 import os
 import unittest
 from BSB.BSB_Simulate.SimulateMethylatedReads import SimulateMethylatedReads
-from BSB.BSB_Utils.UtilityFunctions import reverse_complement
+from BSB.BSB_Utils.UtilityFunctions import reverse_complement, get_external_paths
 
+
+bt2_path, art_path = get_external_paths()
 # hold read simulation data to test functions
 
 aln_pe_1_lines = [['>chr10	chr10-67760/1-1	67549	-',
@@ -91,15 +93,15 @@ sam_lines = [
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 simulation_files = f'{test_directory}/TestSimulations/wgbs_pe'
-art_path = '/Users/colinfarrell/Desktop/bsseeker_refactor_test_folder/art_bin_MountRainier/art_illumina'
 test_genome = f'{test_directory}/TestData/BSB_test.fa'
 
 test_simulation_files = SimulateMethylatedReads(reference_file=test_genome,
                                                 art_path=art_path,
                                                 paired_end=True,
                                                 output_path=simulation_files,
+                                                methylation_reference_output=f'{simulation_files}/wgbs_pe_ref/test',
                                                 undirectional=False)
-test_simulation_files.set_cytosine_methylation()
+test_simulation_files.run_simulation()
 
 # combine aln lines
 all_aln_lines = []
@@ -150,6 +152,8 @@ class TestReadSimulation(unittest.TestCase):
                       'chr10:355638': dict(nucleotide='G', methylation_level=1, context='GC',
                                            methylated_reads=0, unmethylated_reads=0)}
         test_simulation_files.cytosine_dict = {'Watson': watson_dict, 'Crick': crick_dict}
+        test_simulation_files.current_contig = 'chr10'
+
         test_fastq_line = [None, None, None, None]
         methylation_strand = 'Watson'
         read_sequence = test_simulation_files.set_simulated_methylation(aln_profile,
