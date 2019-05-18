@@ -18,7 +18,7 @@ class ProcessCutSites:
 
     def __init__(self, cut_format=None, cut_descriptor='-'):
         assert isinstance(cut_format, str), 'cut_format must be a str'
-        self.cut_format: list = cut_format.upper().split(',')
+        self.cut_format: list = cut_format.upper().replace(' ', '').split(',')
         self.cut_descriptor = cut_descriptor
         self.restriction_site_dict = {}
         self.process_cut_sites()

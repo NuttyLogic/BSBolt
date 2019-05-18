@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from BSB.BSB_Impute.Imputation.GenomeImputation import GenomeImputation
+from BSB.BSB_Utils.MatrixIterator import OpenMatrix
 
 
 class ImputeMissingValues:
@@ -20,6 +21,7 @@ class ImputeMissingValues:
 
     def __init__(self, input_matrix_file=None, batch_size=None, imputation_window_size=3000000, k=5,
                  threads=4, verbose=False, sep='\t', output_path=None, randomize_batch=False):
+        self.input_matrix = input_matrix_file
         self.batch_size = batch_size
         self.output_path = output_path
         if self.output_path:
@@ -42,17 +44,14 @@ class ImputeMissingValues:
 
     def import_matrix(self, bsb_matrix=None):
         methylation_matrix = {}
+        sample_number = None
         matrix_samples = None
         with open(bsb_matrix, 'r') as methylation_matrix:
             for line in methylation_matrix:
                 if not matrix_samples:
                     matrix_samples = line.replace('\n', '').split('\t')
 
-
-
-
-
-    def randomly_sample_list(sample_list, batch_size):
+    def randomly_sample_list(self, batch_size):
         try:
             batch_label = [0] + random.sample(sample_list, batch_size)
         except ValueError:
