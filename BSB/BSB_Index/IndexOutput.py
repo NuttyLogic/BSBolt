@@ -53,10 +53,8 @@ class IndexOutput:
              output_object (Dict[str, TextIO]): dict of output objects with descriptive keys
         """
         output_objects: Dict[str, TextIO] = {
-            'W_C2T': open(f'{self.genome_database}W_C2T.fa', 'w'),
-            'W_G2A': open(f'{self.genome_database}W_G2A.fa', 'w'),
-            'C_C2T': open(f'{self.genome_database}C_C2T.fa', 'w'),
-            'C_G2A': open(f'{self.genome_database}C_G2A.fa', 'w')
+            'Watson': open(f'{self.genome_database}Watson.fa', 'w'),
+            'Crick': open(f'{self.genome_database}Crick.fa', 'w'),
         }
         return output_objects
 
@@ -77,15 +75,13 @@ class IndexOutput:
             value.write(f'>{contig_id}\n')
 
         # output watson strands with replaced bases
-        self.database_output_objects['W_C2T'].write(f'{contig_sequence.replace("C", "T").replace("c", "t")}\n')
-        self.database_output_objects['W_G2A'].write(f'{contig_sequence.replace("G", "A").replace("g", "a")}\n')
+        self.database_output_objects['Watson'].write(f'{contig_sequence.replace("C", "T").replace("c", "t")}\n')
 
         # get reverse complement of contig sequence
         reverse_contig_sequence = reverse_complement(contig_sequence)
 
         # output crick strands
-        self.database_output_objects['C_C2T'].write(f'{reverse_contig_sequence.replace("C", "T").replace("c", "t")}\n')
-        self.database_output_objects['C_G2A'].write(f'{reverse_contig_sequence.replace("G", "A").replace("g", "a")}\n')
+        self.database_output_objects['Crick'].write(f'{reverse_contig_sequence.replace("C", "T").replace("c", "t")}\n')
 
     def build_bowtie2_index(self):
         """Launch external bowtie2 commands for 4 processed reference files and collect external stdout for log file

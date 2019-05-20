@@ -19,20 +19,20 @@ class OpenMatrix:
             self.f = open(matrix, 'r')
 
     def __iter__(self):
-        with self.f as fastq:
+        with self.f as matrix:
             while True:
-                line1 = fastq.readline()
-                if not line1.strip():
+                line = matrix.readline()
+                if not line.strip():
                     break
-                line1 = self.process_line(line1)
-                yield line1
+                line = self.process_line(line)
+                yield line
 
     def process_line(self, line):
         converted_line = self.line_conversion(line)
         if not self.header:
             self.header = 'Done'
             return converted_line[0], converted_line[1:]
-        return converted_line[0], np.asarray(self.convert_to_float(value) for value in converted_line[1:])
+        return converted_line[0], np.asarray([self.convert_to_float(value) for value in converted_line[1:]])
 
     @staticmethod
     def line_conversion(line):
