@@ -151,20 +151,13 @@ class RRBSGenomeIndexBuild:
         ending_index = 0
         for region in contig_regions:
             # if the regions aren't overlapping used region start site, else use the ending_index
-            if ending_index < region[0]:
-                # append masked nucleotide for region between mappable regions
-                masked_region = len(contig_str[ending_index:region[0]]) * masking_nucleotide
-                masked_contig_sequence.append(masked_region)
-                # append mappable region
-                mappable_region = contig_str[region[0]:region[1]]
-            else:
-                # append non-overlapping part of mappable region
-                mappable_region = contig_str[ending_index:region[1]]
-            # designate ending_index for next iteration
+            masked_sequence = (region[0] - ending_index) * masking_nucleotide
+            mappable_region = contig_str[region[0]:region[1]]
+            masked_contig_sequence.append(masked_sequence)
+            masked_contig_sequence.append(mappable_region)
             ending_index = region[1]
             # add mapping region info to self.mappable_regions list in bed format
             self.mappable_regions.append(f'{contig_id}\t{region[0]}\t{region[1] - 1}\t{mappable_region}\n')
-            masked_contig_sequence.append(mappable_region)
         # append remaining contig sequence as masked, by definition the last part can't be a mappable region
         masked_contig_sequence.append(len(contig_str[ending_index:]) * masking_nucleotide)
         return ''.join(masked_contig_sequence)

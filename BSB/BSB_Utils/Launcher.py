@@ -5,6 +5,7 @@ import time
 import pysam
 from BSB.BSB_Align.Align import BisulfiteAlignmentAndProcessing
 from BSB.BSB_CallMethylation.ProcessContigs import ProcessContigs
+from BSB.BSB_Impute.kNN_Impute import ImputeMissingValues
 from BSB.BSB_Index.RRBSGenomeBuild import RRBSGenomeIndexBuild
 from BSB.BSB_Index.WholeGenomeBuild import WholeGenomeIndexBuild
 from BSB.BSB_Matrix.MatrixAggregator import AggregateMatrix
@@ -166,8 +167,21 @@ def launch_simulation(arguments):
         print('ART Executable Path not Valid')
 
 
+def launch_imputation(arguments):
+    output_path = arguments.O
+    if not output_path:
+        output_path = f'{arguments.M}_imputed.txt'
+    impute = ImputeMissingValues(input_matrix_file=arguments.M, batch_size=arguments.B,
+                                 imputation_window_size=arguments.W, k=arguments.k, threads=arguments.t,
+                                 verbose=arguments.verbose, output_path=output_path, randomize_batch=arguments.R)
+    impute.import_matrix()
+    impute.impute_values()
+    impute.output_imputed_matrix()
+
+
 bsb_launch = {'Index': launch_index,
               'Align': launch_alignment,
               'CallMethylation': launch_methylation_call,
               'AggregateMatrix': launch_matrix_aggregation,
-              'Simulate': launch_simulation}
+              'Simulate': launch_simulation,
+              'Impute': launch_imputation}

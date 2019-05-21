@@ -78,7 +78,12 @@ class Bowtie2Alignment:
         # pool thread limit of four, can't go above this, can limit if resources are limited
         pool_threads = 4
         # start pool
-        pool = multiprocessing.Pool(processes=pool_threads)
+        try:
+            pool = multiprocessing.Pool(processes=pool_threads)
+        except OSError as e:
+            print('Shared memory exhausted, please reduce the number of Bowtie2 Threads, or '
+                  'increase the memory allocation')
+            raise e
         for mapping_command, genome_database_label in self.mapping_commands:
             pool.apply_async(launch_bowtie2_mapping,
                              kwds={'bowtie2_stream_kwargs': mapping_command,

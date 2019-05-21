@@ -1,7 +1,5 @@
 import random
 import subprocess
-import numpy as np
-from tqdm import tqdm
 from BSB.BSB_Utils.FastqIterator import OpenFastq
 from BSB.BSB_Utils.AlnIterator import OpenAln
 from BSB.BSB_Simulate.SetCyotsineMethylation import SetCytosineMethylation
