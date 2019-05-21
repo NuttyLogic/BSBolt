@@ -23,7 +23,7 @@ bsb_wgbs_masked_index_commands = ['python3', bsbolt, 'Index', '-G', f'{bsb_direc
                                   '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked', '-MR',
                                   f'{bsb_directory}Tests/TestData/test_wgbs_masking.bed']
 
-#subprocess.run(bsb_wgbs_masked_index_commands)
+subprocess.run(bsb_wgbs_masked_index_commands)
 
 bsb_align_commands = ['python3', bsbolt, 'Align',
                       '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked', '-F1',
