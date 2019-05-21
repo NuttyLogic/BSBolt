@@ -8,14 +8,19 @@ from BSB.BSB_Utils.MatrixIterator import OpenMatrix
 
 class ImputeMissingValues:
     """
-
-            :param batch_size:
-            :param imputation_window_size:
-            :param k:
-            :param threads:
-            :param verbose:
-            :param sep:
-            :param output_path:
+    Keyword Arguments
+        :param input_matrix_file:
+        :param batch_size:
+        :param imputation_window_size:
+        :param k:
+        :param threads:
+        :param verbose:
+        :param sep:
+        :param output_path:
+        :param randomize_batch:
+        :param meth_matrix:
+        :param meth_site_order:
+        :param sample_ids:
     """
 
     def __init__(self, input_matrix_file=None, batch_size=None, imputation_window_size=3000000, k=5,
@@ -39,6 +44,10 @@ class ImputeMissingValues:
                                       verbose=verbose)
 
     def impute_values(self):
+        """
+        Launch kNN imputation for each batch and set values in original matrix.
+        :return:
+        """
         imputation_order = [count for count in range(len(self.sample_ids[1]))]
         if self.batch_commands[1]:
             random.shuffle(imputation_order)
@@ -48,8 +57,8 @@ class ImputeMissingValues:
         for batch in imputation_batches:
             batch_array, sample_labels = self.get_batch_data(batch)
             batch_impute = self.launch_genome_imputation(batch_array, sample_labels)
-            print(self.meth_matrix[:, batch])
-            print(batch_impute.genomic_array)
+            for count, sample in enumerate(batch):
+                self.meth_matrix[:, sample] = batch_impute.genomic_array[:, count]
 
     def process_batch(self, imputation_order):
         batches = []
@@ -95,6 +104,13 @@ class ImputeMissingValues:
         else:
             out = open(output_path, 'r')
         return out
+
+    def output_imputed_matrix(self):
+        self.output_matrix.write('\t'.join([self.sample_ids[0]] + self.sample_ids[1]) + '\n')
+        for site_lablel, values in zip(self.meth_site_order, self.meth_matrix):
+            str_values = '\t'.join([str(value) for value in values])
+            self.output_matrix.write(f'{site_lablel}\t{str_values}\n')
+        self.output_matrix.close()
 
     def launch_genome_imputation(self, meth_array, sample_labels):
         imputation_kwargs = dict(self.imputation_kwargs)

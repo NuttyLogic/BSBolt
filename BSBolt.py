@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser(description='BiSulfite Bolt, A Bisulfite sequen
                                  usage='python3 BSBolt.py Module {Module Arguments}')
 
 subparsers = parser.add_subparsers(description='BSBolt Modules, Please Invoke BSBolt Modules for Help',
-                                   metavar='Index, Align, CallMethylation, AggregateMatrix, Simulate',
+                                   metavar='Index, Align, CallMethylation, AggregateMatrix, Simulate, Impute',
                                    dest='subparser_name')
 
 align_parser = subparsers.add_parser('Align', help='Alignment Module')
@@ -19,6 +19,7 @@ index_parser = subparsers.add_parser('Index', help='Index Generation Module')
 call_meth_parser = subparsers.add_parser('CallMethylation', help='Methylation Calling Module')
 matrix_parser = subparsers.add_parser('AggregateMatrix', help='CGmap Matrix Aggregation Module')
 sim_parser = subparsers.add_parser('Simulate', help='BSBolt Illumina Read Simulation Module')
+imputation_parser = subparsers.add_parser('Impute', help='kNN Imputation Module')
 
 # Add Alignment Parser Commands
 
@@ -142,7 +143,21 @@ sim_parser.add_argument('-RC', default=None, help='Path to CGmap file to generat
 sim_parser.add_argument('-RO', default=None, help='Methylation reference output directory, default = output path')
 sim_parser.add_argument('-BR', default=None, help='Path to previously generate BSB simulation reference')
 
+# Add Imputation Parser Args
+
+imputation_parser.add_argument('-M', type=str, required=True, help='Path to BSB matrix file')
+imputation_parser.add_argument('-B', type=int, default=0, help='Imputation sample batch size kNN imputation, by default'
+                                                               ' the all of the samples will be processed as a single '
+                                                               'batch')
+imputation_parser.add_argument('-W', type=int, default=3000000, help='Sliding window size for imputation')
+imputation_parser.add_argument('-k', type=int, default=5, help='Number of neighbors to use for imputation, default = 5')
+imputation_parser.add_argument('-t', type=int, default=1, help='Number of threads available for imputation')
+imputation_parser.add_argument('-verbos', action='store_true', default=False, help='Verbose output')
+imputation_parser.add_argument('-O', type=str, default='', help='Output path for imputed matrix')
+imputation_parser.add_argument('-R', action='store_true', default=False, help='Randomize batches')
+
 arguments = parser.parse_args()
+
 if len(sys.argv[1:]) == 0:
     parser.print_help()
     # parser.print_usage() # for just the usage line

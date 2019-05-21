@@ -1,9 +1,29 @@
 import unittest
 import os
+import pandas as pd
 from BSB.BSB_Impute.kNN_Impute import ImputeMissingValues
+from BSB.BSB_Impute.Validation.MaskValues import MaskImputationValues
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 test_methylation_data = f'{test_directory}/TestData/ch21_meth_data.tsv'
+test_df = pd.read_csv(test_methylation_data, sep='\t', index_col=0)
+masking = MaskImputationValues(methylation_dataframe=test_df, masking_proportion=.1)
+masking.mask_random_sites()
+masked_df = masking.methylation_dataframe
+print(test_df.values)
+print(masked_df.dropna(axis=0).shape)
+print(masked_df.values)
+test_imputation = ImputeMissingValues(batch_size=50)
+test_imputation.meth_matrix = masked_df.values
+test_imputation.meth_site_order = list(masked_df.index)
+test_imputation.sample_ids = ['blah', list(masked_df)]
+test_imputation.impute_values()
+print(masked_df.dropna(axis=0).shape)
+print(masked_df.values)
+print(test_imputation.meth_matrix)
+
+
+
 
 
 class TestBatchImputation(unittest.TestCase):
@@ -11,33 +31,3 @@ class TestBatchImputation(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_sample_labels(self):
-        test_batch_imputation = ImputeMissingValues(methylation_data=test_methylation_data,
-                                                    output_path=f'{test_methylation_data}_test_imputation',
-                                                    batch_size=10)
-        self.assertEqual(len(test_batch_imputation.sample_labels), 109)
-
-    def test_batch_size_large_remainder(self):
-        test_batch_imputation = ImputeMissingValues(methylation_data=test_methylation_data,
-                                                    output_path=f'{test_methylation_data}_test_imputation',
-                                                    batch_size=10)
-        test_batches = test_batch_imputation.get_batch_split
-        self.assertEqual(test_batches[-1], 9)
-
-    def test_batch_size_small_remainder(self):
-        test_batch_imputation = ImputeMissingValues(methylation_data=test_methylation_data,
-                                                    output_path=f'{test_methylation_data}_test_imputation',
-                                                    batch_size=20)
-        test_batches = test_batch_imputation.get_batch_split
-        self.assertEqual(test_batches[0], 21)
-        self.assertEqual(test_batches[-1], 25)
-
-    def test_batch_imputation(self):
-        test_batch_imputation = ImputeMissingValues(methylation_data=test_methylation_data,
-                                                    output_path=f'{test_methylation_data}_test_imputation',
-                                                    batch_size=20)
-        test_batch_imputation.impute_values()
-
-
-if __name__ == '__main__':
-    unittest.main()
