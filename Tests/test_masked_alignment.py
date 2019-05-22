@@ -14,7 +14,7 @@ bsbolt = f'{bsb_directory}BSBolt.py'
 bsb_simulate_commands = ['python3', bsbolt, 'Simulate',
                          '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
                          '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-U', '-PE']
-#subprocess.run(bsb_simulate_commands)
+subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
 
@@ -106,10 +106,20 @@ for count, read in enumerate(masked_alingment_file.fetch()):
         if read.query_name not in non_target_reads:
             non_target_reads.append(read.query_name)
 
-print(len(expected_reads))
-print(len(non_target_reads))
-print(len(overlaping_reads))
-print(sorted([read for read in overlaping_reads if read not in expected_reads]))
-print(sorted(non_target_reads))
+
+class TestMaskedAlignment(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_reads_on_target(self):
+        on_target_proportion = len(expected_reads) / len(overlaping_reads)
+        self.assertGreater(on_target_proportion, .95)
+
+    def test_off_target_reads(self):
+        off_target_proportion = len(non_target_reads) / len(overlaping_reads)
+        self.assertLess(off_target_proportion, .95)
 
 
+if __name__ == '__main__':
+    unittest.main()
