@@ -1,5 +1,7 @@
 #! /usr/env python3
 
+import gzip
+import io
 import numpy as np
 from tqdm import tqdm
 from BSB.BSB_Utils.CGmapIterator import OpenCGmap
@@ -13,7 +15,7 @@ class AggregateMatrix:
         sample_list (list): if passed, sample labels for CGmaps files, 
                             else labels taken from sample names
         min_site_coverage (int): minimum read coverage for a CpG site to be considered for matrix
-        site_proportion_threshold (float): proprotion of samples that must have valid non-null 
+        site_proportion_threshold (float): proportion of samples that must have valid non-null
                                            methylation calls for a site to be included in matrix
         output_path (str): path to output file
         cg_only (bool): consider all cystosines or only CpG sites
@@ -23,7 +25,7 @@ class AggregateMatrix:
        self.sample_list (list): if passed, sample labels for CGmaps files, 
                            else labels taken from sample names
        self.min_site_coverage (int): minimum read coverage for a CpG site to be considered for matrix
-       self.site_proportion_threshold (float): proprotion of samples that must have valid non-null 
+       self.site_proportion_threshold (float): proportion of samples that must have valid non-null
                                           methylation calls for a site to be included in matrix
        self.output_path (str): path to output file
        self.cg_only (bool): consider all cystosines or only CpG sites
@@ -32,13 +34,13 @@ class AggregateMatrix:
     """
 
     def __init__(self, file_list=None, sample_list=None, min_site_coverage=10,
-                 site_proportion_threshold=0.9, output_path=None, cg_only=True, verbose=True):
+                 site_proportion_threshold=0.9, output_path=None, cg_only=False, verbose=True):
         self.file_list = file_list
         self.sample_list = sample_list
         if not self.sample_list:
             self.sample_list = []
             for file in self.file_list:
-                self.sample_list.append(file.split('/')[-1])
+                self.sample_list.append(file.replace('\n', '').split('/')[-1])
         self.min_coverage = min_site_coverage
         self.site_dict = None
         self.collapsed_matrix = None
@@ -86,7 +88,7 @@ class AggregateMatrix:
                             self.site_dict[site_label] = 1
 
     def get_matrix_sites(self):
-        """Set sites seen across samples sbove proportion """
+        """Set sites seen across samples above proportion """
         site_count_threshold = int(self.site_proportion_threshold * len(self.sample_list))
         self.collapsed_matrix = {}
         for key, value in tqdm(self.site_dict.items(), desc='Getting Methylation Sites', total=len(self.site_dict)):
@@ -106,19 +108,25 @@ class AggregateMatrix:
                     self.collapsed_matrix[site_label][sample_index] = float(line_info[5])
 
     def check_cg(self, nucleotide_context):
-        if self.check_cg:
+        if self.cg_only:
             if nucleotide_context == 'CG':
                 return True
             return False
         return True
 
+    def get_output_object(self):
+        if self.output_path.endswith('gz'):
+            return io.BufferedWriter(gzip.open(self.output_path, 'wb'))
+        return open(self.output_path, 'w')
+
     def output_matrix(self):
         """Output sorted aggregated matrix"""
         print('Writing Matrix')
         key_list = self.sort_sites(list(self.collapsed_matrix.keys()))
-        out = open(self.output_path, 'w')
-        out.write(' \t%s\n' % '\t'.join(self.sample_list))
-        for site in key_list:
-            meth_values = self.collapsed_matrix[site]
-            out.write('%s\t%s\n' % (site, '\t'.join(meth_values)))
-        out.close()
+        out = self.get_output_object()
+        with out as matrix:
+            sample_labels = '\t'.join([str(x) for x in self.sample_list])
+            matrix.write(f'Site\t{sample_labels}\n')
+            for site in key_list:
+                meth_values = '\t'.join([str(value) for value in self.collapsed_matrix[site]])
+                matrix.write(f'{site}\t{meth_values}\n')

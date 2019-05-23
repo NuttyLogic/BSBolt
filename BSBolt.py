@@ -104,7 +104,6 @@ call_meth_parser.add_argument('-CG', action="store_true", default=False, help='O
 call_meth_parser.add_argument('-ATCG', action="store_true", default=False, help='Output ATCGmap file')
 
 
-
 # Add Matrix Aggregation Parser Args
 
 matrix_parser.add_argument('-F', type=lambda file: [file_path for file_path in file.split(',')], required=True,
@@ -152,7 +151,7 @@ imputation_parser.add_argument('-B', type=int, default=0, help='Imputation sampl
 imputation_parser.add_argument('-W', type=int, default=3000000, help='Sliding window size for imputation')
 imputation_parser.add_argument('-k', type=int, default=5, help='Number of neighbors to use for imputation, default = 5')
 imputation_parser.add_argument('-t', type=int, default=1, help='Number of threads available for imputation')
-imputation_parser.add_argument('-verbos', action='store_true', default=False, help='Verbose output')
+imputation_parser.add_argument('-verbose', action='store_true', default=False, help='Verbose output')
 imputation_parser.add_argument('-O', type=str, default='', help='Output path for imputed matrix')
 imputation_parser.add_argument('-R', action='store_true', default=False, help='Randomize batches')
 

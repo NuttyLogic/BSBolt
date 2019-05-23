@@ -37,7 +37,6 @@ class ProcessContigs:
         max_read_depth (int): default = 8000
         threads (int): 1, if one watcher and processing on same thread else separated
         min_base_quality (int): minimum base quality for base to be considered
-        wig (bool): write out wig file
     Attributes:
         self.input_file (str): path to input bam/sam file
         self.input_bam (pysam.Samfile): pysam object to retrieve pileup information from .bam file
@@ -50,12 +49,11 @@ class ProcessContigs:
         self.return_queue (multiprocessing.manager.Queue): object to return methylation calls
         self.output_objects (dict[str, TextIO]): dict of output objects
         self.methylation_stats (dict): global methylation statistics
-        self.wit (bool): write out wig file
     """
 
     def __init__(self, input_file=None, genome_database=None, output_prefix=None,
                  remove_sx_reads=True, ignore_overlap=False, text_output=False, remove_ccgg=False,
-                 min_read_depth=10, max_read_depth=8000, threads=1, verbose=True, min_base_quality=0, wig=False,
+                 min_read_depth=10, max_read_depth=8000, threads=1, verbose=True, min_base_quality=0,
                  ATCGmap=False, cg_only=True):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(text_output, bool), 'Not valid bool'
@@ -77,7 +75,6 @@ class ProcessContigs:
                                             min_base_quality=min_base_quality,
                                             cg_only=cg_only)
         self.min_read_depth = min_read_depth
-        self.wig = wig
         self.ATCGmap = ATCGmap
         self.methylation_calling = True
         self.contigs = self.get_contigs
@@ -141,6 +138,8 @@ class ProcessContigs:
                 self.methylation_calling = False
         if self.verbose:
             pbar.close()
+        for out in self.output_objects.values():
+            out.close()
         self.print_stats()
 
     def write_output(self, methylation_lines):
@@ -150,9 +149,6 @@ class ProcessContigs:
         """
         # write wig contig designation
         if methylation_lines:
-            contig = self.unpack_meth_line(methylation_lines[0])['chrom']
-            if self.wig:
-                self.write_line(self.output_objects['wig'], f'variableStep chrom={contig}\n')
             for meth_tuple in methylation_lines:
                 # unpack methylation data
                 meth_line = self.unpack_meth_line(meth_tuple)
@@ -164,8 +160,6 @@ class ProcessContigs:
                 # if methylation level greater than or equal to min_read_depth output CGmap and wig lines
                 if meth_line['all_cytosines'] >= self.min_read_depth:
                     self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
-                    if self.wig:
-                        self.write_line(self.output_objects['wig'], self.format_wig(meth_line))
 
     @staticmethod
     def unpack_meth_line(meth_line):
@@ -191,15 +185,6 @@ class ProcessContigs:
                      f'\t{meth_line["meth_cytosines"]}\t{meth_line["all_cytosines"]}\n'
         return CGmap_line
 
-    @staticmethod
-    def format_wig(meth_line):
-        """WIG line formatting
-        """
-        wiggle_line = f'{meth_line["pos"]}\t{meth_line["meth_level"]:.2f}\n'
-        if meth_line["nucleotide"] == 'C':
-            wiggle_line = f'{meth_line["pos"]}\t{-meth_line["meth_level"]:.2f}\n'
-        return wiggle_line
-
     @property
     def get_output_objects(self):
         output_objects = {}
@@ -208,19 +193,12 @@ class ProcessContigs:
             output_path = self.output_prefix
         if self.text_output:
             output_objects['CGmap'] = open(f'{output_path}.CGmap', 'w')
-            if self.wig:
-                output_objects['wig'] = open(f'{output_path}.wig', 'w')
-                output_objects['wig'].write('track type=wiggle_o\n')
             if self.ATCGmap:
                 output_objects['ATCGmap'] = open(f'{output_path}.ATCGmap', 'w')
         else:
             output_objects['CGmap'] = io.BufferedWriter(gzip.open(f'{output_path}.CGmap.gz', 'wb'))
-            if self.wig:
-                output_objects['wig'] = io.BufferedWriter(gzip.open(f'{output_path}.wig.gz', 'wb'))
-                output_objects['wig'].write('track type=wiggle_o\n'.encode('utf-8'))
             if self.ATCGmap:
                 output_objects['ATCGmap'] = io.BufferedWriter(gzip.open(f'{output_path}.ATCGmap.gz', 'wb'))
-
         return output_objects
 
     def write_line(self, output_object, line):

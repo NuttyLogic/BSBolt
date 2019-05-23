@@ -92,7 +92,7 @@ class ImputeMissingValues:
         if output_path.endswith('.gz'):
             out = io.BufferedWriter(gzip.open(output_path, 'wb'))
         else:
-            out = open(output_path, 'r')
+            out = open(output_path, 'w')
         return out
 
     def output_imputed_matrix(self):

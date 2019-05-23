@@ -28,18 +28,10 @@ class CallMethylation:
         self.context_tables (dict): dict of dicts listing nucleotide context
     """
 
-    def __init__(self, input_file=None, genome_database=None,
-                 remove_sx_reads=True, ignore_overlap=False, remove_ccgg=False,
-                 min_read_depth=10, max_read_depth=8000, contig=None, min_base_quality=0, return_queue=None,
-                 cg_only=False):
-        assert isinstance(input_file, str), 'Path to input file not valid'
-        assert isinstance(genome_database, str), 'Path to genome database not valid'
-        assert isinstance(remove_sx_reads, bool), 'Not valid bool'
-        assert isinstance(ignore_overlap, bool), 'Not valid bool'
-        assert isinstance(remove_ccgg, bool), 'Not valid bool'
-        assert isinstance(min_read_depth, int), 'Minimum depth must be integer'
-        assert isinstance(max_read_depth, int), 'Maximum depth must be integer'
-        assert isinstance(contig, str), 'Contig must be a string'
+    def __init__(self, input_file: str = None, genome_database: str = None, remove_sx_reads: bool = True,
+                 ignore_overlap: bool = False, remove_ccgg: bool = False, min_read_depth: int = 10,
+                 max_read_depth: int = 8000, contig: str = None, min_base_quality: int = 0, return_queue=None,
+                 cg_only: bool = False):
         self.input_file = str(input_file)
         self.input_bam = pysam.AlignmentFile(self.input_file, 'rb')
         self.genome_database = str(genome_database)
@@ -95,7 +87,7 @@ class CallMethylation:
 
     def call_contig(self, chrom_seq):
         """Iterates through bam pileup, calling methylation values if the reference nucleotide is a C or G. Pileup reads
-        are buffered and accessed as needed then deleted when they exit the scope.
+        are buffered and accessed as needed.
         """
         # iterate through pileup
         line_count = 0
@@ -117,7 +109,7 @@ class CallMethylation:
 
                 if self.cg_only and subcontext != 'CG':
                     continue
-                # check if sequence is CCGG, skip loop if filter True
+                # check if CCGG in sequence, skip loop if filter True
                 if self.check_ccgg(reference_seq):
                     continue
 
