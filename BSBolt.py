@@ -99,10 +99,9 @@ call_meth_parser.add_argument('-min', type=int, default=10,
 call_meth_parser.add_argument('-t', type=int, default=1,
                               help='Number of threads to use when calling methylation values')
 call_meth_parser.add_argument('-min-qual', type=int, default=0, help='Minimum base quality for a base to considered for'
-                                                                     'methylation calling')
+                                                                     'methylation calling, default=0')
 call_meth_parser.add_argument('-CG', action="store_true", default=False, help='Only output CpG sites in CGmap file')
 call_meth_parser.add_argument('-ATCG', action="store_true", default=False, help='Output ATCGmap file')
-
 
 
 # Add Matrix Aggregation Parser Args
@@ -152,7 +151,7 @@ imputation_parser.add_argument('-B', type=int, default=0, help='Imputation sampl
 imputation_parser.add_argument('-W', type=int, default=3000000, help='Sliding window size for imputation')
 imputation_parser.add_argument('-k', type=int, default=5, help='Number of neighbors to use for imputation, default = 5')
 imputation_parser.add_argument('-t', type=int, default=1, help='Number of threads available for imputation')
-imputation_parser.add_argument('-verbos', action='store_true', default=False, help='Verbose output')
+imputation_parser.add_argument('-verbose', action='store_true', default=False, help='Verbose output')
 imputation_parser.add_argument('-O', type=str, default='', help='Output path for imputed matrix')
 imputation_parser.add_argument('-R', action='store_true', default=False, help='Randomize batches')
 

@@ -1,9 +1,8 @@
 import gzip
 import io
 import random
-import numpy as np
 from BSB.BSB_Impute.Imputation.GenomeImputation import GenomeImputation
-from BSB.BSB_Utils.MatrixIterator import OpenMatrix
+from BSB.BSB_Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
 
 
 class ImputeMissingValues:
@@ -86,23 +85,14 @@ class ImputeMissingValues:
         return batch_array, sample_labels
 
     def import_matrix(self):
-        sample_ids, site_order, site_values = None, [], []
-        for line_label, line_values in OpenMatrix(self.input_matrix_file):
-            if not sample_ids:
-                sample_ids = line_label, line_values
-            else:
-                site_order.append(line_label)
-                site_values.append(line_values)
-        self.meth_matrix = np.asarray(site_values)
-        self.meth_site_order = site_order
-        self.sample_ids = sample_ids
+        self.meth_matrix, self.meth_site_order, self.sample_ids = get_bsb_matrix(self.input_matrix_file)
 
     @staticmethod
     def get_output_matrix(output_path):
         if output_path.endswith('.gz'):
             out = io.BufferedWriter(gzip.open(output_path, 'wb'))
         else:
-            out = open(output_path, 'r')
+            out = open(output_path, 'w')
         return out
 
     def output_imputed_matrix(self):

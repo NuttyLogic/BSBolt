@@ -76,7 +76,7 @@ with gzip.open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs/mappable_regions
 
 reference_sequences = {'chr10': None, 'chr11': None, 'chr12': None, 'chr13': None, 'chr14': None, 'chr15': None}
 # retrieve contig sequences
-with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs//W_C2T.fa', 'r') as w_c2t:
+with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs/W_C2T.fa', 'r') as w_c2t:
     chrome: str = None
     for line in w_c2t:
         if '>' in line:

@@ -67,7 +67,6 @@ for line in gzip.open(f'{bsb_directory}Tests/BSB_pe_test.CGmap.gz', 'rb'):
                                                                             total_reads=processed_line[7])
 
 
-
 def z_test_of_proportion(a_yes, a_no, b_yes, b_no):
     a_total = a_yes + a_no
     b_total = b_yes + b_no
@@ -110,18 +109,18 @@ class TestBSBPipeline(unittest.TestCase):
         coverage_difference_tolerance = 5
         # count number of sites out of tolerance
         out_of_tolerance_sites = 0
-        for site in site_comparisons.values():
-            if site['coverage_difference'] > coverage_difference_tolerance:
+        for test_site in site_comparisons.values():
+            if test_site['coverage_difference'] > coverage_difference_tolerance:
                 out_of_tolerance_sites += 1
         self.assertLessEqual(out_of_tolerance_sites, 250)
 
     def test_beta_proportion(self):
         # set z threshold
-        z = 3
+        z_threshold = 3
         # count site with z score above threshold
         z_site_count = 0
-        for site in site_comparisons.values():
-            if site['beta_z_value'] >= z:
+        for test_site in site_comparisons.values():
+            if test_site['beta_z_value'] >= z_threshold:
                 z_site_count += 1
         self.assertLessEqual(z_site_count, 250)
 

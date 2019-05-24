@@ -7,7 +7,7 @@ import io
 class OpenCGmap:
 
     def __init__(self, cgmap=None):
-        if cgmap.endswith(".gz"):
+        if cgmap.endswith('.gz'):
             self.f = io.BufferedReader(gzip.open(cgmap, 'rb'))
         else:
             self.f = open(cgmap, 'r')
