@@ -68,7 +68,7 @@ class SimulateMethylatedReads:
         to simplify read simulation """
         simulate_commands = [self.art_path, '-ss', 'HS25', '-i', self.reference_file, '-l', str(self.read_length),
                              '-f', str(self.read_depth), '--out', self.output_path, '-ir', '0.001', '-dr', '0.001',
-                             '-ir2', '0.001', '-dr2', '0.001', '-sam', '-M']
+                             '-ir2', '0.001', '-dr2', '0.001', '-sam', '-M', '-nf', '1']
         # add PE specific commands
         if self.paired_end:
             simulate_commands.extend(['-p', '-m', '400', '-s', '50'])

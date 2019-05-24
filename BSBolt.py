@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import argparse
 import sys
 from BSB.BSB_Utils.UtilityFunctions import check_python_version, get_external_paths
