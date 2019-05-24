@@ -99,7 +99,7 @@ call_meth_parser.add_argument('-min', type=int, default=10,
 call_meth_parser.add_argument('-t', type=int, default=1,
                               help='Number of threads to use when calling methylation values')
 call_meth_parser.add_argument('-min-qual', type=int, default=0, help='Minimum base quality for a base to considered for'
-                                                                     'methylation calling')
+                                                                     'methylation calling, default=0')
 call_meth_parser.add_argument('-CG', action="store_true", default=False, help='Only output CpG sites in CGmap file')
 call_meth_parser.add_argument('-ATCG', action="store_true", default=False, help='Output ATCGmap file')
 
