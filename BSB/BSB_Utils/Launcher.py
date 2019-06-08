@@ -79,7 +79,7 @@ def launch_alignment(arguments):
     bsb_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
     arg_order = ['F1', 'F2', 'U', 'BT2', 'NC', 'O', 'DB', 'CP', 'CT', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
                  'BT2_X', 'BT2_k', 'BT2_local', 'BT2_p', 'BT2_score_min']
-    bowtie2_commands = ['--quiet', '--norc', '--no-mixed', '--no-discordant', '--sam-nohead', '--reorder',
+    bowtie2_commands = ['--quiet', '--no-mixed', '--no-discordant', '--sam-nohead', '--reorder',
                         '-k', str(arguments.BT2_k),
                         '-p', str(arguments.BT2_p),
                         '-L', str(arguments.BT2_L),
@@ -104,6 +104,7 @@ def launch_alignment(arguments):
                            conversion_threshold=(arguments.CP, arguments.CT), mismatch_threshold=arguments.M,
                            command_line_arg=command_line_arg, non_converted_output=arguments.NC,
                            output_unmapped=arguments.OU)
+    print(aligment_kwargs)
     align_bisulfite(aligment_kwargs)
     if arguments.S:
         pysam.sort('-o', f'{arguments.O}.sorted.bam', f'{arguments.O}.bam')

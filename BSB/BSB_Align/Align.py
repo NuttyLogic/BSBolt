@@ -1,7 +1,7 @@
 import pickle
 import subprocess
 import pysam
-from BSB.BSB_Align.BT2_Mapping import Bowtie2Alignment
+from BSB.BSB_Align.LaunchBowtie2Alignment import Bowtie2Align
 from BSB.BSB_Align.ProcessSamReads import ProcessSamAlignment
 from BSB.BSB_Align.TabSamIterator import TabSamIterator
 from BSB.BSB_Align.AlignmentHelpers import write_bam_line
@@ -47,12 +47,11 @@ class BisulfiteAlignmentAndProcessing:
 
     def __init__(self, fastq1=None, fastq2=None, undirectional_library=False, bowtie2_commands=None,
                  bsb_database=None, bowtie2_path=None, output_path=None, conversion_threshold=(0.5, 5),
-                 mismatch_threshold=None, command_line_arg=None, non_converted_output=False, output_unmapped=False):
+                 mismatch_threshold=None, command_line_arg=None, unmapped_output=False):
+        print(bowtie2_commands)
         self.bowtie2_mapping = dict(fastq1=fastq1, fastq2=fastq2, undirectional_library=undirectional_library,
                                     bowtie2_commands=bowtie2_commands, bowtie2_path=bowtie2_path,
-                                    output_path=output_path, bsb_database=bsb_database,
-                                    non_converted_output=non_converted_output)
-        assert isinstance(undirectional_library, bool)
+                                    bsb_database=bsb_database)
         self.bsb_database = bsb_database
         self.undirectional_library = undirectional_library
         self.fastq1 = fastq1
@@ -63,13 +62,8 @@ class BisulfiteAlignmentAndProcessing:
         if self.fastq2:
             self.paired_end = True
         self.output_path = output_path
-        self.sam_tuple: tuple = self.get_sam_tuple
         self.conversion_threshold = conversion_threshold
         self.mismatch_threshold = mismatch_threshold
-        self.unmapped_output_object = None
-        if output_unmapped:
-            self.unmapped_output_object = self.get_unmapped_outputs
-        self.output_unmapped = output_unmapped
         self.contig_sequence_dict = {}
         self.sam_output = self.get_output_object
         self.mapping_statistics = dict(total_reads=0, multimapped_reads=0, unmapped_reads=0, multireference_reads=0)
@@ -77,22 +71,6 @@ class BisulfiteAlignmentAndProcessing:
                                 'W_G2A': {'99': '115', '147': '179'},
                                 'C_C2T': {'99': '179', '147': '115'},
                                 'C_G2A': {'99': '131', '147': '67'}}
-
-    @property
-    def get_unmapped_outputs(self):
-        output_range = 1
-        if self.paired_end:
-            output_range = 2
-        unmapped_output = [open(f'{self.output_path}.unmapped_{count + 1}.fastq', 'w') for count in range(output_range)]
-        return unmapped_output
-
-    @property
-    def get_sam_tuple(self):
-        # alignment for one strand pair if library is undirectional, all if directional
-        sam_list = [f'{self.output_path}.W_C2T.sam.temp', f'{self.output_path}.C_C2T.sam.temp']
-        if self.undirectional_library:
-            sam_list.extend([f'{self.output_path}.W_G2A.sam.temp', f'{self.output_path}.C_G2A.sam.temp'])
-        return tuple(sam_list)
 
     @property
     def get_output_object(self):
@@ -112,15 +90,23 @@ class BisulfiteAlignmentAndProcessing:
 
     def launch_bisulfite_aligment(self):
         """ Instance Bowtie2Alingment class and map reads"""
-        bisulfite_alignment = Bowtie2Alignment(**self.bowtie2_mapping)
-        bisulfite_alignment.launch_bt2_mapping()
+        alignment = Bowtie2Align(**self.bowtie2_mapping)
+        for line in alignment:
+            print(line)
+        sam_read = {}
+        while True:
+            try:
+                sam_read = next(alignment)
+                print(sam_read)
+                break
+            except StopIteration:
+                break
 
     def process_reads(self):
         """ Iterate through fastq files and temp sam files generated with bowtie2 mapping and combine to one
         sam file"""
         # instance iterator to go through fastq lines and sam lines together, this assumes the order is identical for
         # all alignment files (if this isn't true alignment processing will quickly break)
-        tab_sam_iterator = iter(TabSamIterator(fastq1=self.fastq1, fastq2=self.fastq2, sam_tuple=self.sam_tuple))
         previous_readname = None
         while True:
             # get next line or break
@@ -138,7 +124,6 @@ class BisulfiteAlignmentAndProcessing:
                 # if paired end get second read information and perform PE specific processing
                 if self.paired_end:
                     # if pe sam_read_2 should always be present
-                    sam_reads_2 = next(tab_sam_iterator)
                     mapping_number_2, processed_read_2, bisulfite_strand_2 = self.process_sam_reads(sam_reads_2)
                     # only perform additional processing if both reads uniquely aligned and passed filters
                     if bisulfite_strand_2 and bisulfite_strand:
@@ -154,32 +139,14 @@ class BisulfiteAlignmentAndProcessing:
                         # output lines
                         self.output_sam_lines(bisulfite_strand, processed_read, bisulfite_strand_2, processed_read_2)
                     else:
-                        p1, p2 = self.format_unmapped_read(processed_read), self.format_unmapped_read(processed_read_2)
-                        if p1[1] != previous_readname:
-                            self.output_multimapped_reads(mapping_number, p1, p2)
-                    self.process_pe_mapping_stats(mapping_number, bisulfite_strand,
+                        self.process_pe_mapping_stats(mapping_number, bisulfite_strand,
                                                   mapping_number_2, bisulfite_strand_2, multimapped)
                 else:
                     # output se line
                     self.output_sam_lines(bisulfite_strand, processed_read)
-                    if not bisulfite_strand:
-                        p1 = self.format_unmapped_read(processed_read)
-                        if p1[1] != previous_readname:
-                            self.output_multimapped_reads(mapping_number, processed_read)
                     self.update_mapping_statistics(mapping_number, bisulfite_strand, multimapped)
-            previous_readname = self.format_unmapped_read(processed_read)[1]
         # close output file
         self.sam_output.close()
-        if self.unmapped_output_object:
-            for output in self.unmapped_output_object:
-                output.close()
-
-    @staticmethod
-    def format_unmapped_read(read):
-        if isinstance(read, list):
-            return read
-        else:
-            return [read['SEQ'], read['QNAME'], read['QUAL'], []]
 
     def output_sam_lines(self, bisulfite_strand, processed_read, bisulfite_strand_2=None, processed_read_2=None):
         """ Write out sam files if read mapped uniquely and pass quality filters. Handles PE and SE reads.
@@ -202,23 +169,6 @@ class BisulfiteAlignmentAndProcessing:
                 # correct single end flag
                 self.correct_single_end_flag(bisulfite_strand, processed_read)
                 write_bam_line(processed_read, self.sam_output)
-
-    def output_multimapped_reads(self, mapping_number=None, processed_read=None, processed_read_2=None):
-        if self.unmapped_output_object:
-            if mapping_number != 1:
-                self.unmapped_output_object[0].write(self.format_ummapped_output(processed_read))
-                if processed_read_2:
-                    self.unmapped_output_object[1].write(self.format_ummapped_output(processed_read_2))
-
-    @staticmethod
-    def format_ummapped_output(processed_read):
-        mapping_strands = ' '.join(processed_read[3])
-        fastq_id = f'@{processed_read[1]} {mapping_strands}'
-        return f'{fastq_id}\n{processed_read[0]}\n+\n{processed_read[2]}\n'
-
-    def clean_temp_files(self):
-        for sam_file in self.sam_tuple:
-            subprocess.run(['rm', sam_file])
 
     @staticmethod
     def correct_single_end_flag(bisulfite_strand, processed_read):

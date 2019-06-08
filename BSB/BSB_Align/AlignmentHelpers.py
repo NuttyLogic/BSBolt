@@ -53,11 +53,10 @@ def get_length_stats(cigar):
     return read_start, read_end, mapped_region_length
 
 
-def launch_bowtie2_mapping(bowtie2_stream_kwargs=None, output_path=None, genome_database_label=None):
+def launch_bowtie2_mapping(bowtie2_stream_kwargs=None, output_path=None):
     """Write output of Bowtie2Align instance"""
     assert isinstance(bowtie2_stream_kwargs, dict)
-    assert isinstance(genome_database_label, str)
-    output_object = open(f'{output_path}.{genome_database_label}.sam.temp', 'w')
+    output_object = open(f'{output_path}.sam.temp', 'w')
     for sam_line in Bowtie2Align(**bowtie2_stream_kwargs):
         write_sam_line(sam_line=sam_line, output_object=output_object)
     output_object.close()

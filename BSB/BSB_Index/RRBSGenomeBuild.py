@@ -65,7 +65,7 @@ class RRBSGenomeIndexBuild:
                 contig_sequence.append(sequence.upper())
         # process remaining sequence after iterator exhausted
         self.process_contig_region(contig_id, contig_sequence)
-        self.index_output.close_output_objects()
+        self.index_output.database_output.close()
         # launch build commands
         self.index_output.build_bowtie2_index()
         # output mappable regions in bed format

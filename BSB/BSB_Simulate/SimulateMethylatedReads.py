@@ -147,6 +147,9 @@ class SimulateMethylatedReads:
 
     def get_contig_methylation_reference(self, contig_id):
         if not self.current_contig:
+            if contig_id == 'stop':
+                print('Empty Reference Sequence')
+                raise ValueError
             self.cytosine_dict = self.simulation_out.load_contig(contig_id)
             self.current_contig = contig_id
         elif contig_id != self.current_contig:
