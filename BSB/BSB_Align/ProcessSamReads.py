@@ -27,51 +27,69 @@ class ProcessSamAlignment:
 
     """
 
-    def __init__(self, sam_line_dict=None, contig_dict=None, bsb_database=None,
-                 conversion_threshold=(0.5, 5), mismatch_threshold=4):
-        assert isinstance(contig_dict, dict)
-        self.contig_dict = contig_dict
-        self.conversion_threshold = conversion_threshold
+    def __init__(self, sam_reads=None, contig_lens=None, mismatch_threshold=4):
+        self.sam_reads = sam_reads
         self.mismatch_threshold = mismatch_threshold
-        self.sam_line_dict = sam_line_dict
-        self.bsb_database = bsb_database
-        self.read_strand_info = (('W_C2T', '+FW', False, False), ('C_C2T', '-FW', True, True),
-                                 ('W_G2A', '-RC', False, False), ('C_G2A', '+RC', True, True))
-        self.good_flags = {'0', '99', '147'}
-        self.output_read = self.get_combined_bisulfite_read
+        self.contig_lens = contig_lens
+        self.read_strand_info = (('W_C2T', '+W', False), ('C_C2T', '+C', True),
+                                 ('W_G2A', '-W', False), ('C_G2A', '-C', True))
+        self.mapping_flags = {'0', '16', '83', '99', '147', '163'}
+        self.crick_mapping_conversion = {'0': '16', '16': '0',
+                                         '83': '99', '163': '147',
+                                         '99': '83', '147': '163'}
+        self.output_reads = self.get_combined_bisulfite_read
 
     @property
     def get_combined_bisulfite_read(self):
         # get number of correctly maped reads
-        mapped_read_number, mapped_strands = self.check_read_mapping
-        # if read uniquely mapped continue
+        mapped_read_number, mapped_reads = self.check_read_mapping
         if mapped_read_number == 1:
-            # process and return read
-            bisulfite_sam_read, bisulfite_strand = self.process_reads
-            return mapped_read_number, bisulfite_sam_read, bisulfite_strand
-        # else return mapped read number and a null bisulfite strand
-        return mapped_read_number, [self.sam_line_dict['read_sequence'],
-                                    self.sam_line_dict['W_C2T']['QNAME'],
-                                    self.sam_line_dict['W_C2T']['QUAL'],
-                                    mapped_strands], None
+            processed_reads = []
+            for read_grouping in mapped_reads:
+                reads = [self.process_read(read, mapped_read_number) for read in read_grouping]
+                if len(reads) > 1:
+                    read_2_pnext, read_1_pnext = str(read_grouping[1]['POS']), str(read_grouping[0]['POS'])
+                    reads[0]['PNEXT'], reads[1]['PNEXT'] = read_1_pnext, read_2_pnext
+                processed_reads.append(tuple(reads))
+            return mapped_read_number, processed_reads
+        return mapped_read_number, mapped_reads
 
     @property
     def check_read_mapping(self):
-        mapped_read_number = 0
         # processing assumes standard input order
-        mapped_strands = []
-        for read_instruction in self.read_strand_info:
-            try:
-                read = self.sam_line_dict[read_instruction[0]]
-            except KeyError:
-                break
-            else:
-                # if read in good flags and mismatch below threshold increase mapped_read_number
-                if read['FLAG'] in self.good_flags:
-                    if self.check_mismatch(read):
-                        mapped_read_number += 1
-                        mapped_strands.append(read_instruction[0])
-        return mapped_read_number, mapped_strands
+        mapped_strands = set()
+        mapping_reads = []
+        for read_group in self.sam_reads:
+            if read_group[0]['FLAG'] in self.mapping_flags:
+                mismatch_check = False
+                for read in read_group:
+                    if not self.check_mismatch(read):
+                        mismatch_check = True
+                if not mismatch_check:
+                    mapped_strands.add(read_group[0]['mapping_reference'])
+                    mapping_reads.append(read_group)
+        if len(mapped_strands) == 0:
+            return len(mapped_strands), [self.sam_reads[0]]
+        elif len(mapped_strands) == 1:
+            return len(mapped_strands), mapping_reads
+        return len(mapped_strands), self.set_unmapped_read(self.sam_reads[0], mapped_strands)
+
+    @staticmethod
+    def set_unmapped_read(read_group, mapping_strands):
+        unmapped_flags = tuple('4') if len(read_group) == 1 else ('77', '141')
+        mapping_stand_id = ','.join(mapping_strands)
+        unmapped_reads = []
+        for read, flag in zip(read_group, unmapped_flags):
+            unmapped_read = dict(read)
+            unmapped_read['FLAG'] = flag
+            unmapped_read['RNAME'] = '*'
+            unmapped_read['POS'] = 0
+            unmapped_read['CIGAR'] = 0
+            unmapped_read['PNEXT'] = 0
+            unmapped_read['TLEN'] = 0
+            unmapped_reads['SAM_TAGS'] = ['YT:Z:UP', f'XO:Z:{mapping_stand_id}']
+            unmapped_reads.append(unmapped_read)
+        return tuple(unmapped_reads)
 
     def check_mismatch(self, read):
         """ Arguments:
@@ -92,59 +110,34 @@ class ProcessSamAlignment:
         # if mismatch sam flag missing return false by default
         return False
 
-    @property
-    def process_reads(self):
-        # process reads by read group
-        for read_instruction in self.read_strand_info:
-            # unpack read processing instructions
-            mapping_label, strand, mapping_reverse, reverse_comp = read_instruction
-            # retrieve original read sequence, should always be present even is unmapped / multi-mapped
-            original_sequence = self.sam_line_dict['read_sequence']
-            try:
-                # retrieve read
-                read = self.sam_line_dict[read_instruction[0]]
-            except KeyError:
-                break
-            else:
-                # check for good read mapping flag
-                if read['FLAG'] in self.good_flags:
-                    # get contig mapping sequence
-                    contig_sequence = self.get_contig_sequence(read['RNAME'])
-                    # get contig length
-                    contig_len = len(contig_sequence)
-                    # convert cigar to numeric representation
-                    cigar_tuple = convert_alpha_numeric_cigar(read['CIGAR'])
-                    mapping_length = self.get_mapping_length(cigar_tuple)
-                    mapping_loc = int(read['POS'])
-                    quality = read['QUAL']
-                    # rule to reverse flag based on mapping strand
-                    if read['FLAG'] == '147':
-                        if not reverse_comp:
-                            reverse_comp = True
-                        else:
-                            reverse_comp = False
-                    if reverse_comp:
-                        original_sequence = reverse_complement(original_sequence)
-                        # reverse cigar tuple,
-                        cigar_tuple = cigar_tuple[::-1]
-                        quality = quality[::-1]
-                    if mapping_reverse:
-                        mapping_loc = contig_len - mapping_loc - mapping_length + 2
-                    mapping_genomic_sequence = contig_sequence[mapping_loc - 2: mapping_loc + len(read['SEQ'])]
-                    filtered_sequence, xs, alpha_cigar, filtered_qual = self.process_cigar_genomic_sequence(
-                                                                                         original_sequence,
-                                                                                         mapping_genomic_sequence,
-                                                                                         cigar_tuple,
-                                                                                         strand,
-                                                                                         quality)
-                    read['CIGAR'] = alpha_cigar
-                    read['SEQ'] = filtered_sequence
-                    read['CIGAR'] = alpha_cigar
-                    read['SAM_TAGS'].append(f'XS:i:{xs}')
-                    read['SAM_TAGS'].append(f'XO:Z:{strand}')
-                    read['POS'] = str(mapping_loc)
-                    read['QUAL'] = filtered_qual
-                    return dict(read), mapping_label
+    def process_read(self, read, paired_end):
+        mapped_read = dict(read)
+        contig_len = self.contig_lens[mapped_read['RNAME']]
+        sequence = mapped_read['SEQ']
+        cigar_tuple = convert_alpha_numeric_cigar(mapped_read['CIGAR'])
+        mapping_length = self.get_mapping_length(cigar_tuple)
+        mapping_loc = int(mapped_read['POS'])
+        quality = mapped_read['QUAL']
+        # rule to reverse flag based on mapping strand
+        if 'C_' in mapped_read['mapping_reference']:
+            sequence = reverse_complement(sequence)
+            # reverse cigar tuple,
+            cigar_tuple = cigar_tuple[::-1]
+            quality = quality[::-1]
+            mapping_loc = contig_len - mapping_loc - mapping_length + 2
+            if paired_end > 1:
+                tlen = mapped_read['TLEN']
+                mapped_read['TLEN'] = tlen.replace('-', '') if '-' in tlen else f'-{tlen}'
+        filtered_sequence, alpha_cigar, filtered_qual = self.process_cigar_genomic_sequence(sequence,
+                                                                                            cigar_tuple,
+                                                                                            quality)
+        read['CIGAR'] = alpha_cigar
+        read['SEQ'] = filtered_sequence
+        read['CIGAR'] = alpha_cigar
+        read['SAM_TAGS'].append(f'XO:Z:{mapped_read["mapping_reference"]}')
+        read['POS'] = str(mapping_loc)
+        read['QUAL'] = filtered_qual
+        return mapped_read
 
     @staticmethod
     def get_mapping_length(cigar_tuple):
@@ -158,19 +151,16 @@ class ProcessSamAlignment:
                 mapping_length += cigar_label[1]
         return mapping_length
 
-    def process_cigar_genomic_sequence(self, read_sequence, mapping_genomic_sequence, cigar, strand, qual):
+    def process_cigar_genomic_sequence(self, read_sequence, cigar, qual):
         """Take read sequence, genomic sequence and return aligned sequence according to cigar string
         Arguments:
             read_sequence (str): SAM read sequence
-            mapping_genomic_sequence (str): reference sequence over mapping area
             cigar (list): list of tuples describing cigar string, can't be alpha numeric
             strand (str): reference strand for bisulfite conversion check
             """
         matched_read_sequence = []
         filtered_sequence = []
         filtered_qual = []
-        # bisulfite conversion flag, passing by default
-        xs = 0
         end_position = 0
         alpha_cigar = ''
         for cigar_type in cigar:
@@ -194,69 +184,6 @@ class ProcessSamAlignment:
             # if read is soft clipped extend end position, only has effect is read is reversed
             if cigar_type[0] == 4:
                 end_position += cigar_type[1]
-        if self.check_bisulfite_conversion(''.join(matched_read_sequence), mapping_genomic_sequence, strand):
-            xs = 1
         filtered_sequence, filtered_qual = ''.join(filtered_sequence), ''.join(filtered_qual)
         assert len(filtered_sequence) == len(filtered_qual)
-        return filtered_sequence, xs, alpha_cigar, filtered_qual
-
-    def check_bisulfite_conversion(self, matched_read_sequence, mapping_genomic_sequence, strand):
-        """
-        Takes matched read sequence and check for bisulfite conversion of non-CpG sites in relation to the reference.
-        The conversion check is strand specific, ie Watson and Crick strands will have different conversion patterns.
-        Arguments
-            matched_read_sequence (str): str of uppercase nucleotides with - representing deleted bases
-            mapping_genomic_sequence (str): str of uppercase reference nucleotides
-            strand (str): mapping strand to set conversion pattern
-        Returns
-            Type bool: True if nonconversion_proportion greater than threshold and the number of unconverted sites
-                        great than specified threshold, else return False
-        """
-        # rules for + strand mapping
-        ch_sequences = {'CA', 'CT', 'CC'}
-        nucleotide_pattern = ('C', 'T')
-        # mapping_genomic_sequence is extended by 1 bp on each end so 2bp context can be considered regardless of strand
-        reference_sequence = mapping_genomic_sequence[1:]
-        if strand in {'-FW', '-RC'}:
-            # rules for - strand mapping
-            nucleotide_pattern = ('G', 'A')
-            ch_sequences = {'TG', 'AG', 'GG'}
-            reference_sequence = mapping_genomic_sequence[:-1]
-        converted_sites = 0.0
-        unconverted_sites = 0.0
-        for count in range(len(matched_read_sequence)):
-            reference_nuc = matched_read_sequence[count]
-            # get nucleotide context
-            genomic_2mer = reference_sequence[count: count + 2]
-            if genomic_2mer in ch_sequences:
-                # if nucleotide is reference base, base unconverted
-                if reference_nuc == nucleotide_pattern[0]:
-                    unconverted_sites += 1.0
-                # converted base if C > T, G > A
-                elif reference_nuc == nucleotide_pattern[1]:
-                    converted_sites += 1.0
-        if unconverted_sites:
-            nonconversion_proportion: float = unconverted_sites / (converted_sites + unconverted_sites)
-        else:
-            # necessary to prevent ZeroDivisionError
-            nonconversion_proportion: float = 0.0
-        if nonconversion_proportion >= self.conversion_threshold[0] and unconverted_sites >= self.conversion_threshold[1]:
-            return True
-        return False
-
-    def get_contig_sequence(self, contig_id):
-        """ Helper function to deserialize reference sequences as needed or return sequence in memory.
-        Args;
-            contig_id (str): contig label
-        Returns:
-             contig_sequence (str): str with reference sequence
-        """
-        try:
-            contig_sequence = self.contig_dict[contig_id]
-        except KeyError:
-            with open(f'{self.bsb_database}{contig_id}.pkl', 'rb') as contig:
-                contig_sequence = pickle.load(contig)
-                self.contig_dict[contig_id] = contig_sequence
-                return contig_sequence
-        else:
-            return contig_sequence
+        return filtered_sequence, alpha_cigar, filtered_qual

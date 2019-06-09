@@ -61,7 +61,7 @@ class ConvertFastq:
         # strip fastq specific formatting
         sequence = fastq_line[1]
         name = fastq_line[0].replace('@', '').split('/')[0]
-        name = f'{name.split(" ")[0]}_BSBolt_{read_conversion}_{replacement_rule[0]}{replacement_rule[1]}_{sequence}'
+        name = f'{name.split(" ")[0]}_BSBolt_{read_conversion}_{replacement_rule[0]}2{replacement_rule[1]}_{sequence}'
         quality = fastq_line[3]
         if replacement_rule:
             sequence = sequence.replace(replacement_rule[0], replacement_rule[1].lower())

@@ -64,7 +64,7 @@ def launch_bowtie2_mapping(bowtie2_stream_kwargs=None, output_path=None):
 
 def write_sam_line(sam_line=None, output_object=None):
     """Convert sam_dict to tab separated text and write out"""
-    output_values = list(sam_line.values())
+    output_values = list(sam_line.values())[0:-4]
     sam1 = '\t'.join(output_values[:-1])
     sam2 = '\t'.join(output_values[-1])
     formatted_read = f'{sam1}\t{sam2}\n'
@@ -73,7 +73,7 @@ def write_sam_line(sam_line=None, output_object=None):
 
 def write_bam_line(sam_line=None, output_object=None):
     """Convert sam line to bam line and write out"""
-    output_values = list(sam_line.values())
+    output_values = list(sam_line.values())[0:-3]
     sam1 = '\t'.join(output_values[:-1])
     sam2 = '\t'.join(output_values[-1])
     formatted_read = f'{sam1}\t{sam2}'

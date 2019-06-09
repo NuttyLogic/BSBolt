@@ -87,13 +87,13 @@ class Bowtie2Align:
         if sam_line:
             processed_sam_line: list = sam_line.replace('\n', '').split('\t')
             read_name, FLAG, RNAME, POS, MAPQ, CIGAR, RNEXT, PNEXT, TLEN, SEQ, QUAL, *SAM_TAGS = processed_sam_line
-            QNAME, read_group, conversion_bases, original_sequence = self.process_read_name(read_name)
-            RNAME, mapping_reference = self.process_mapping_chrom(RNAME)
+            QNAME, read_group, conversion_bases, SEQ = self.process_read_name(read_name)
+            RNAME, mapping_reference = self.process_mapping_chrom(RNAME, read_group)
             return dict(QNAME=QNAME, FLAG=FLAG, RNAME=RNAME, POS=POS,
                         MAPQ=MAPQ, CIGAR=CIGAR, RNEXT=RNEXT, PNEXT=PNEXT,
                         TLEN=TLEN, SEQ=SEQ, QUAL=QUAL, SAM_TAGS=SAM_TAGS,
                         read_group=read_group, conversion_bases=conversion_bases,
-                        original_sequence=original_sequence, mapping_reference=mapping_reference)
+                        mapping_reference=mapping_reference)
 
     @staticmethod
     def process_read_name(read_name):
@@ -102,8 +102,9 @@ class Bowtie2Align:
         return QNAME, read_group, conversion_bases, original_sequence
 
     @staticmethod
-    def process_mapping_chrom(RNAME):
+    def process_mapping_chrom(RNAME, read_group):
+        reference_conversion = 'C2T' if read_group == '1' else 'G2A'
         if '_crick_bs' in RNAME:
-            return RNAME.replace('_crick_bs', ''), 'Crick'
-        return RNAME, 'Watson'
+            return RNAME.replace('_crick_bs', ''), f'C_{reference_conversion}'
+        return RNAME, f'W_{reference_conversion}'
 

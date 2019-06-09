@@ -1,9 +1,7 @@
 import pickle
-import subprocess
 import pysam
 from BSB.BSB_Align.LaunchBowtie2Alignment import Bowtie2Align
 from BSB.BSB_Align.ProcessSamReads import ProcessSamAlignment
-from BSB.BSB_Align.TabSamIterator import TabSamIterator
 from BSB.BSB_Align.AlignmentHelpers import write_bam_line
 
 
@@ -46,9 +44,8 @@ class BisulfiteAlignmentAndProcessing:
     """
 
     def __init__(self, fastq1=None, fastq2=None, undirectional_library=False, bowtie2_commands=None,
-                 bsb_database=None, bowtie2_path=None, output_path=None, conversion_threshold=(0.5, 5),
-                 mismatch_threshold=None, command_line_arg=None, unmapped_output=False):
-        print(bowtie2_commands)
+                 bsb_database=None, bowtie2_path=None, output_path=None,
+                 mismatch_threshold=4, command_line_arg=None, unmapped_output=False):
         self.bowtie2_mapping = dict(fastq1=fastq1, fastq2=fastq2, undirectional_library=undirectional_library,
                                     bowtie2_commands=bowtie2_commands, bowtie2_path=bowtie2_path,
                                     bsb_database=bsb_database)
@@ -57,20 +54,16 @@ class BisulfiteAlignmentAndProcessing:
         self.fastq1 = fastq1
         self.fastq2 = fastq2
         self.command_line_arg = command_line_arg
+        self.unmapped_output = unmapped_output
         self.paired_end = False
         # if self.fastq2 provided assume library is paired end
         if self.fastq2:
             self.paired_end = True
         self.output_path = output_path
-        self.conversion_threshold = conversion_threshold
         self.mismatch_threshold = mismatch_threshold
-        self.contig_sequence_dict = {}
+        self.contig_lens = self.get_contig_lens
         self.sam_output = self.get_output_object
         self.mapping_statistics = dict(total_reads=0, multimapped_reads=0, unmapped_reads=0, multireference_reads=0)
-        self.flag_correction = {'W_C2T': {'99': '67', '147': '131'},
-                                'W_G2A': {'99': '115', '147': '179'},
-                                'C_C2T': {'99': '179', '147': '115'},
-                                'C_G2A': {'99': '131', '147': '67'}}
 
     @property
     def get_output_object(self):
@@ -88,177 +81,56 @@ class BisulfiteAlignmentAndProcessing:
         sam_out = pysam.AlignmentFile(f'{self.output_path}.bam', 'wb', header=sam_header)
         return sam_out
 
-    def launch_bisulfite_aligment(self):
+    def align_reads(self):
         """ Instance Bowtie2Alingment class and map reads"""
-        alignment = Bowtie2Align(**self.bowtie2_mapping)
-        for line in alignment:
-            print(line)
-        sam_read = {}
+        alignment = iter(Bowtie2Align(**self.bowtie2_mapping))
+        sam_reads, read_name = [], None
         while True:
+            self.mapping_statistics['total_reads'] += 1
             try:
                 sam_read = next(alignment)
-                print(sam_read)
-                break
             except StopIteration:
                 break
-
-    def process_reads(self):
-        """ Iterate through fastq files and temp sam files generated with bowtie2 mapping and combine to one
-        sam file"""
-        # instance iterator to go through fastq lines and sam lines together, this assumes the order is identical for
-        # all alignment files (if this isn't true alignment processing will quickly break)
-        previous_readname = None
-        while True:
-            # get next line or break
-            try:
-                sam_reads = next(tab_sam_iterator)
-            except StopIteration:
-                break
+            if not read_name:
+                read_name = sam_read['QNAME']
+            elif sam_read['QNAME'] != read_name:
+                self.process_sam_reads(sam_reads)
+                sam_reads, read_name = [], sam_read['QNAME']
+            if self.paired_end:
+                sam_read_paired = next(alignment)
+                assert sam_read['QNAME'] == sam_read_paired['QNAME'], '.fastq files are not paired, sort .fastq files'
+                sam_reads.append((sam_read, sam_read_paired))
             else:
-                # get sam read information for first reads
-                mapping_number, processed_read, bisulfite_strand = self.process_sam_reads(sam_reads)
-                if self.format_unmapped_read(processed_read)[1] == previous_readname:
-                    multimapped = 1
-                else:
-                    multimapped = 0
-                # if paired end get second read information and perform PE specific processing
-                if self.paired_end:
-                    # if pe sam_read_2 should always be present
-                    mapping_number_2, processed_read_2, bisulfite_strand_2 = self.process_sam_reads(sam_reads_2)
-                    # only perform additional processing if both reads uniquely aligned and passed filters
-                    if bisulfite_strand_2 and bisulfite_strand:
-                        # sanity check to make sure reads are paired end
-                        assert processed_read['QNAME'].split('/')[0] == processed_read_2['QNAME'].split('/')[0]
-                        # depending on conversion and processing correction make location may be incorrect so update
-                        processed_read['PNEXT'] = str(processed_read_2['POS'])
-                        processed_read_2['PNEXT'] = str(processed_read['POS'])
-                        # set proper template sign if position updated during read processing
-                        self.check_template(processed_read, processed_read_2)
-                        # set proper sam flags
-                        self.correct_paired_end_flag(bisulfite_strand, processed_read, processed_read_2)
-                        # output lines
-                        self.output_sam_lines(bisulfite_strand, processed_read, bisulfite_strand_2, processed_read_2)
-                    else:
-                        self.process_pe_mapping_stats(mapping_number, bisulfite_strand,
-                                                  mapping_number_2, bisulfite_strand_2, multimapped)
-                else:
-                    # output se line
-                    self.output_sam_lines(bisulfite_strand, processed_read)
-                    self.update_mapping_statistics(mapping_number, bisulfite_strand, multimapped)
-        # close output file
-        self.sam_output.close()
+                sam_reads.append(tuple(sam_read))
+        self.process_sam_reads(sam_reads)
 
-    def output_sam_lines(self, bisulfite_strand, processed_read, bisulfite_strand_2=None, processed_read_2=None):
-        """ Write out sam files if read mapped uniquely and pass quality filters. Handles PE and SE reads.
-        Arguments
-            bisulfite_strand (str or None): mapping strand
-            processed_read (dict): read dictionary
-        Keyword Arguments:
-            bisulfite_strand_2 (str or None): mapping strand
-            processed_read_2 (dict): read dictionary
-        """
-        # if process_read_2 given output is PE
-        if processed_read_2:
-            # both reads have to map uniquely to write out to sam file
-            if bisulfite_strand and bisulfite_strand_2:
-                write_bam_line(processed_read, self.sam_output)
-                write_bam_line(processed_read_2, self.sam_output)
-        else:
-            # single end output
-            if bisulfite_strand:
-                # correct single end flag
-                self.correct_single_end_flag(bisulfite_strand, processed_read)
-                write_bam_line(processed_read, self.sam_output)
+    @property
+    def get_contig_lens(self):
+        with open(f'{self.bsb_database}genome_index.pkl', 'rb') as contig_lens:
+            return pickle.load(contig_lens)
 
-    @staticmethod
-    def correct_single_end_flag(bisulfite_strand, processed_read):
-        """Change flag for reverse complement strands"""
-        if bisulfite_strand == 'W_G2A' or bisulfite_strand == 'C_C2T':
-            processed_read['FLAG'] = '16'
+    def write_alignment_reads(self, read_grouping, output_object):
+        for read in read_grouping:
+            write_bam_line(read, self.sam_output)
 
     def process_sam_reads(self, sam_reads):
         """Launch sam read processing
         Arguments:
             sam_reads (list): list of sam_read dictionaries and fastq lists"""
-        process_sam = ProcessSamAlignment(sam_line_dict=sam_reads,
-                                          contig_dict=self.contig_sequence_dict,
-                                          bsb_database=self.bsb_database,
-                                          conversion_threshold=self.conversion_threshold,
+        process_sam = ProcessSamAlignment(sam_reads=sam_reads,
+                                          contig_lens=self.contig_lens,
                                           mismatch_threshold=self.mismatch_threshold)
-        mapping_number, processed_read, bisulfite_strand = process_sam.output_read
-        # return results
-        return mapping_number, processed_read, bisulfite_strand
-
-    def correct_paired_end_flag(self, bisulfite_strand, processed_read, processed_read_2):
-        """Properly orient flags based on mapping strand
-        Arguments:
-            bisulfite_strand (str or None): mapping strand
-            processed_read (dict): read dictionary
-            processed_read_2 (dict): read dictionary """
-        processed_read['FLAG'] = self.flag_correction[bisulfite_strand][processed_read['FLAG']]
-        processed_read_2['FLAG'] = self.flag_correction[bisulfite_strand][processed_read_2['FLAG']]
-
-    @staticmethod
-    def check_template(read_1, read_2):
-        """Set proper template lengths, if upstream and downstream reads are flipped during processing template length
-        signs all need to be flipped
-        Arguments:
-            read_1 (dict): read dictionary
-            read_2 (dict): read dictionary """
-        # check read position and if read position flipped flip template length
-        if int(read_1['POS']) > int(read_2['POS']):
-            if int(read_1['TLEN']) > 0:
-                tlen_1 = str(read_1['TLEN'])
-                read_1['TLEN'] = str(read_2['TLEN'])
-                read_2['TLEN'] = tlen_1
-        else:
-            # if template length sign incorrect flip sign
-            if int(read_1['TLEN']) < 0:
-                tlen_1 = str(read_1['TLEN'])
-                read_1['TLEN'] = str(read_2['TLEN'])
-                read_2['TLEN'] = tlen_1
-
-    def process_pe_mapping_stats(self, mapping_number, bisulfite_strand,
-                                 mapping_number_2, bisulfite_strand_2, multimapped):
-        """ Logic to process paired end read mapping statistics, accounts for reads filtered during processing and
-        multi-reference reads
-        Arguments:
-            mapping_number (int): number of times read mapped
-            bisulfite_strand (str or None): mapping bisulfite strand else None
-            mapping_number_2 (int): number of times read mapped
-            bisulfite_strand_2 (str or None): mapping bisulfite strand else None
-            multimapped (int): read processed previously
-        """
-        match1 = not bisulfite_strand and bisulfite_strand_2
-        match2 = bisulfite_strand and not bisulfite_strand_2
-        if match1 or match2:
-            if not mapping_number or not mapping_number_2:
-                self.update_mapping_statistics(0, None, multimapped)
-                self.update_mapping_statistics(0, None, multimapped)
-            else:
-                self.update_mapping_statistics(mapping_number, None, multimapped)
-                self.update_mapping_statistics(mapping_number_2, None, multimapped)
-        else:
-            self.update_mapping_statistics(mapping_number, bisulfite_strand, multimapped)
-            self.update_mapping_statistics(mapping_number_2, bisulfite_strand_2, multimapped)
-
-    def update_mapping_statistics(self, mapping_number, bisulfite_strand, multimapped):
-        """ Update mapping statistics based on the number of time read mapped
-        Arguments:
-            mapping_number (int): number of times read mapped
-            bisulfite_strand (str or none): if one mapping bisulfite strand else None
-            multimapped (int): 1 if read previously mapped else 0"""
-        if multimapped == 1:
+        mapping_number, processed_reads = process_sam.output_reads
+        if mapping_number == 1:
+            for read_grouping in processed_reads:
+                self.write_alignment_reads(read_grouping, self.sam_output)
             self.mapping_statistics['multimapped_reads'] += 1
-        elif multimapped == 0:
-            self.mapping_statistics['total_reads'] += 1
-            if bisulfite_strand:
-                try:
-                    self.mapping_statistics[bisulfite_strand] += 1
-                except KeyError:
-                    self.mapping_statistics[bisulfite_strand] = 1
+        else:
+            if self.unmapped_output:
+                for read_grouping in processed_reads:
+                    self.write_alignment_reads(read_grouping, self.sam_output)
+            if mapping_number < 1:
+                self.mapping_statistics['unmapped_reads'] += 1
             else:
-                if mapping_number < 1:
-                    self.mapping_statistics['unmapped_reads'] += 1
-                else:
-                    self.mapping_statistics['multireference_reads'] += 1
+                self.mapping_statistics['multireference_reads'] += 1
+
