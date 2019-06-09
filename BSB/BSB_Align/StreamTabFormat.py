@@ -12,7 +12,7 @@ class StreamTab:
            fastq2: fastq2
     """
 
-    def __init__(self, fastq1=None, fastq2=None, unstranded=False):
+    def __init__(self, fastq1=None, fastq2=None, unstranded=False, no_conversion=False):
         assert isinstance(fastq1, str)
         self.fastq1 = fastq1
         if fastq2:
@@ -20,6 +20,7 @@ class StreamTab:
         self.fastq2 = fastq2
         self.python_path = self.get_python_version
         self.unstranded = unstranded
+        self.no_conversion = no_conversion
         self.tab_format_path = self.get_tab_format_path
         self.tab_conversion = self.stream_tab
 
@@ -52,4 +53,6 @@ class StreamTab:
             conversion_command.extend(['-fq2', self.fastq2])
         if self.unstranded:
             conversion_command.append('-u')
+        if self.no_conversion:
+            conversion_command.append('-nc')
         return conversion_command

@@ -26,7 +26,7 @@ class Bowtie2Align:
     """
 
     def __init__(self, fastq1=None, fastq2=None, bowtie2_commands=None,
-                 bowtie2_path=None, bsb_database=None, undirectional_library=False):
+                 bowtie2_path=None, bsb_database=None, undirectional_library=False, no_conversion=False):
         if bowtie2_commands:
             assert isinstance(bowtie2_commands, list)
         self.bowtie2_commands = bowtie2_commands
@@ -35,7 +35,8 @@ class Bowtie2Align:
         assert isinstance(bsb_database, str)
         self.bsb_database = f'{bsb_database}BSB_ref'
         assert isinstance(fastq1, str)
-        self.tab_commands = dict(fastq1=fastq1, fastq2=fastq2, unstranded=undirectional_library)
+        self.tab_commands = dict(fastq1=fastq1, fastq2=fastq2,
+                                 unstranded=undirectional_library, no_conversion=no_conversion)
         self.paired_end = False
         if fastq2:
             self.paired_end = True

@@ -45,10 +45,10 @@ class BisulfiteAlignmentAndProcessing:
 
     def __init__(self, fastq1=None, fastq2=None, undirectional_library=False, bowtie2_commands=None,
                  bsb_database=None, bowtie2_path=None, output_path=None,
-                 mismatch_threshold=4, command_line_arg=None, unmapped_output=False):
+                 mismatch_threshold=4, command_line_arg=None, unmapped_output=False, non_converted_output=False):
         self.bowtie2_mapping = dict(fastq1=fastq1, fastq2=fastq2, undirectional_library=undirectional_library,
                                     bowtie2_commands=bowtie2_commands, bowtie2_path=bowtie2_path,
-                                    bsb_database=bsb_database)
+                                    bsb_database=bsb_database, no_conversion=non_converted_output)
         self.bsb_database = bsb_database
         self.undirectional_library = undirectional_library
         self.fastq1 = fastq1
