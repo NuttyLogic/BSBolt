@@ -1,4 +1,3 @@
-import pickle
 from BSB.BSB_Align.AlignmentHelpers import convert_alpha_numeric_cigar
 from BSB.BSB_Utils.UtilityFunctions import reverse_complement
 
@@ -31,8 +30,6 @@ class ProcessSamAlignment:
         self.sam_reads = sam_reads
         self.mismatch_threshold = mismatch_threshold
         self.contig_lens = contig_lens
-        self.read_strand_info = (('W_C2T', '+W', False), ('C_C2T', '+C', True),
-                                 ('W_G2A', '-W', False), ('C_G2A', '-C', True))
         self.mapping_flags = {'0', '16', '83', '99', '147', '163'}
         self.crick_mapping_conversion = {'0': '16', '16': '0',
                                          '83': '99', '163': '147',
@@ -48,8 +45,8 @@ class ProcessSamAlignment:
             for read_grouping in mapped_reads:
                 reads = [self.process_read(read, mapped_read_number) for read in read_grouping]
                 if len(reads) > 1:
-                    read_2_pnext, read_1_pnext = str(read_grouping[1]['POS']), str(read_grouping[0]['POS'])
-                    reads[0]['PNEXT'], reads[1]['PNEXT'] = read_1_pnext, read_2_pnext
+                    read_1_pos, read_2_pos = str(reads[0]['POS']), str(reads[1]['POS'])
+                    reads[0]['PNEXT'], reads[1]['PNEXT'] = read_2_pos, read_1_pos
                 processed_reads.append(tuple(reads))
             return mapped_read_number, processed_reads
         return mapped_read_number, mapped_reads

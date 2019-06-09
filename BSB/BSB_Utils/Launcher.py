@@ -41,17 +41,9 @@ def align_bisulfite(alignment_kwargs):
     start = time.time()
     print(f'Aligning {alignment_kwargs["fastq1"]} {alignment_kwargs["fastq2"]}')
     bs_alignment = BisulfiteAlignmentAndProcessing(**alignment_kwargs)
-    bs_alignment.launch_bisulfite_aligment()
+    bs_alignment.align_reads()
     alignment_time = datetime.timedelta(seconds=round(time.time() - start))
     print(f'Alignment Complete: Time {alignment_time}')
-    start = time.time()
-    print('Processing Reads')
-    bs_alignment.process_reads()
-    processing_time = datetime.timedelta(seconds=round(time.time() - start))
-    print(f'Read Processing Complete: Time {processing_time}')
-    print('Cleaning Temporary Files')
-    bs_alignment.clean_temp_files()
-    print(f'Total Run Time: {alignment_time + processing_time}')
     print('------------------------------')
     mapping_stats = process_mapping_statistics(bs_alignment.mapping_statistics)
     print(mapping_stats)
@@ -61,16 +53,16 @@ def process_mapping_statistics(mapping_dict):
     processed_list = [f'Total Reads: {mapping_dict["total_reads"]}',
                       f'Multi-mapped Reads: {mapping_dict["multimapped_reads"]}',
                       f'Multi-reference Reads: {mapping_dict["multireference_reads"]}',
-                      f'Unmapped Reads: {mapping_dict["unmapped_reads"]}']
-    mapped_reads = mapping_dict["total_reads"] - mapping_dict["multimapped_reads"] - mapping_dict["unmapped_reads"]
-    mappability = mapped_reads / mapping_dict["total_reads"]
+                      f'Unmapped Reads: {mapping_dict["unmapped_reads"]}',
+                      f'Uniquely Mapping Reads: {mapping_dict["unique_reads"]}']
+    mappability = mapping_dict['unique_reads'] / mapping_dict["total_reads"]
     processed_list.append(f'Mappability: {mappability:.3f}')
     processed_list.append('------------------------------')
-    processed_list.append(f'Reads Mapped to Watson_C2T: {mapping_dict.get("W_C2T", 0)}')
-    processed_list.append(f'Reads Mapped to Crick_C2T: {mapping_dict.get("C_C2T", 0)}')
+    processed_list.append(f'Reads Mapped to Watson_C2T: {mapping_dict["W_C2T"]}')
+    processed_list.append(f'Reads Mapped to Crick_C2T: {mapping_dict["C_C2T"]}')
     if 'W_G2A' in mapping_dict:
-        processed_list.append(f'Reads Mapped to Watson_G2A: {mapping_dict.get("W_G2A", 0)}')
-        processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict.get("C_G2A", 0)}')
+        processed_list.append(f'Reads Mapped to Watson_G2A: {mapping_dict["W_G2A"]}')
+        processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict["C_G2A"]}')
     return '\n'.join(processed_list)
 
 
@@ -100,8 +92,7 @@ def launch_alignment(arguments):
     command_line_arg = 'BSBolt Align ' + ' '.join([f'-{arg} {bsb_command_dict[arg]}' for arg in arg_order])
     aligment_kwargs = dict(fastq1=arguments.F1, fastq2=arguments.F2, undirectional_library=arguments.U,
                            bowtie2_commands=bowtie2_commands, bsb_database=arguments.DB,
-                           bowtie2_path=arguments.BT2, output_path=arguments.O,
-                           conversion_threshold=(arguments.CP, arguments.CT), mismatch_threshold=arguments.M,
+                           bowtie2_path=arguments.BT2, output_path=arguments.O, mismatch_threshold=arguments.M,
                            command_line_arg=command_line_arg, non_converted_output=arguments.NC,
                            output_unmapped=arguments.OU)
     print(aligment_kwargs)

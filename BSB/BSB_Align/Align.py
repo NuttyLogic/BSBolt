@@ -63,7 +63,11 @@ class BisulfiteAlignmentAndProcessing:
         self.mismatch_threshold = mismatch_threshold
         self.contig_lens = self.get_contig_lens
         self.sam_output = self.get_output_object
-        self.mapping_statistics = dict(total_reads=0, multimapped_reads=0, unmapped_reads=0, multireference_reads=0)
+        self.mapping_statistics = dict(total_reads=0, multimapped_reads=0,
+                                       unmapped_reads=0, multireference_reads=0,
+                                       unique_reads=0,
+                                       W_C2T=0, W_G2A=0,
+                                       C_C2T=0, C_G2A=0)
 
     @property
     def get_output_object(self):
@@ -124,7 +128,11 @@ class BisulfiteAlignmentAndProcessing:
         if mapping_number == 1:
             for read_grouping in processed_reads:
                 self.write_alignment_reads(read_grouping, self.sam_output)
-            self.mapping_statistics['multimapped_reads'] += 1
+            self.mapping_statistics[processed_reads[0][1]['mapping_reference']] += 1
+            if len(processed_reads) > 1:
+                self.mapping_statistics['multimapped_reads'] += 1
+            else:
+                self.mapping_statistics['unique_reads'] += 1
         else:
             if self.unmapped_output:
                 for read_grouping in processed_reads:

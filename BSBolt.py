@@ -34,9 +34,6 @@ align_parser.add_argument('-BT2', type=str, default=bt2_path, help='Path to bowt
                                                                    'bowtie2')
 align_parser.add_argument('-O', type=str, default=None, help='Path to Output Prefix', required=True)
 align_parser.add_argument('-DB', type=str, default=None, help='Path to BSSeeker Database', required=True)
-align_parser.add_argument('-CP', type=float, default=0.5, help='Proportion threshold to label read not fully converted')
-align_parser.add_argument('-CT', type=int, default=5, help='Number of mCH that must be observed '
-                                                           'to label a read unconverted')
 align_parser.add_argument('-M', type=int, default=4, help='Read mismatch threshold, reads with mismatches greater than '
                                                           'threshold will be discarded')
 align_parser.add_argument('-S', action="store_true", default=False, help='Position Sort Output Bam, default=False')
