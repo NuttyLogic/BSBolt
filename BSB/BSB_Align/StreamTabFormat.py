@@ -27,7 +27,6 @@ class StreamTab:
     @property
     def stream_tab(self):
         conversion_command: list = self.format_conversion_command
-        print(' '.join(conversion_command))
         return subprocess.Popen(conversion_command, stdout=subprocess.PIPE, universal_newlines=True)
 
     @property

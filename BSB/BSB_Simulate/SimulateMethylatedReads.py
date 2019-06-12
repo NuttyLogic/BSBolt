@@ -9,7 +9,7 @@ class SimulateMethylatedReads:
     """Tool to simulated methylation bisulfite sequencing reads. The process works in three distinct steps:
         1. Given a reference Cytonsine methylation levels are designated by dinucleotide context, ie CG, CT, etc.
         2. Illumina sequencing Reads are simulated using ART (Huang et al. 2012)
-        3. Illumina reads are converted to bisulfite sequencing reads with uncoverted methylated cytosines
+        3. Illumina reads are converted to bisulfite sequencing reads with unconverted methylated cytosines
         Keyword Arguments:
             reference_file (str): path to fasta reference file, all contigs should be in same fasta file
             param art_path (str): path to ART executable
@@ -74,17 +74,14 @@ class SimulateMethylatedReads:
             simulate_commands.extend(['-p', '-m', '400', '-s', '50'])
         subprocess.run(args=simulate_commands)
 
-    def simulate_methylated_reads(self, aln_files, fastq_files):
-        watson_crick_proportion = 0.0
-        if self.undirectional:
-            watson_crick_proportion = 0.5
+    def simulate_methylated_reads(self, aln_files, fastq_files, watson_crick_proportion=0.5):
         simulation_iterators = [OpenAln(aln_file) for aln_file in aln_files]
         # noinspection PyTypeChecker
         simulation_iterators.extend([OpenFastq(fastq) for fastq in fastq_files])
         for line in zip(*simulation_iterators):
             aln1_profile = self.parse_aln_line(line[0])
             methylation_strand = 'Watson'
-            # if undirectional set half of the reads as crick reads
+            #
             if self.random_roll(proportion_positive=watson_crick_proportion):
                 methylation_strand = 'Crick'
             methylated_reads = []

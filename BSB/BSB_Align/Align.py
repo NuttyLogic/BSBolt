@@ -19,10 +19,10 @@ class BisulfiteAlignmentAndProcessing:
         bsb_database(str): path to bsb 2 directory
         bowtie2_path(str): path to bowtie2 executable
         output_path(str): output prefix of output file
-        conversion_threshold (tuple (float, int)): proportion of unconverted CHH sites and minimum number of CHH sites
-                                                    to label a read incompletely converted
         mismatch_threshold (int): mismatch threshold to consider a valid read
         command_line_arg (str): list of commandline args to output with sam file
+        unmapped_output (bool): write unmapped reads to bam (unmapped and multireference reads)
+        non_converted_output (bool): map non in silico converted reads to bisulfite reference
     Attributes:
         self.bowtie2_mapping (dict): argument for launching bowtie2 mapping
         self.fastq1 (str): path to fastq file
@@ -31,16 +31,12 @@ class BisulfiteAlignmentAndProcessing:
         self.bsb_database(str): path to bsb database directory
         self.paired_end (bool): paired end reads
         self.output_path (str): output prefix of output file
-        self.self.sam_tuple (tuple): tuple of temporary output files
-        self.conversion_threshold (tuple (float, int)): proportion of unconverted CHH sites and minimum number of
-                                                        CHH sites to label a read incompletely converted
         self.mismatch_threshold (int): mismatch threshold to consider a valid read
         self.command_line_arg (str): list of commandline args to output with sam file
-        self.contig_sequence_dict (dict): dict of lengths, bp, of contig sequences, populated in ProccessSamAlingment
-                                          class instances
-        self.sam_output (TextIO): TextIO instance to output processed sam reads.
+        self.sam_output (pysam.AlignmentFile): TextIO instance to output processed sam reads.
         self.mapping_statistics (dict): dict of mapping statistics
-        self.flag_correction (dict): dict containing specific temp sam file processing instructions
+        self.unmapped_output (bool); write unmapped reads to bam (unmapped and multireference reads)
+        self.non_converted_output (bool); map non in silico converted reads to bisulfite reference
     """
 
     def __init__(self, fastq1=None, fastq2=None, undirectional_library=False, bowtie2_commands=None,
@@ -63,7 +59,7 @@ class BisulfiteAlignmentAndProcessing:
         self.mismatch_threshold = mismatch_threshold
         self.contig_lens = self.get_contig_lens
         self.sam_output = self.get_output_object
-        self.mapping_statistics = dict(total_reads=0, multimapped_reads=0,
+        self.mapping_statistics = dict(total_reads=1, multimapped_reads=0,
                                        unmapped_reads=0, multireference_reads=0,
                                        unique_reads=0,
                                        W_C2T=0, W_G2A=0,
@@ -90,7 +86,6 @@ class BisulfiteAlignmentAndProcessing:
         alignment = iter(Bowtie2Align(**self.bowtie2_mapping))
         sam_reads, read_name = [], None
         while True:
-            self.mapping_statistics['total_reads'] += 1
             try:
                 sam_read = next(alignment)
             except StopIteration:
@@ -99,6 +94,7 @@ class BisulfiteAlignmentAndProcessing:
                 read_name = sam_read['QNAME']
             elif sam_read['QNAME'] != read_name:
                 self.process_sam_reads(sam_reads)
+                self.mapping_statistics['total_reads'] += 1
                 sam_reads, read_name = [], sam_read['QNAME']
             if self.paired_end:
                 sam_read_paired = next(alignment)
@@ -113,7 +109,7 @@ class BisulfiteAlignmentAndProcessing:
         with open(f'{self.bsb_database}genome_index.pkl', 'rb') as contig_lens:
             return pickle.load(contig_lens)
 
-    def write_alignment_reads(self, read_grouping, output_object):
+    def write_alignment_reads(self, read_grouping):
         for read in read_grouping:
             write_bam_line(read, self.sam_output)
 
@@ -127,7 +123,7 @@ class BisulfiteAlignmentAndProcessing:
         mapping_number, processed_reads = process_sam.output_reads
         if mapping_number == 1:
             for read_grouping in processed_reads:
-                self.write_alignment_reads(read_grouping, self.sam_output)
+                self.write_alignment_reads(read_grouping)
             self.mapping_statistics[processed_reads[0][1]['mapping_reference']] += 1
             if len(processed_reads) > 1:
                 self.mapping_statistics['multimapped_reads'] += 1
@@ -136,7 +132,7 @@ class BisulfiteAlignmentAndProcessing:
         else:
             if self.unmapped_output:
                 for read_grouping in processed_reads:
-                    self.write_alignment_reads(read_grouping, self.sam_output)
+                    self.write_alignment_reads(read_grouping)
             if mapping_number < 1:
                 self.mapping_statistics['unmapped_reads'] += 1
             else:
