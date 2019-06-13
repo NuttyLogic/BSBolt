@@ -1,3 +1,4 @@
+from collections import Counter
 import pickle
 import pysam
 
@@ -96,9 +97,6 @@ class CallMethylation:
                                                 contig=self.contig,
                                                 ignore_overlaps=self.ignore_overlap, 
                                                 min_base_quality=self.min_base_quality):
-            # initialize count dictionaries for pileup sites
-            ATCG_forward = {'A': 0, 'T': 0, 'C': 0, 'G': 0, 'N': 0}
-            ATCG_reverse = {'A': 0, 'T': 0, 'C': 0, 'G': 0, 'N': 0}
             # get sequence around pileup site
             reference_seq = chrom_seq[(pileup_col.reference_pos - 3):(pileup_col.reference_pos + 4)].upper()
             # get nucleotide context
@@ -112,35 +110,21 @@ class CallMethylation:
                 # check if CCGG in sequence, skip loop if filter True
                 if self.check_ccgg(reference_seq):
                     continue
-
-                for pileup_read in pileup_col.pileups:
-                    if not self.check_read(pileup_read):
-                        continue
-                    if pileup_read.query_position:
-                        read_nucleotide = pileup_read.alignment.query_sequence[pileup_read.query_position]
-                        if pileup_read.alignment.is_reverse:
-                            ATCG_reverse[read_nucleotide] += 1
-                        else:
-                            ATCG_forward[read_nucleotide] += 1
-                # get methylation call at line
-                meth_line = self.get_methylation_call(nucleotide, ATCG_forward, ATCG_reverse)
+                # count the pileup read bases, Uppercase watson strand, lowercase crick strand
+                base_counts = Counter(pileup_col.get_query_sequences(mark_matches=False,
+                                                                     mark_ends=False,
+                                                                     add_indels=False))
+                meth_line = self.get_methylation_call(nucleotide, base_counts)
                 meth_line.update({'pos': pileup_col.reference_pos + 1, 'chrom': self.contig,
                                   'context': context, 'subcontext': subcontext})
                 contig_chunk.append(tuple(meth_line.values()))
                 line_count += 1
+                # return chunk for output
                 if line_count == self.chunk_size - 1:
                     self.return_queue.put(contig_chunk, block=True)
                     contig_chunk = []
                     line_count = 0
         self.return_queue.put(contig_chunk, block=True)
-
-    def check_read(self, pileup_read):
-        """Check if read converted and pileup_read location and indel
-        """
-        # proceed after conversion check
-        if self.check_conversion(pileup_read) and not pileup_read.indel:
-            return True
-        return False
 
     def get_context(self, nucleotide, fivemer):
         """
@@ -162,13 +146,6 @@ class CallMethylation:
             context = self.context_tables['antisense_context_table'].get(fivemer[0:3], null_context)
         return context, subcontext
 
-    def check_conversion(self, pileup_read):
-        """Checks if XS flag present
-        """
-        if self.remove_sx_reads:
-            return ('XS', 1) not in pileup_read.alignment.tags
-        return True
-
     def check_ccgg(self, sequence):
         """checks if sequence is == to CCGG
         """
@@ -177,30 +154,37 @@ class CallMethylation:
         return False
 
     @staticmethod
-    def get_methylation_call(nucleotide, forward_meth_dict, reverse_meth_dict):
+    def get_methylation_call(nucleotide, base_counts):
         """
+        Methylation for a C relative to the sense strand of the reference can only be called using watson reads,
+        and G with crick reads
         Arguments
             nucleotide (str): reference nucleotide
-            forward_meth_dict (dict): dictionary of bases called from sense strand
-            reverse_meth_dict (dict): dictionary of bases called from antisense strand
+            base_counts (collections.Counter): watson nucleotides are Uppercase and crick nucleotides lowercase
         Returns:
              methylation call dictionary
         """
         meth_cytosines = 0
         unmeth_cytosines = 0
+        # call cytonsines with watson
         if nucleotide == 'C':
-            meth_cytosines = forward_meth_dict['C']
-            unmeth_cytosines = forward_meth_dict['T']
+            meth_cytosines = base_counts.get('C', 0)
+            unmeth_cytosines = base_counts.get('T', 0)
+        # call guanines with crick strand
         elif nucleotide == 'G':
-            meth_cytosines = reverse_meth_dict['G']
-            unmeth_cytosines = reverse_meth_dict['A']
+            meth_cytosines = base_counts.get('g', 0)
+            unmeth_cytosines = base_counts.get('a', 0)
         all_cytosines = meth_cytosines + unmeth_cytosines
         meth_level = 'na'
         if all_cytosines > 0:
             # if cytosines present call methylation
             meth_level = round(float(meth_cytosines) / float(all_cytosines), 3)
-        forward_counts = '\t'.join([str(count) for count in forward_meth_dict.values()])
-        reverse_counts = '\t'.join([str(count) for count in reverse_meth_dict.values()])
+        f'{base_counts.get("A", 0)}\t{base_counts.get("T", 0)}\t{base_counts.get("C", 0)}' \
+            f'\t{base_counts.get("G", 0)}\t{base_counts.get("N", 0)}'
+        forward_counts = f'{base_counts.get("A", 0)}\t{base_counts.get("T", 0)}\t{base_counts.get("C", 0)}' \
+                         f'\t{base_counts.get("G", 0)}\t{base_counts.get("N", 0)}'
+        reverse_counts = f'{base_counts.get("a", 0)}\t{base_counts.get("t", 0)}\t{base_counts.get("c", 0)}' \
+                         f'\t{base_counts.get("g", 0)}\t{base_counts.get("n", 0)}'
         return {'nucleotide': nucleotide, 'meth_cytosines': meth_cytosines, 'unmeth_cytosines': unmeth_cytosines,
                 'all_cytosines': all_cytosines, 'meth_level': meth_level, 'forward_counts': forward_counts,
                 'reverse_counts': reverse_counts}

@@ -1,24 +1,6 @@
 import re
 import pysam
 from BSB.BSB_Align.LaunchBowtie2Alignment import Bowtie2Align
-from BSB.BSB_Align.StreamTabFormat import StreamTab
-
-
-def launch_bowtie2_stream(bowtie2_stream_kwargs=None, return_dict=None, genome_database_label=None):
-    """ Given a mutliprocessing.mangager dict return sam_line"""
-    assert isinstance(bowtie2_stream_kwargs, dict)
-    assert isinstance(genome_database_label, str)
-    for sam_line in Bowtie2Align(**bowtie2_stream_kwargs):
-        sam_label = f'{genome_database_label}_{sam_line["QNAME"]}'
-        return_dict[sam_label] = sam_line
-    return True
-
-
-def launch_unaltered_tab_stream(tab_kwargs=None, return_dict=None, read_list=None):
-    """ Stream tab format without altering base"""
-    for tab_dict in StreamTab(**tab_kwargs):
-        return_dict.update(tab_dict)
-        read_list.extend(list(tab_dict.keys()))
 
 
 def convert_alpha_numeric_cigar(cigar_string):
@@ -29,54 +11,70 @@ def convert_alpha_numeric_cigar(cigar_string):
          cigar_tuple_list (list [tuples]): list of cigar tuples
     """
     cigar_list = re.findall(r'[^\d_]+|\d+', cigar_string)
-    cigar_dict = {'M': 0,  'I': 1, 'D': 2, 'S': 4, 'N': 0}
+    cigar_dict = {'M': 0,  'I': 1, 'D': 2, 'N': 3, 'S': 4, 'H': 5, 'P': 6, '=': 7, 'X': 8}
     cigar_tuple_list = []
     for cigar_character, cigar_count in zip(cigar_list[1::2], cigar_list[0::2]):
         cigar_tuple_list.append((cigar_dict[cigar_character], int(cigar_count)))
     return cigar_tuple_list
 
 
-def get_length_stats(cigar):
+def convert_cigar_tuple(cigar_tuple):
+    cigar_dict = {0: 'M', 1: 'I', 2: 'D', 3: 'N', 4: 'S', 5: 'H', 6: 'P', 7: '=', 8: 'X'}
+    cigar_str = ''
+    for cigar_type, cigar_length in cigar_tuple:
+        cigar_str = f'{cigar_str}{cigar_length}{cigar_dict[cigar_type]}'
+    return cigar_str
+
+
+def get_mapping_length(cigar):
     """Logic to reset position for reverse complement of soft clipped read"""
     # start at next cigar type if beginning of read soft clipped
-    read_start = cigar[0][1] if cigar[0][0] == 4 else 0
-    read_end = int(read_start)
+    read_start = None
+    read_end = 0
     mapped_region_length = 0
+    reference_consumers = {0, 2, 3, 7, 8}
+    query_consumers = {0, 1, 4, 7, 8}
     for cigar_type, cigar_length in cigar:
-        if cigar_type == 0:
-            read_end += cigar_length
+        if cigar_type in reference_consumers:
+            read_start = read_end
             mapped_region_length += cigar_length
-        elif cigar_type == 1:
+        if cigar_type in query_consumers:
             read_end += cigar_length
-        elif cigar_type == 2:
-            mapped_region_length += cigar_length
-    return read_start, read_end, mapped_region_length
-
-
-def launch_bowtie2_mapping(bowtie2_stream_kwargs=None, output_path=None, genome_database_label=None):
-    """Write output of Bowtie2Align instance"""
-    assert isinstance(bowtie2_stream_kwargs, dict)
-    assert isinstance(genome_database_label, str)
-    output_object = open(f'{output_path}.{genome_database_label}.sam.temp', 'w')
-    for sam_line in Bowtie2Align(**bowtie2_stream_kwargs):
-        write_sam_line(sam_line=sam_line, output_object=output_object)
-    output_object.close()
-
-
-def write_sam_line(sam_line=None, output_object=None):
-    """Convert sam_dict to tab separated text and write out"""
-    output_values = list(sam_line.values())
-    sam1 = '\t'.join(output_values[:-1])
-    sam2 = '\t'.join(output_values[-1])
-    formatted_read = f'{sam1}\t{sam2}\n'
-    output_object.write(formatted_read)
+    return mapped_region_length
 
 
 def write_bam_line(sam_line=None, output_object=None):
     """Convert sam line to bam line and write out"""
-    output_values = list(sam_line.values())
+    output_values = list(sam_line.values())[0:-3]
     sam1 = '\t'.join(output_values[:-1])
     sam2 = '\t'.join(output_values[-1])
     formatted_read = f'{sam1}\t{sam2}'
     bam_line = pysam.AlignedSegment.fromstring(formatted_read, output_object.header)
     output_object.write(bam_line)
+
+
+def bowtie2_alignment(bowtie2_kwargs, read_pipe, paired_end=False, chunk_size=10000):
+    alignment = iter(Bowtie2Align(bowtie2_kwargs))
+    sam_reads, read_name = [], None
+    read_chunk, read_count = [], 0
+    while True:
+        try:
+            sam_read = next(alignment)
+        except StopIteration:
+            break
+        if not read_name:
+            read_name = sam_read['QNAME']
+        elif sam_read['QNAME'] != read_name:
+            read_chunk.append(sam_reads)
+            sam_reads, read_name = [], sam_read['QNAME']
+        if paired_end:
+            sam_read_paired = next(alignment)
+            assert sam_read['QNAME'] == sam_read_paired['QNAME'], '.fastq files are not paired, sort .fastq files'
+            sam_reads.append((sam_read, sam_read_paired))
+        else:
+            sam_reads.append(tuple(sam_read))
+        read_count += 1
+        if read_count == chunk_size:
+            read_pipe.send(read_chunk)
+            read_chunk, read_count = [], 0
+    read_pipe.send(read_chunk)

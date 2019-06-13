@@ -88,7 +88,7 @@ class SetCytosineMethylation:
                     contig_sequence = []
                 contig_id = line.replace('>', '').split()[0]
             else:
-                contig_sequence.append(line)
+                contig_sequence.append(line.upper())
         # join contig and add to dict after iteration finishes
         contig_dict[contig_id] = ''.join(contig_sequence)
         return contig_dict

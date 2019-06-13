@@ -9,10 +9,10 @@ def reverse_complement(sequence):
     """
     Arguments:
         sequence (str): DNA sequence, can have non ATGC nucleotide will remain untouched
+        complement_only (bool): only return complement don't
     Returns:
        reversed_string.translate(_rc_trans) (str): reverse complement of input sequence
     """
-    assert isinstance(sequence, str), 'Sequence Provided Not String'
     # reverse string
     reversed_string = sequence[::-1]
     # replace base with complement

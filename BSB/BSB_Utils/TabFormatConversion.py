@@ -14,29 +14,20 @@ class ConvertFastq:
     Keyword Arguments:
         fastq1 (str): path to first input fastq file
         fastq2 (str): path to second input fastq file
-        replacement_base1 (str): base to substitute
-        replacement_base2 (str): base to substitute
+        unstanded (bool): convert reverse complement of watson / crick strands
     Attributes:
         self.fastq1 (str): path to first input fastq file
         self.fastq2 (str): path to second input fastq file
-        self.replacement_base1 (str): base to substitute
-        self.replacement_base2 (str): base to substitute
+        self.unstranded (bool): convert complement of watson / crick strands
     """
 
-    def __init__(self, fastq1=None, fastq2=None, replacement_base1=None, replacement_base2=None):
-        assert isinstance(fastq1, str)
+    def __init__(self, fastq1=None, fastq2=None, unstranded=False, no_conversion=False):
         self.fastq1 = fastq1
-        if fastq2:
-            assert isinstance(fastq2, str)
         self.fastq2 = fastq2
-        if replacement_base1:
-            assert isinstance(replacement_base1, str)
-            replacement_base1 = self.get_replacemet_rule(str(replacement_base1))
-        self.replacement_base1 = replacement_base1
-        if replacement_base2:
-            assert isinstance(replacement_base2, str)
-            replacement_base2 = self.get_replacemet_rule(str(replacement_base2))
-        self.replacement_base2 = replacement_base2
+        self.unstranded = unstranded
+        self.conversion_rules = (('C', 'T'), ('G', 'A'))
+        if no_conversion:
+            self.conversion_rules = (('C', 'C'), ('G', 'G'))
 
     def convert_reads(self):
         # output tab5 if self.fastq2 not true
@@ -49,38 +40,35 @@ class ConvertFastq:
         # tab five format is read_name\tsequence\tquality\n
         fastq_iterator1 = OpenFastq(self.fastq1)
         for line in fastq_iterator1:
-            tab_line = self.tab_conversion(line, self.replacement_base1)
-            print(f'{tab_line}')
+            tab_line = self.tab_conversion(line, self.conversion_rules[0], 1)
+            print(tab_line)
+            if self.unstranded:
+                tab_line2 = self.tab_conversion(line, self.conversion_rules[1], 2)
+                print(tab_line2)
 
     def pipe_tab6(self):
         # tab five format is read_name\tsequence\tquality\tread_name2\tsequence2\tquality2\n
         fastq_iterator1 = OpenFastq(self.fastq1)
         fastq_iterator2 = OpenFastq(self.fastq2)
         for line1, line2 in zip(fastq_iterator1, fastq_iterator2):
-            tab_line1 = self.tab_conversion(line1, self.replacement_base1)
-            tab_line2 = self.tab_conversion(line2, self.replacement_base2)
+            tab_line1 = self.tab_conversion(line1, self.conversion_rules[0], 1)
+            tab_line2 = self.tab_conversion(line2, self.conversion_rules[1], 1)
             print(f'{tab_line1}\t{tab_line2}')
+            if self.unstranded:
+                tab_line3 = self.tab_conversion(line1, self.conversion_rules[1], 2)
+                tab_line4 = self.tab_conversion(line2, self.conversion_rules[0], 2)
+                print(f'{tab_line3}\t{tab_line4}')
 
     @staticmethod
-    def tab_conversion(fastq_line, replacement_rule):
+    def tab_conversion(fastq_line, replacement_rule, read_conversion):
         # strip fastq specific formatting
         sequence = fastq_line[1]
         name = fastq_line[0].replace('@', '').split('/')[0]
-        name = f'{name.split(" ")[0]}_BSBolt_{sequence}'
+        name = f'{name.split(" ")[0]}_BSBolt_{read_conversion}_{replacement_rule[0]}2{replacement_rule[1]}_{sequence}'
         quality = fastq_line[3]
         if replacement_rule:
             sequence = sequence.replace(replacement_rule[0], replacement_rule[1].lower())
         return f'{name}\t{sequence}\t{quality}'
-
-    @staticmethod
-    def get_replacemet_rule(replacement_base):
-        # only replace Cytosine or Guanine for purposes of methylation alignment
-        if replacement_base != 'C' and replacement_base != 'G':
-            raise TypeError('Replacement Base Must by Cytosine or Guanine')
-        replacement_rule = ('C', 'T')
-        if replacement_base == 'G':
-            replacement_rule = ('G', 'A')
-        return replacement_rule
 
 
 # simple argparse to launch externally
@@ -89,8 +77,8 @@ parser = argparse.ArgumentParser(description='Iterate through fastq files, while
 
 parser.add_argument('-fq1', type=str, default=None)
 parser.add_argument('-fq2', type=str, default=None)
-parser.add_argument('-r1', type=str, default=None)
-parser.add_argument('-r2', type=str, default=None)
+parser.add_argument('-u', action='store_true', default=False)
+parser.add_argument('-nc', action='store_true', default=False)
 
 arguments = parser.parse_args()
 
@@ -98,6 +86,6 @@ arguments = parser.parse_args()
 if __name__ == "__main__":
     fastq_conversion = ConvertFastq(fastq1=arguments.fq1,
                                     fastq2=arguments.fq2,
-                                    replacement_base1=arguments.r1,
-                                    replacement_base2=arguments.r2)
+                                    unstranded=arguments.u,
+                                    no_conversion=arguments.nc)
     fastq_conversion.convert_reads()

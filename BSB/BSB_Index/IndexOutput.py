@@ -2,7 +2,6 @@ import os
 import subprocess
 import pickle
 import gzip
-from typing import Dict, TextIO
 
 from BSB.BSB_Utils.UtilityFunctions import reverse_complement
 
@@ -30,7 +29,7 @@ class IndexOutput:
         self.bowtie2 = bowtie2_path
         self.bowtie2_threads = str(bowtie2_threads)
         # set output object
-        self.database_output_objects = self.set_database_output_object
+        self.database_output = open(f'{self.genome_database}BSB_ref.fa', 'w')
 
     @staticmethod
     def generate_genome_directory(genome_database):
@@ -46,63 +45,36 @@ class IndexOutput:
             genome_database = f'{genome_database}/'
         return genome_database
 
-    @property
-    def set_database_output_object(self):
-        """
-        Returns:
-             output_object (Dict[str, TextIO]): dict of output objects with descriptive keys
-        """
-        output_objects: Dict[str, TextIO] = {
-            'W_C2T': open(f'{self.genome_database}W_C2T.fa', 'w'),
-            'W_G2A': open(f'{self.genome_database}W_G2A.fa', 'w'),
-            'C_C2T': open(f'{self.genome_database}C_C2T.fa', 'w'),
-            'C_G2A': open(f'{self.genome_database}C_G2A.fa', 'w')
-        }
-        return output_objects
-
-    def close_output_objects(self):
-        """Close self.database_output_objects
-        """
-        for output_object in self.database_output_objects.values():
-            output_object.close()
-
     def write_contig_sequence(self, contig_id, contig_sequence):
         """ Writes formatted DNA sequence. Write possible outputs for Watson and Crick strands.
         Arguments:
             contig_id (str): contig label
             contig_sequence (str): str of DNA sequence
         """
-        # output fromatted contig_id
-        for value in self.database_output_objects.values():
-            value.write(f'>{contig_id}\n')
+        # write forward bisulfite converted sequence
+        self.database_output.write(f'>{contig_id}\n')
+        self.database_output.write(f'{contig_sequence.replace("C", "T").replace("c", "t")}\n')
 
-        # output watson strands with replaced bases
-        self.database_output_objects['W_C2T'].write(f'{contig_sequence.replace("C", "T").replace("c", "t")}\n')
-        self.database_output_objects['W_G2A'].write(f'{contig_sequence.replace("G", "A").replace("g", "a")}\n')
-
-        # get reverse complement of contig sequence
+        # write reverse bisulfite converted sequence
         reverse_contig_sequence = reverse_complement(contig_sequence)
-
-        # output crick strands
-        self.database_output_objects['C_C2T'].write(f'{reverse_contig_sequence.replace("C", "T").replace("c", "t")}\n')
-        self.database_output_objects['C_G2A'].write(f'{reverse_contig_sequence.replace("G", "A").replace("g", "a")}\n')
+        self.database_output.write(f'>{contig_id}_crick_bs\n')
+        self.database_output.write(f'{reverse_contig_sequence.replace("C", "T").replace("c", "t")}\n')
 
     def build_bowtie2_index(self):
         """Launch external bowtie2 commands for 4 processed reference files and collect external stdout for log file
         """
-        for output_reference in self.database_output_objects.keys():
-            # format output and input
-            index_input = f'{self.genome_database}{output_reference}.fa'
-            index_output = f'{self.genome_database}{output_reference}'
-            # collect external command
-            bowtie_command = [f'{self.bowtie2}-build',
-                              '--threads', self.bowtie2_threads,
-                              '-f', index_input,
-                              index_output]
-            # open file to collect stdout
-            bowtie2_index_log = open(f'{self.genome_database}{output_reference}.bt2_index.log', 'w')
-            # run external command
-            subprocess.run(args=bowtie_command, stdout=bowtie2_index_log)
+        # format output and input
+        index_input = f'{self.genome_database}BSB_ref.fa'
+        index_output = f'{self.genome_database}BSB_ref'
+        # collect external command
+        bowtie_command = [f'{self.bowtie2}-build',
+                          '--threads', self.bowtie2_threads,
+                          '-f', index_input,
+                          index_output]
+        # open file to collect stdout
+        bowtie2_index_log = open(f'{self.genome_database}.bt2_index.log', 'w')
+        # run external command
+        subprocess.run(args=bowtie_command, stdout=bowtie2_index_log)
 
     def output_contig_sequence(self, contig_id, contig_sequence):
         """Outputs serialized version of contig sequence

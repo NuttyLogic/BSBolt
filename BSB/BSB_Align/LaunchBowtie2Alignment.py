@@ -11,8 +11,6 @@ class Bowtie2Align:
             fastq1 (str): path to fastq file
             fastq2 (str): path to fastq1 mate pair
             bowtie2_commands (list of str): commands to use for bowtie2 alignment
-            replacement_base1 (str): base to replace for fastq1 read
-            replacement_base2 (str): base to replace for fastq2 read
             bsb_database(str): path to bsb 2 directory with specific mapping reference suffix
             bowtie2_path(str): path to bowtie2 executable
         Attributes:
@@ -27,22 +25,21 @@ class Bowtie2Align:
 
     """
 
-    def __init__(self, fastq1=None, fastq2=None, bowtie2_commands=None, replacement_base1=None, replacement_base2=None,
-                 bowtie2_path=None, bowtie2_database=None):
+    def __init__(self, fastq1=None, fastq2=None, bowtie2_commands=None,
+                 bowtie2_path=None, bsb_database=None, undirectional_library=False, no_conversion=False):
         if bowtie2_commands:
             assert isinstance(bowtie2_commands, list)
         self.bowtie2_commands = bowtie2_commands
         assert isinstance(bowtie2_path, str)
         self.bowtie2_path = bowtie2_path
-        assert isinstance(bowtie2_database, str)
-        self.bowtie2_database = bowtie2_database
+        assert isinstance(bsb_database, str)
+        self.bsb_database = f'{bsb_database}BSB_ref'
         assert isinstance(fastq1, str)
         self.tab_commands = dict(fastq1=fastq1, fastq2=fastq2,
-                                 replacement_base1=replacement_base1, replacement_base2=replacement_base2)
+                                 unstranded=undirectional_library, no_conversion=no_conversion)
         self.paired_end = False
         if fastq2:
             self.paired_end = True
-        self.replacement_base2 = replacement_base2
         self.bowtie2_alignment = None
         self.launch_bowtie2_alignment()
 
@@ -78,7 +75,7 @@ class Bowtie2Align:
         bowtie2_command = [self.bowtie2_path]
         bowtie2_command.extend(self.bowtie2_commands)
         # add path for correct bowtie2 database
-        bowtie2_command.extend(['-x', self.bowtie2_database])
+        bowtie2_command.extend(['-x', self.bsb_database])
         input_file_style = '--tab5'
         # if paired end stream tab6
         if self.paired_end:
@@ -86,11 +83,29 @@ class Bowtie2Align:
         bowtie2_command.extend([input_file_style, '-'])
         return bowtie2_command
 
-    @staticmethod
-    def process_sam_line(sam_line):
+    def process_sam_line(self, sam_line):
         # yield parsed sam line as dict
         if sam_line:
             processed_sam_line: list = sam_line.replace('\n', '').split('\t')
-            QNAME, FLAG, RNAME, POS, MAPQ, CIGAR, RNEXT, PNEXT, TLEN, SEQ, QUAL, *SAM_TAGS = processed_sam_line
-            return dict(QNAME=QNAME, FLAG=FLAG, RNAME=RNAME, POS=POS, MAPQ=MAPQ, CIGAR=CIGAR, RNEXT=RNEXT, PNEXT=PNEXT,
-                        TLEN=TLEN, SEQ=SEQ, QUAL=QUAL, SAM_TAGS=SAM_TAGS)
+            read_name, FLAG, RNAME, POS, MAPQ, CIGAR, RNEXT, PNEXT, TLEN, SEQ, QUAL, *SAM_TAGS = processed_sam_line
+            QNAME, read_group, conversion_bases, SEQ = self.process_read_name(read_name)
+            RNAME, mapping_reference = self.process_mapping_chrom(RNAME, read_group)
+            return dict(QNAME=QNAME, FLAG=FLAG, RNAME=RNAME, POS=POS,
+                        MAPQ=MAPQ, CIGAR=CIGAR, RNEXT=RNEXT, PNEXT=PNEXT,
+                        TLEN=TLEN, SEQ=SEQ, QUAL=QUAL, SAM_TAGS=SAM_TAGS,
+                        read_group=read_group, conversion_bases=conversion_bases,
+                        mapping_reference=mapping_reference)
+
+    @staticmethod
+    def process_read_name(read_name):
+        QNAME, meta_data = read_name.split('_BSBolt_')
+        read_group, conversion_bases, original_sequence = meta_data.split('_')
+        return QNAME, read_group, conversion_bases, original_sequence
+
+    @staticmethod
+    def process_mapping_chrom(RNAME, read_group):
+        reference_conversion = 'C2T' if read_group == '1' else 'G2A'
+        if '_crick_bs' in RNAME:
+            return RNAME.replace('_crick_bs', ''), f'C_{reference_conversion}'
+        return RNAME, f'W_{reference_conversion}'
+

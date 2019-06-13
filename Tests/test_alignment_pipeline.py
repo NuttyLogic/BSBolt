@@ -13,7 +13,7 @@ bsbolt = f'{bsb_directory}BSBolt.py'
 # generate simulated reads
 bsb_simulate_commands = ['python3', bsbolt, 'Simulate',
                          '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
-                         '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-U', '-PE']
+                         '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-PE', '-U']
 subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
@@ -123,6 +123,7 @@ class TestBSBPipeline(unittest.TestCase):
             if test_site['beta_z_value'] >= z_threshold:
                 z_site_count += 1
         self.assertLessEqual(z_site_count, 250)
+
 
 
 if __name__ == '__main__':

@@ -61,7 +61,7 @@ class WholeGenomeIndexBuild:
             contig_str = self.mask_contig(contig_id, contig_str)
         self.index_output.output_contig_sequence(contig_id, contig_str)
         self.index_output.write_contig_sequence(contig_id, contig_str)
-        self.index_output.close_output_objects()
+        self.index_output.database_output.close()
         self.contig_size_dict[contig_id] = len(contig_str)
         self.index_output.output_contig_sequence('genome_index', self.contig_size_dict)
         # launch external commands
