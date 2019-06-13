@@ -121,9 +121,6 @@ reference genome. Aligned reads are selected based mapping criteria provided by 
 -BT2                  Path to bowtie2 aligner
 -O                    Path to Output Prefix
 -DB                   Path to BSBolt Database
--CP                   Proportion threshold to label read not fully converted
--CT                   Number of mCH that must be observed to label a read
-                      unconverted
 -M                    Read mismatch threshold, reads with mismatches greater
                       than threshold will be discarded
 -S                    Position Sort Output Bam, default=False
@@ -177,7 +174,7 @@ samtools sort BSB_pe_test.dup.bam BSB_pe_test.sorted.bam
 ### BSBolt CallMethylation
 
 The running time of the methylation calling module can be greatly reduced by only calling methylation for CG sites. By default compressed CGmap files are output from methylation calling. 
-ATCGmap files can sloe be output if downstream analysis requires, but this is disabled by default
+ATCGmap files can also be output if downstream analysis requires, but this is disabled by default
 
 **BSB CallMethylation Commands**
 ```bash
@@ -188,8 +185,6 @@ ATCGmap files can sloe be output if downstream analysis requires, but this is di
   -remove-ccgg        Remove methylation calls in ccgg sites,default=False
   -verbose            Verbose Output, default=False
   -text               Output plain text files, default=False
-  -remove-sx          Remove methylation calls from reads marked as
-                      incompletely by BSSeeker-Align, default=True
   -ignore-overlap     Only consider higher quality base when paired end reads
                       overlap, default=False
   -max                Max read depth to call methylation

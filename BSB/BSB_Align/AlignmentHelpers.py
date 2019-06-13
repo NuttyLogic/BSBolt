@@ -3,16 +3,6 @@ import pysam
 from BSB.BSB_Align.LaunchBowtie2Alignment import Bowtie2Align
 
 
-def launch_bowtie2_stream(bowtie2_stream_kwargs=None, return_dict=None, genome_database_label=None):
-    """ Given a mutliprocessing.mangager dict return sam_line"""
-    assert isinstance(bowtie2_stream_kwargs, dict)
-    assert isinstance(genome_database_label, str)
-    for sam_line in Bowtie2Align(**bowtie2_stream_kwargs):
-        sam_label = f'{genome_database_label}_{sam_line["QNAME"]}'
-        return_dict[sam_label] = sam_line
-    return True
-
-
 def convert_alpha_numeric_cigar(cigar_string):
     """Convert cigar str representation to cigar tuple representation, MATCH = 0, INS = 1, DEL = 2, SOFTCLIP = 4.
     Arguments:
@@ -61,3 +51,30 @@ def write_bam_line(sam_line=None, output_object=None):
     formatted_read = f'{sam1}\t{sam2}'
     bam_line = pysam.AlignedSegment.fromstring(formatted_read, output_object.header)
     output_object.write(bam_line)
+
+
+def bowtie2_alignment(bowtie2_kwargs, read_pipe, paired_end=False, chunk_size=10000):
+    alignment = iter(Bowtie2Align(bowtie2_kwargs))
+    sam_reads, read_name = [], None
+    read_chunk, read_count = [], 0
+    while True:
+        try:
+            sam_read = next(alignment)
+        except StopIteration:
+            break
+        if not read_name:
+            read_name = sam_read['QNAME']
+        elif sam_read['QNAME'] != read_name:
+            read_chunk.append(sam_reads)
+            sam_reads, read_name = [], sam_read['QNAME']
+        if paired_end:
+            sam_read_paired = next(alignment)
+            assert sam_read['QNAME'] == sam_read_paired['QNAME'], '.fastq files are not paired, sort .fastq files'
+            sam_reads.append((sam_read, sam_read_paired))
+        else:
+            sam_reads.append(tuple(sam_read))
+        read_count += 1
+        if read_count == chunk_size:
+            read_pipe.send(read_chunk)
+            read_chunk, read_count = [], 0
+    read_pipe.send(read_chunk)
