@@ -33,25 +33,32 @@ class TestSamReadProcessing(unittest.TestCase):
 
     def test_crick_start_conversion(self):
         mapping_number_1, processed_reads1 = processed_output[0]
+
         self.assertEqual(1, mapping_number_1)
+
         # assert flags have been switch relative to watson reference
         self.assertEqual(processed_reads1[0][0]['FLAG'], '115')
         self.assertEqual(processed_reads1[0][1]['FLAG'], '179')
+
         # assert positions are correct, based on simulation sam
         self.assertEqual(processed_reads1[0][0]['POS'], '304380')
         self.assertEqual(processed_reads1[0][1]['POS'], '304150')
+
         # check template length is calculated correctly for each read
         self.assertEqual(processed_reads1[0][0]['TLEN'], '-355')
         self.assertEqual(processed_reads1[0][1]['TLEN'], '355')
+
         # check proper location of mapped read
         self.assertEqual(processed_reads1[0][0]['PNEXT'], processed_reads1[0][1]['POS'])
         self.assertEqual(processed_reads1[0][1]['PNEXT'], processed_reads1[0][0]['POS'])
 
     def test_multi_reference(self):
         mapping_number_2, processed_reads2 = processed_output[1]
+
         # check number of mapped reference is equal to 2
         self.assertEqual(mapping_number_2, 2)
         mapping_strands = processed_reads2[0][0]['SAM_TAGS'][1].split(':')[-1].split(',')
+
         # check mapping references are C_C2T and W_G2A
         self.assertIn('C_C2T', mapping_strands)
         self.assertIn('W_G2A', mapping_strands)

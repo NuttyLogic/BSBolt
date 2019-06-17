@@ -152,7 +152,13 @@ def launch_simulation(arguments):
                                                   output_path=arguments.O, paired_end=arguments.PE,
                                                   read_length=arguments.RL, read_depth=arguments.RD,
                                                   undirectional=arguments.U, methylation_reference_output=arguments.RO,
-                                                  methylation_reference=arguments.BR, methylation_profile=arguments.RC)
+                                                  methylation_reference=arguments.BR, methylation_profile=arguments.RC,
+                                                  insertion_rate1=arguments.IR1, insertion_rate2=arguments.IR2,
+                                                  deletion_rate1=arguments.DR1, deletion_rate2=arguments.DR2,
+                                                  n_base_cutoff=arguments.NF, sequencing_system=arguments.SS,
+                                                  pe_fragment_size=arguments.M, fragment_size_deviation=arguments.SM,
+                                                  read1_quality_profile=arguments.Q1,
+                                                  read2_quality_profile=arguments.Q2)
         read_simulation.run_simulation()
     else:
         print('ART Executable Path not Valid')

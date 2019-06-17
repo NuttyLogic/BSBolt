@@ -140,6 +140,28 @@ sim_parser.add_argument('-U', default=False, action='store_true',
 sim_parser.add_argument('-RC', default=None, help='Path to CGmap file to generate simulation reference profile')
 sim_parser.add_argument('-RO', default=None, help='Methylation reference output directory, default = output path')
 sim_parser.add_argument('-BR', default=None, help='Path to previously generate BSB simulation reference')
+sim_parser.add_argument('-IR1', type=float, default=0.001, help='Read 1 insertion rate')
+sim_parser.add_argument('-IR2', type=float, default=0.001, help='Read 2 insertion rate')
+sim_parser.add_argument('-DR1', type=float, default=0.001, help='Read 1 deletion rate')
+sim_parser.add_argument('-DR2', type=float, default=0.001, help='Read 2 deletion rate')
+sim_parser.add_argument('-NF', type=int, default=0, help='Cutoff theshold for a read with gaps, -, or ambiguous bases, '
+                                                         'N. Reads below the threshold will not be output')
+sim_parser.add_argument('-M', type=int, default=400, help='Mean paired end fragment size')
+sim_parser.add_argument('-SM', type=int, default=50, help='Paired end fragment length distribution standard deviation')
+sim_parser.add_argument('-SS', type=str, default='HS25', help="Sequencing system, default HS25 (HiSeq 2500)\n "
+                                                              "HS10 - HiSeq 1000 (100bp) \n\
+                                                               HS20 - HiSeq 2000 (100bp)\n\
+                                                               HS25 - HiSeq 2500 (125bp, 150bp)\n\
+                                                               HSXn - HiSeqX PCR free (150bp)\n\
+                                                               HSXt - HiSeqX TruSeq (150bp)\n\
+                                                               MinS - MiniSeq TruSeq (50bp)\n\
+                                                               MSv1 - MiSeq v1 (250bp)\n\
+                                                               MSv3 - MiSeq v3 (250bp)\n\
+                                                               NS50 - NextSeq500 v2 (75bp)\n")
+sim_parser.add_argument('-Q1', type=str, default=None, help='Optional read 1 quality profile, generated using ART '
+                                                            'Illumina read profiler')
+sim_parser.add_argument('-Q2', type=str, default=None, help='Path to read 2 quality profile')
+
 
 # Add Imputation Parser Args
 
@@ -164,3 +186,4 @@ if len(sys.argv[1:]) == 0:
 if __name__ == "__main__":
     launcher = bsb_launch[arguments.subparser_name]
     launcher(arguments)
+
