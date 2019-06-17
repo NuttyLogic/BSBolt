@@ -30,7 +30,7 @@ bsb_align_commands = ['python3', bsbolt, 'Align',
                       '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
-                      f'{bsb_directory}Tests/BSB_pe_test', '-S', '-OU', '-BT2-k', '10']
+                      f'{bsb_directory}Tests/BSB_pe_test', '-S', '-OU', '-BT2-k', '10', '-BT2-p', '10']
 subprocess.run(bsb_align_commands)
 
 
@@ -123,7 +123,6 @@ class TestBSBPipeline(unittest.TestCase):
             if test_site['beta_z_value'] >= z_threshold:
                 z_site_count += 1
         self.assertLessEqual(z_site_count, 250)
-
 
 
 if __name__ == '__main__':

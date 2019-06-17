@@ -9,25 +9,56 @@ class SimulateMethylatedReads:
     """Tool to simulated methylation bisulfite sequencing reads. The process works in three distinct steps:
         1. Given a reference Cytonsine methylation levels are designated by dinucleotide context, ie CG, CT, etc.
         2. Illumina sequencing Reads are simulated using ART (Huang et al. 2012)
-        3. Illumina reads are converted to bisulfite sequencing reads with unconverted methylated cytosines
+        3. Illumina reads are converted to bisulfite sequencing reads with uncoverted methylated cytosines
         Keyword Arguments:
             reference_file (str): path to fasta reference file, all contigs should be in same fasta file
-            param art_path (str): path to ART executable
+            art_path (str): path to ART executable
             output_path (str): output prefix for processed files
+            methylation_reference_output (str): output path for methylation reference, (useful if using built reference)
             paired_end (bool): output paired end reads, default = False / single end reads
             read_length (int): read length
-            undirectional (bool): simulate both watson and crick strand reads
+            undirectional (bool): simulate both watson / crick PCR strands
+            methylation_reference (str): path to CGmap file to build mehtylation reference
+            methylation_profile (str): previously generated BSBolt simulation database
+            insertion_rate1 (float): read 1 insertion rate
+            insertion_rate2 (float): read 2 insertion rate
+            deletion_rate1 (float): read 1 deletion rate
+            deletion_rate2 (float): read 2 deletion rate
+            n_base_cutoff (int): threshold for including a read with a gap or ambiguous base
+            sequencing_system (str): sequencing system to simulate quality profile
+            pe_fragment_size (int): fragment size for simulations
+            fragment_size_deviation (int): standard deviation of fragment size for simulation
+            read1_quality_profile (str): path to art quality profile for read 1
+            read2_quality_profile (str): path to art quality profile for read 2
+
         Attributes:
-            self.reference_dict (dict): dictionary of reference sequence
+            self.simulate_commands (dict): are simulation commands
+            self.simulation_out (BSB.BSB_Simulation.SimulationOutput): collection of output paths
+            self.output_objects (list): list of fastq outputs
+            self.paired_end (bool): reads paired
+            self.undirectional (bool): simulated pcr products of Watson and Crick strands
             self.reference_contig_size (dict): dict of contig lengths
+            self.current_contig (str): label of contig being processed
             self.cpg_distribution (np.vector): binomial distribution to draw CpG methylation proportions
             self.ch_distribution (np.vector): binomial distribution to dra CH methylation proportions
             """
 
     def __init__(self, reference_file=None, art_path=None, output_path=None, methylation_reference_output=None,
                  paired_end=False, read_length=125, read_depth=20, undirectional=False, methylation_reference=None,
-                 methylation_profile=None):
-        self.art_path = art_path
+                 methylation_profile=None, insertion_rate1=0.001, insertion_rate2=0.001, deletion_rate1=0.001,
+                 deletion_rate2=0.001, n_base_cutoff=0, sequencing_system='HS25', pe_fragment_size=400,
+                 fragment_size_deviation=50, read1_quality_profile=None, read2_quality_profile=None):
+        self.simulate_commands = [art_path, '-ss', sequencing_system, '-i', reference_file, '-l', str(read_length),
+                                  '-f', str(read_depth), '--out', str(output_path), '-ir', str(insertion_rate1),
+                                  '-dr', str(deletion_rate1), '-sam', '-M', '-nf', str(n_base_cutoff)]
+        if read1_quality_profile:
+            self.simulate_commands.extend(['-1', read1_quality_profile])
+        if paired_end:
+            paired_end_commands = ['-ir2', str(insertion_rate2), '-dr2', str(deletion_rate2),
+                                   '-p', '-m', str(pe_fragment_size), '-s', str(fragment_size_deviation)]
+            if read2_quality_profile:
+                paired_end_commands.extend(['-2', read2_quality_profile])
+            self.simulate_commands.extend(paired_end_commands)
         if not methylation_reference_output:
             methylation_reference_output = output_path
         self.cytosine_dict_profile_kwargs = dict(reference_file=reference_file,
@@ -36,10 +67,7 @@ class SimulateMethylatedReads:
                                                  methylation_profile=methylation_profile)
         self.simulation_out = None
         self.output_path = output_path
-        self.reference_file = reference_file
         self.paired_end = paired_end
-        self.read_length = read_length
-        self.read_depth = read_depth
         self.undirectional = undirectional
         self.reference_contig_size = None
         self.current_contig = None
@@ -66,24 +94,22 @@ class SimulateMethylatedReads:
     def simulate_illumina_reads(self):
         """Launch external ART command to simulate illumina reads. Insertion and deletion rate set to zero
         to simplify read simulation """
-        simulate_commands = [self.art_path, '-ss', 'HS25', '-i', self.reference_file, '-l', str(self.read_length),
-                             '-f', str(self.read_depth), '--out', self.output_path, '-ir', '0.001', '-dr', '0.001',
-                             '-ir2', '0.001', '-dr2', '0.001', '-sam', '-M', '-nf', '1']
-        # add PE specific commands
-        if self.paired_end:
-            simulate_commands.extend(['-p', '-m', '400', '-s', '50'])
-        subprocess.run(args=simulate_commands)
+        subprocess.run(args=self.simulate_commands)
 
-    def simulate_methylated_reads(self, aln_files, fastq_files, watson_crick_proportion=0.5):
+    def simulate_methylated_reads(self, aln_files, fastq_files):
         simulation_iterators = [OpenAln(aln_file) for aln_file in aln_files]
         # noinspection PyTypeChecker
         simulation_iterators.extend([OpenFastq(fastq) for fastq in fastq_files])
         for line in zip(*simulation_iterators):
             aln1_profile = self.parse_aln_line(line[0])
             methylation_strand = 'Watson'
-            #
-            if self.random_roll(proportion_positive=watson_crick_proportion):
-                methylation_strand = 'Crick'
+            # if undirectional strand assigned regardless of strand else Watson if reference simulation strand positive
+            if self.undirectional:
+                if self.random_roll(proportion_positive=0.5):
+                    methylation_strand = 'Crick'
+            else:
+                if aln1_profile['reference_strand'] == '-':
+                    methylation_strand = 'Crick'
             methylated_reads = []
             if self.paired_end:
                 aln2_profile = self.parse_aln_line(line[1])
@@ -144,9 +170,6 @@ class SimulateMethylatedReads:
 
     def get_contig_methylation_reference(self, contig_id):
         if not self.current_contig:
-            if contig_id == 'stop':
-                print('Empty Reference Sequence')
-                raise ValueError
             self.cytosine_dict = self.simulation_out.load_contig(contig_id)
             self.current_contig = contig_id
         elif contig_id != self.current_contig:
