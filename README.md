@@ -38,7 +38,7 @@ operating systems (MacOS, Linux); Windows support is untested.
 **Calling BSBolt Modules**
 Invoke BSBolt modules by calling *BSBolt.py* and selecting the appropriate module. Module help command can be invoked 
 by calling *-h* with each module. 
-```bash
+```
 python3 BSBolt.py Module
 
 Align               Alignment Module
@@ -66,7 +66,7 @@ BSB support generation of 3 types of alignment indices.
 3. Reduced representation bisulfite sequencing indices (*In silico* restriction enzyme digested)
  
 **BSB Index Commands**
-```bash
+```
   -h, --help            show this help message and exit
   -G                    Path for reference genome fasta file, fasta file
                         should contain all contigs
@@ -87,19 +87,19 @@ BSB support generation of 3 types of alignment indices.
                         indexgeneration, default = 500
 ```
 **WGBS Index Generation Example**
-```bash
+```
 # WGBS Index with 4 BT2 Threads
 python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4
 ```
 
 **Masked Alignment Index Generation Example**
-```bash
+```
 # WGBS Index with 4 BT2 Threads
 python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4 -MR /Tests/TestData/test_wgbs_madking.bed
 ```
 
 **RRBS Index Generation Example**
-```bash
+```
 # RRBS Index Using 4 BT2 Threads, MSPI Cut Format, 40bp Lower Fragment Bound, and 400bp Upper Fragment Bound
 python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4 -rrbs -rrbs-cut-format C-CGG -rrbs-lower 40 -rrbs-upper 400
 ```
@@ -111,7 +111,7 @@ during bisulfite treatment are converted *in silico* and aligned to a bisulfite 
 reference genome. Aligned reads are selected based mapping criteria provided by the user and incorporated into a final alignment file.
 
 **BSB Align Commands**
-```bash
+```
 -h, --help            show this help message and exit
 -F1                   Path to fastq 1
 -F2                   Path to fastq 2
@@ -138,13 +138,13 @@ reference genome. Aligned reads are selected based mapping criteria provided by 
                       end alignment
 ```
 **Paired End Alignment**
-```bash
+```
 # Paired End Alignment Using Default Commands
 python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/Tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/Tests/BSB_pe_test -S
 ```
 
 **Single End Alignment**
-```bash
+```
 # Single End Alignment Using Default Commands
 python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/Tests/BSB_pe_test -S
 ```
@@ -162,7 +162,7 @@ due to enzymatic digestion.
 We recommend using [samtools](http://www.htslib.org/) to remove duplicates. Due to the structure of the integrated alignment file the *samtools fixmate* option must be disabled. 
 Removing PCR duplicates using paired sequencing reads will give better results; removal using single end reads can be overly aggressive and should be performed on a case by case basis. 
 
-```bash
+```
 # fixmates to prepare for duplicate removal, use -p to disable proper pair check
 samtools samtools fixmate -p BSB_pe_test.bam BSB_pe_test.fixmates.bam 
 # remove duplicate reads
@@ -177,7 +177,7 @@ The running time of the methylation calling module can be greatly reduced by onl
 ATCGmap files can also be output if downstream analysis requires, but this is disabled by default
 
 **BSB CallMethylation Commands**
-```bash
+```
   -h, --help          show this help message and exit
   -I                  Input BAM, input file must be in BAM format
   -DB                 Path to index directory
@@ -200,7 +200,7 @@ ATCGmap files can also be output if downstream analysis requires, but this is di
 Methylation calling is performed by counting the number of bisulfite converted bases relative to the number of reads 
 observed at each cytonsine. Relative to the reference genome methylation status at a cytosine and guanine 
 can only be called using reads mapped to Watson and Crick strands respectively. 
-```bash
+```
 # Methylation Calling with 2 threads, 
 python3 BSBolt.py CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose > methylation_stats.txt
 ```
@@ -229,7 +229,7 @@ BSBolt AggregrateMatrix takes a list of CGmap, compressed or uncompressed, and a
 pass a read depth threshold and are present in a set proportion of samples are included in the matrix. 
 
 **BSBolt AggregateMatrix Commands**
-```bash
+```
 optional arguments:
   -h, --help            show this help message and exit
   -F                    Comma separated list of CGmap file paths, or path to
@@ -269,7 +269,7 @@ python3 BSBolt.py AggregateMatrix -F cgmap_file_list.txt -S sample1,sample2,samp
 BSBolt Impute leverages the correlation structure between neighboring CpG sites to impute missing values through the use of a kNN sliding window.  Within each window the nearest neighbors are calculated using Euclidean distance, 
 and the average value of k nearest neighbors is used to impute the null methylation value. To efficiently scale the algorithm, imputation can be performed in batches. 
 
-```bash
+```
   -h, --help  show this help message and exit
   -M          Path to BSB matrix file
   -B          Imputation sample batch size kNN imputation, by default the all
@@ -302,7 +302,7 @@ read. The methylation value represent the probability a base with be methylated,
 introduced to more accurately represent bisulfite sequencing reads. 
 
 **BSB Simulate Commands**
-```bash
+```
   -h, --help  show this help message and exit
   -G          Path for reference genome fasta file, fasta file should contain
               all contigs

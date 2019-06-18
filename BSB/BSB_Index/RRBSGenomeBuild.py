@@ -141,6 +141,7 @@ class RRBSGenomeIndexBuild:
             contig_id (str): contig label
             contig_str (str): str of DNA sequence
             contig_regions (list): list of mappable regions
+            masking_nucleotide (str): str to use for nucleotide maksing
         Keyword Arguments:
             masking_nucleotide (str): default = '-', character used to masked DNA sequence
         Returns:

@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='BiSulfiteBolt',
-      version='0.2.0',
+      version='0.3.0',
       description='Bisulfite Sequencing Processing Platform',
       author='Colin Farrell',
       author_email='colinpfarrell@gmail.com',

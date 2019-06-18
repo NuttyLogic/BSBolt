@@ -97,9 +97,9 @@ class ImputeMissingValues:
 
     def output_imputed_matrix(self):
         self.output_matrix.write('\t'.join([self.sample_ids[0]] + self.sample_ids[1]) + '\n')
-        for site_lablel, values in zip(self.meth_site_order, self.meth_matrix):
+        for site_label, values in zip(self.meth_site_order, self.meth_matrix):
             str_values = '\t'.join([str(value) for value in values])
-            self.output_matrix.write(f'{site_lablel}\t{str_values}\n')
+            self.output_matrix.write(f'{site_label}\t{str_values}\n')
         self.output_matrix.close()
 
     def launch_genome_imputation(self, meth_array, sample_labels):
