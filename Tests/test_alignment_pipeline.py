@@ -14,7 +14,7 @@ bsbolt = f'{bsb_directory}BSBolt.py'
 bsb_simulate_commands = ['python3', bsbolt, 'Simulate',
                          '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
                          '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-PE']
-#subprocess.run(bsb_simulate_commands)
+subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
 # map simulated reads
@@ -22,7 +22,7 @@ print('Reads Simulated')
 print('Building Methylation Index')
 bsb_index_commands = ['python3', bsbolt, 'Index', '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
                       '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB']
-#subprocess.run(bsb_index_commands)
+subprocess.run(bsb_index_commands)
 print('BSB Index Built')
 
 
