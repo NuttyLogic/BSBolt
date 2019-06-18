@@ -14,7 +14,7 @@ class ConvertFastq:
     Keyword Arguments:
         fastq1 (str): path to first input fastq file
         fastq2 (str): path to second input fastq file
-        unstanded (bool): convert reverse complement of watson / crick strands
+        unstranded (bool): convert reverse complement of watson / crick strands
     Attributes:
         self.fastq1 (str): path to first input fastq file
         self.fastq2 (str): path to second input fastq file

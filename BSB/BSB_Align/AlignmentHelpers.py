@@ -29,14 +29,12 @@ def convert_cigar_tuple(cigar_tuple):
 def get_mapping_length(cigar):
     """Logic to reset position for reverse complement of soft clipped read"""
     # start at next cigar type if beginning of read soft clipped
-    read_start = None
     read_end = 0
     mapped_region_length = 0
     reference_consumers = {0, 2, 3, 7, 8}
     query_consumers = {0, 1, 4, 7, 8}
     for cigar_type, cigar_length in cigar:
         if cigar_type in reference_consumers:
-            read_start = read_end
             mapped_region_length += cigar_length
         if cigar_type in query_consumers:
             read_end += cigar_length

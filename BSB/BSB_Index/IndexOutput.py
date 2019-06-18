@@ -17,7 +17,7 @@ class IndexOutput:
         self.bowtie2_path (str): bowtie2 command if in path or path to executable
         self.bowtie2_threads (int): thread count for bowtie2
         self.database_output_object (Dict[str, TextIO]): Contains TextIO output objects for writing processed DNA
-            sequence
+                                                         sequence
     """
 
     def __init__(self, genome_database=None, bowtie2_path=None, bowtie2_threads=1):

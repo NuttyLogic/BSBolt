@@ -99,10 +99,11 @@ class BisulfiteAlignmentAndProcessing:
             if self.paired_end:
                 sam_read_paired = next(alignment)
                 assert sam_read['QNAME'] == sam_read_paired['QNAME'], '.fastq files are not paired, sort .fastq files'
-                sam_reads.append((sam_read, sam_read_paired))
+                sam_reads.append([sam_read, sam_read_paired])
             else:
-                sam_reads.append(tuple(sam_read))
-        self.process_sam_reads(sam_reads)
+                sam_reads.append([sam_read])
+        if sam_reads:
+            self.process_sam_reads(sam_reads)
 
     @property
     def get_contig_lens(self):
@@ -124,7 +125,7 @@ class BisulfiteAlignmentAndProcessing:
         if mapping_number == 1:
             for read_grouping in processed_reads:
                 self.write_alignment_reads(read_grouping)
-            self.mapping_statistics[processed_reads[0][1]['mapping_reference']] += 1
+            self.mapping_statistics[processed_reads[0][0]['mapping_reference']] += 1
             if len(processed_reads) > 1:
                 self.mapping_statistics['multimapped_reads'] += 1
             else:
@@ -137,4 +138,3 @@ class BisulfiteAlignmentAndProcessing:
                 self.mapping_statistics['unmapped_reads'] += 1
             else:
                 self.mapping_statistics['multireference_reads'] += 1
-
