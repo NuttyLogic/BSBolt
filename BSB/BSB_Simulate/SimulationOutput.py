@@ -13,8 +13,9 @@ class SimulationOutput:
 
     def generate_simulation_directory(self):
         simulation_directory = '/'.join(self.simulation_output.split('/')[0:-1])
-        if not os.path.isdir(simulation_directory):
-            os.makedirs(simulation_directory, exist_ok=False)
+        if simulation_directory:
+            if not os.path.isdir(simulation_directory):
+                os.makedirs(simulation_directory, exist_ok=False)
 
     def output_contig_key(self):
         with open(f'{self.simulation_output}.genome_index.pkl', 'wb') as ref_out:

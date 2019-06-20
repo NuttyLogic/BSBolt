@@ -72,7 +72,7 @@ class SimulateMethylatedReads:
         self.reference_contig_size = None
         self.current_contig = None
         self.cytosine_dict = None
-        self.output_objects = self.get_output_objects
+        self.output_objects = None
 
     def run_simulation(self):
         """Commands to execute read simulation"""
@@ -88,6 +88,7 @@ class SimulateMethylatedReads:
             aln_files = [f'{self.output_path}.aln']
             fastq_files = [f'{self.output_path}.fq']
         print('Simulating Methylated Illumina Reads')
+        self.output_objects = self.get_output_objects
         self.simulate_methylated_reads(aln_files=aln_files, fastq_files=fastq_files)
         print('Finished Simulation')
 

@@ -1,9 +1,6 @@
-import gzip
 import os
-import pickle
 import subprocess
 import unittest
-import numpy as np
 
 # get current directory
 
@@ -18,3 +15,16 @@ bsb_align_commands = ['python3', bsbolt, 'Align',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_1.fastq', '-O',
                       f'{bsb_directory}Tests/BSB_pe_test', '-S', '-OU', '-BT2-k', '10', '-BT2-p', '10']
 subprocess.run(bsb_align_commands)
+
+
+class TestSingleEndAlignment(unittest.TestCase):
+
+    def setup(self):
+        pass
+
+    def test_file_exists(self):
+        self.assertTrue(os.path.isfile(f'{bsb_directory}Tests/BSB_pe_test.sorted.bam'))
+
+
+if __name__ == '__main__':
+    unittest.main()
