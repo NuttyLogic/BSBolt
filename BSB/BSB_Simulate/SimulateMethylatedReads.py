@@ -95,7 +95,10 @@ class SimulateMethylatedReads:
     def simulate_illumina_reads(self):
         """Launch external ART command to simulate illumina reads. Insertion and deletion rate set to zero
         to simplify read simulation """
-        subprocess.run(args=self.simulate_commands)
+        art = subprocess.run(args=self.simulate_commands)
+        if art.returncode:
+            print('ART not correctly initialized, please check path')
+            raise OSError
 
     def simulate_methylated_reads(self, aln_files, fastq_files):
         simulation_iterators = [OpenAln(aln_file) for aln_file in aln_files]

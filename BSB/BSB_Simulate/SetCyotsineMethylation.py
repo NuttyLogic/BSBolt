@@ -6,6 +6,28 @@ from BSB.BSB_Simulate.SimulationOutput import SimulationOutput
 
 
 class SetCytosineMethylation:
+    """Set cytosine methylation at CpG and CH sites. Methylation value are assigned for at + and - cytosines. After
+    setting a methylation value, a random roll is performed for each read. If the roll is less than the methylation
+    value the cytosine is set as methylation and if it is greater than the cytosine is unmethylated. This introduces
+    some random noise into the simulation process. The number of methylated and unmethylated reads is tracked in the
+    final simulation output.
+    Keyword Arguments:
+        reference_file (str): path to reference genome
+        methylation_reference_output (str): path to output folder for simulation data
+        methylation_reference (str): CGmap file with methylation profile
+        methylation_profile (str): path to previously generated methylation reference
+    Attributes:
+        self.reference_file (str): path to reference genome
+        self.methylation_reference_output (str): path to output folder for simulation data
+        self.methylation_reference (str): CGmap file with methylation profile
+        self.methylation_profile (str): path to previously generated methylation reference
+        self.reference_dict (dict): contig sequences
+        self.reference_contig_size (dict): lens of all contigs
+        self.methylation_profile (dict): dict with cytosine methylation values
+        self.simulation_out (dict): objects for loading and outputting simulation data
+        self.cpg_distribution (np.array): beta binomial distribution for CpG sites
+        self.ch_distribution (np.array): beat binomial distribution for CH sites
+            """
 
     def __init__(self, reference_file=None, methylation_reference_output=None,
                  methylation_reference=None, methylation_profile=None):
