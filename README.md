@@ -29,7 +29,7 @@ Representative Bisulfite Sequencing* (RRBS), and targeted bisulfite sequencing d
 Illumina reads. 
 
 ### Installation
-BSBolt requries python3.6 or greater to run, with the external *pysam*, *numpy*, and *tqdm* packages. BSBolt is 
+BSBolt requires python3.6 or greater to run, with the external *pysam*, *numpy*, and *tqdm* packages. BSBolt is 
 distributed with [Bowtie2]( http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml)
 and [ART Read Simulation Tools](https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm) 
 under the terms of the [GPLv3 License](https://www.gnu.org/licenses/gpl-3.0.html). BSBolt is implemented for Unix like
