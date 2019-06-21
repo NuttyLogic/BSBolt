@@ -7,6 +7,9 @@ and data imputation. BSBolt has been validated to work with a wide array of bisu
 including whole genome bisulfite sequencing (WGBS), reduced representative bisulfite sequencing data (RRBS), 
 and targeted methylation sequencing data. 
   
+## Documentation
+
+The complete BSBolt documentation can be found at, [bsbolt.readthedocs.io](bsbolt.readthedocs.io).
 
 ## BSBolt Content
 - [BSBolt (BiSulfite Bolt)](#bsbolt-bisulfite-bolt)
