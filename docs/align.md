@@ -6,16 +6,16 @@ Adapter sequences should be trimmed from sequencing reads before alignment with 
 alignment can be performed using Bowtie2 local mode to increase mappability; however, due the low complexity of bisulfite
 sequencing libraries this is not recommended. 
 ### BSB Index 
-Alignment with BSBolt requires generation of an alignment index. BSBbolt Index generates multiple Bowtie2 alignment indices in 
-addition to processed reference files for downstream analysis. 
+Alignment with BSBolt requires generation of an alignment index. BSBbolt Index generates a bisulfite converted reference sequence. 
 
 BSB support generation of 3 types of alignment indices. 
+
 1. Whole genome bisulfite sequencing indices 
 2. Masked alignment indices for targeted bisulfite sequencing 
 3. Reduced representation bisulfite sequencing indices (*In silico* restriction enzyme digested)
  
 **BSB Index Commands**
-```
+```shell
   -h, --help            show this help message and exit
   -G                    Path for reference genome fasta file, fasta file
                         should contain all contigs
@@ -36,19 +36,19 @@ BSB support generation of 3 types of alignment indices.
                         indexgeneration, default = 500
 ```
 **WGBS Index Generation Example**
-```
+```shell
 # WGBS Index with 4 BT2 Threads
 python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4
 ```
 
 **Masked Alignment Index Generation Example**
-```
+```shell
 # WGBS Index with 4 BT2 Threads
 python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4 -MR /Tests/TestData/test_wgbs_madking.bed
 ```
 
 **RRBS Index Generation Example**
-```
+```shell
 # RRBS Index Using 4 BT2 Threads, MSPI Cut Format, 40bp Lower Fragment Bound, and 400bp Upper Fragment Bound
 python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4 -rrbs -rrbs-cut-format C-CGG -rrbs-lower 40 -rrbs-upper 400
 ```
@@ -59,7 +59,7 @@ during bisulfite treatment are converted *in silico* and aligned to a bisulfite 
 reference genome. Aligned reads are selected based mapping criteria provided by the user and incorporated into a final alignment file.
 
 **BSB Align Commands**
-```
+```shell
 -h, --help            show this help message and exit
 -F1                   Path to fastq 1
 -F2                   Path to fastq 2
@@ -86,13 +86,13 @@ reference genome. Aligned reads are selected based mapping criteria provided by 
                       end alignment
 ```
 **Paired End Alignment**
-```
+```shell
 # Paired End Alignment Using Default Commands
 python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/Tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/Tests/BSB_pe_test -S
 ```
 
 **Single End Alignment**
-```
+```shell
 # Single End Alignment Using Default Commands
 python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/Tests/BSB_pe_test -S
 ```
