@@ -93,7 +93,7 @@ class ProcessSamAlignment:
                 read (dict): individual sam read
         """
         # retrieve sam tags
-        SAM_TAGS = read['SAM_TAGS']
+        SAM_TAGS: list = read['SAM_TAGS']
         for tag in SAM_TAGS:
             # if sam tag XM, mismatch sam tag
             if 'XM:i' in tag:
