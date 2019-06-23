@@ -9,7 +9,7 @@ and targeted methylation sequencing data.
   
 ## Documentation
 
-BSBolt documentation can be found at [bsbolt.readthedocs.io](bsbolt.readthedocs.io).
+BSBolt documentation can be found at [bsbolt.readthedocs.io](https://bsbolt.readthedocs.io).
 
 ## Overview
 BSBolt provides support for processing and simulation of *Whole Genome Bisulfite Sequencing* (WGBS), *Reduced 
