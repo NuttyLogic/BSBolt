@@ -1,4 +1,6 @@
 site_name: BSBolt (BiSulfite Bolt)
+repo_url: https://github.com/NuttyLogic/BSBolt
+repo_name: 'GitHub'
 
 theme:
   name: 'readthedocs'
@@ -9,3 +11,4 @@ nav:
     - Matrix Assembly and Imputation: matrix.md
     - Pipelines: pipelines.md
     - Simulation: simulation.md
+    - Python API: API.md

@@ -8,10 +8,11 @@ due to enzymatic digestion.
 
 ### Methylation Calling Pre-Processing
 
-We recommend using [samtools](http://www.htslib.org/) to remove duplicates. Due to the structure of the integrated alignment file the *samtools fixmate* option must be disabled. 
-Removing PCR duplicates using paired sequencing reads will give better results; removal using single end reads can be overly aggressive and should be performed on a case by case basis. 
+We recommend using [samtools](http://www.htslib.org/) to remove duplicates. Due to the structure of the integrated alignment file the *samtools fixmate -p* option must be disabled. 
+Removing PCR duplicates using paired sequencing reads will give better results; removal using single end reads can be overly aggressive when used with bisulfite sequencing data
+ and should be performed on a case by case basis. 
 
-```
+```shell
 # fixmates to prepare for duplicate removal, use -p to disable proper pair check
 samtools samtools fixmate -p BSB_pe_test.bam BSB_pe_test.fixmates.bam 
 # remove duplicate reads
@@ -22,11 +23,11 @@ samtools sort BSB_pe_test.dup.bam BSB_pe_test.sorted.bam
 
 ### BSBolt CallMethylation
 
-The running time of the methylation calling module can be greatly reduced by only calling methylation for CG sites. By default compressed CGmap files are output from methylation calling. 
-ATCGmap files can also be output if downstream analysis requires, but this is disabled by default
+Methylation calling outputs a .CGmap file by default. The maintain compatibility with some downstream analysis tools 
+ATCGmap files can by output, but this feature will be removed in a future update
 
 **BSB CallMethylation Commands**
-```
+```shell
   -h, --help          show this help message and exit
   -I                  Input BAM, input file must be in BAM format
   -DB                 Path to index directory
@@ -49,11 +50,12 @@ ATCGmap files can also be output if downstream analysis requires, but this is di
 Methylation calling is performed by counting the number of bisulfite converted bases relative to the number of reads 
 observed at each cytonsine. Relative to the reference genome methylation status at a cytosine and guanine 
 can only be called using reads mapped to Watson and Crick strands respectively. 
-```
+```shell
 # Methylation Calling with 2 threads, 
 python3 BSBolt.py CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose > methylation_stats.txt
 ```
 **Output Files**
+
 CGmap is a tab separated txt format desribing the methylation status of a cytosine. 
 1. Chromosome
 2. Nucleotide, C for reads mapped to the Watson (sense) strand and G for reads mapped to the Crick (anti-sense) strand

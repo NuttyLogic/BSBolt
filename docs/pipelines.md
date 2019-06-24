@@ -1,7 +1,9 @@
-## Whole Genome Bisulfite Sequencing
+## Analysis Pipelines 
 
-## Targeted Bisulfite Seuquencing
+### Whole Genome Bisulfite Sequencing
 
-## Reduced Representative Bisulfite Sequencing
+### Targeted Bisulfite Seuquencing
 
-## Read Simulation
+### Reduced Representative Bisulfite Sequencing
+
+### Read Simulation
