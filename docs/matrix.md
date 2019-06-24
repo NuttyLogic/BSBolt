@@ -24,25 +24,28 @@ optional arguments:
 ```
 **Aggregate Matrix Default Settings**
 
-```bash
+```shell
 python3 BSBolt.py AggregateMatrix -F cgmap_1,cgmap_2,cgmap_3 -O ~/test_matrix.txt
 ```
 **Aggregate Matrix Default Settings - File List**
 
-```bash
+```shell
 python3 BSBolt.py AggregateMatrix -F cgmap_file_list.txt -O ~/test_matrix.txt
 ```
 
 **Aggregate Matrix Default Settings - File List, Sample Labels, Verbose**
 
-```bash
+```shell
 python3 BSBolt.py AggregateMatrix -F cgmap_file_list.txt -S sample1,sample2,sample3 -O ~/test_matrix.txt -verbose
 ```
 
 ## Methylation Value Imputation
 
-BSBolt Impute leverages the correlation structure between neighboring CpG sites to impute missing values through the use of a kNN sliding window.  Within each window the nearest neighbors are calculated using Euclidean distance, 
-and the average value of k nearest neighbors is used to impute the null methylation value. To efficiently scale the algorithm, imputation can be performed in batches. 
+BSBolt Impute leverages the correlation structure between neighboring CpG sites to impute missing values through the use of a kNN sliding window.  
+Within each window the nearest neighbors are calculated using Euclidean distance using non-null sites. The average value of k nearest neighbors is used to impute the null methylation value. 
+To efficiently scale the algorithm, imputation can be performed in batches. 
+
+![](img/kNN_graphic.png){: style="height:150px;width:150px"}
 
 ```
   -h, --help  show this help message and exit

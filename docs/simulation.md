@@ -1,14 +1,14 @@
 ## Bisulfite Sequencing Simulation
 
-Simulating bisuflite reads is performed by assiging each cytosine and guanine in the user provided reference file a 
-methylation value. This done based on an input methylation reference file (.CGmap or BSBolt Reference Directory) or 
+Simulating bisuflite reads is performed by assigning each cytosine and guanine (anti-sense cytosine) in the input reference file a 
+methylation value. The methylation value is assigned using an input methylation reference file (.CGmap or BSBolt Reference Directory) or 
 sampling from a binomial distribution for CpG and CH sites. After a methylation value is assigned for cytosine and 
-guanine individual reads simulated using ART are modified according to the methylation value of the nucleotides in the 
-read. The methylation value represent the probability a base with be methylated, and as a result there random noise is 
+guanine individual reads simulated using ART are modified accordingly. 
+The methylation value represent the probability a base with be methylated, and as a result there random noise is 
 introduced to more accurately represent bisulfite sequencing reads. 
 
 **BSB Simulate Commands**
-```
+```shell
   -h, --help  show this help message and exit
   -G          Path for reference genome fasta file, fasta file should contain
               all contigs
@@ -45,7 +45,8 @@ introduced to more accurately represent bisulfite sequencing reads.
   -Q2         Path to read 2 quality profile
 
 ```
+
 **Simulate Paired End, Undirectional Methylation Reads**
-```bash
+```shell
 python3 BSBolt.py Simulate -G ~/Tests/TestData/BSB_test.fa -O ~/Tests/TestSimulations/BSB_pe -U -PE
 ```
