@@ -23,7 +23,7 @@ samtools sort BSB_pe_test.dup.bam BSB_pe_test.sorted.bam
 
 ### BSBolt CallMethylation
 
-Methylation calling outputs a .CGmap file by default. The maintain compatibility with some downstream analysis tools 
+Methylation calling outputs a .CGmap file by default. To maintain compatibility with some downstream analysis tools 
 ATCGmap files can by output, but this feature will be removed in a future update
 
 **BSB CallMethylation Commands**

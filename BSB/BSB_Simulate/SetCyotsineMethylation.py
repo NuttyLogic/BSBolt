@@ -76,7 +76,7 @@ class SetCytosineMethylation:
             if nucleotide == 'G':
                 cytosine_dict['Crick'][f'{chrom}:{pos}'] = meth_profile
             elif nucleotide == 'C':
-                cytosine_dict['watson'][f'{chrom}:{pos}'] = meth_profile
+                cytosine_dict['Watson'][f'{chrom}:{pos}'] = meth_profile
         self.simulation_out.output_contig_methylation_reference(cytosine_dict, current_chromosome)
 
     @property
