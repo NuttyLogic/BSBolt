@@ -4,7 +4,7 @@ BSBolt AggregrateMatrix takes a list of CGmap, compressed or uncompressed, and a
 pass a read depth threshold and are present in a set proportion of samples are included in the matrix. 
 
 **BSBolt AggregateMatrix Commands**
-```
+```shell
 optional arguments:
   -h, --help            show this help message and exit
   -F                    Comma separated list of CGmap file paths, or path to
@@ -45,9 +45,9 @@ BSBolt Impute leverages the correlation structure between neighboring CpG sites 
 Within each window the nearest neighbors are calculated using Euclidean distance using non-null sites. The average value of k nearest neighbors is used to impute the null methylation value. 
 To efficiently scale the algorithm, imputation can be performed in batches. 
 
-![](img/kNN_graphic.png){: style="height:150px;width:150px"}
+![](img/kNN_graphic.png)
 
-```
+```shell
   -h, --help  show this help message and exit
   -M          Path to BSB matrix file
   -B          Imputation sample batch size kNN imputation, by default the all
@@ -61,11 +61,11 @@ To efficiently scale the algorithm, imputation can be performed in batches.
 ```  
 
 **Impute No Batches**
-```bash
+```shell
 python3 BSBolt.py Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt
 ```
 
 **Batch Imputation**
-```bash
+```shell
 python3 BSBolt.py Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt -B 10 -R
 ```
