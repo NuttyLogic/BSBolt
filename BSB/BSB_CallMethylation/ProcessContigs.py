@@ -98,7 +98,7 @@ class ProcessContigs:
         # initialize manager
         manager = multiprocessing.Manager()
         # get return dictionary
-        self.return_queue = manager.Queue(maxsize=10)
+        self.return_queue = manager.Queue(maxsize=20)
         self.completed_contigs = manager.list()
         # threads for methylation calling, if one thread use thread for calling and watching
         pool_threads = self.threads - 1 if self.threads != 1 else 1

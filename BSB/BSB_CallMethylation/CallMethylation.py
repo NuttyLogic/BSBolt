@@ -111,9 +111,13 @@ class CallMethylation:
                 if self.check_ccgg(reference_seq):
                     continue
                 # count the pileup read bases, Uppercase watson strand, lowercase crick strand
-                base_counts = Counter(pileup_col.get_query_sequences(mark_matches=False,
-                                                                     mark_ends=False,
-                                                                     add_indels=False))
+                try:
+                    base_counts = Counter(pileup_col.get_query_sequences(mark_matches=False,
+                                                                         mark_ends=False,
+                                                                         add_indels=False))
+                except AssertionError:
+                    # pysam may through an error if more than 8000 reads present in a pileup column
+                    continue
                 meth_line = self.get_methylation_call(nucleotide, base_counts)
                 meth_line.update({'pos': pileup_col.reference_pos + 1, 'chrom': self.contig,
                                   'context': context, 'subcontext': subcontext})
