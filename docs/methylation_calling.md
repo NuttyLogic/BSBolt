@@ -14,11 +14,13 @@ Removing PCR duplicates using paired sequencing reads will give better results; 
 
 ```shell
 # fixmates to prepare for duplicate removal, use -p to disable proper pair check
-samtools samtools fixmate -p BSB_pe_test.bam BSB_pe_test.fixmates.bam 
+samtools samtools fixmate -p -m BSB_pe_test.bam BSB_pe_test.fixmates.bam 
+# sort bam by coordinates for duplicate calling
+samtools sort -@ 2 -o BSB_pe_test.sorted.bam BSB_pe_test.fixmates.bam
 # remove duplicate reads
-samtools markdup -r BSB_pe_test.fixmates.bam BSB_pe_test.dup.bam
-# sort bam by coordinates for methylation calling
-samtools sort BSB_pe_test.dup.bam BSB_pe_test.sorted.bam
+samtools markdup -r BSB_pe_test.sorted.bam BSB_pe_test.dup.bam
+# index bam file for methylation calling
+samtools index BSB_pe_test.dup.bam
 ```
 
 ### BSBolt CallMethylation
