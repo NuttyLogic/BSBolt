@@ -116,7 +116,7 @@ class CallMethylation:
                                                                          mark_ends=False,
                                                                          add_indels=False))
                 except AssertionError:
-                    # pysam may through an error if more than 8000 reads present in a pileup column
+                    # pysam may throw an error if the number of reads in pileup column is above the max
                     continue
                 meth_line = self.get_methylation_call(nucleotide, base_counts)
                 meth_line.update({'pos': pileup_col.reference_pos + 1, 'chrom': self.contig,
