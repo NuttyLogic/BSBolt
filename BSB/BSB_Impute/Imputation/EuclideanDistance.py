@@ -27,8 +27,11 @@ def get_euclidean(array=None, global_neighbors=None):
                 # samples to get best distance comparison estimate
                 comparison_array = np.ma.compress_cols(np.ma.masked_invalid(comparison_array))
                 try:
-                    pairwise_distance[count].append(np.linalg.norm(comparison_array[0] - comparison_array[1]) /
-                                                    len(comparison_array[1]))
+                    if len(comparison_array[0]) and len(comparison_array[1]):
+                        pairwise_distance[count].append(np.linalg.norm(comparison_array[0] - comparison_array[1]) /
+                                                        len(comparison_array[1]))
+                    else:
+                        raise IndexError
                 # if all values are missing the missing neighbor is global
                 except IndexError:
                     if isinstance(global_neighbors, (np.ndarray, np.generic)):
