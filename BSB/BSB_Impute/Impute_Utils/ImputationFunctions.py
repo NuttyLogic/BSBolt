@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from BSB.BSB_Utils.MatrixIterator import OpenMatrix
 
@@ -11,6 +12,7 @@ def get_bsb_matrix(bsb_matrix):
         site_order (list): list of methylation site identifiers
         sample_ids ([site_labels, [sample_lables]]: site label, list of sample labels
         """
+    assert os.path.exists(bsb_matrix), f'{bsb_matrix} does not exist, please change path'
     site_values, site_order, sample_ids = [], [], None
     for line_label, line_values in OpenMatrix(bsb_matrix):
         if not sample_ids:
