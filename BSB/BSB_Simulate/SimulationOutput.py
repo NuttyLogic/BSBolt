@@ -26,9 +26,12 @@ class SimulationOutput:
             pickle.dump(contig_methylation, contig_out)
 
     def load_contig(self, contig_id):
-        with open(f'{self.bsb_methylation_reference}.{contig_id}.pkl', 'rb') as contig_out:
-            contig_methylation = pickle.load(contig_out)
-            return contig_methylation
+        try:
+            with open(f'{self.bsb_methylation_reference}.{contig_id}.pkl', 'rb') as contig_out:
+                contig_methylation = pickle.load(contig_out)
+                return contig_methylation
+        except FileNotFoundError:
+            return {'Watson': {}, 'Crick': {}}
 
     def load_contig_key(self):
         with open(f'{self.bsb_methylation_reference}.genome_index.pkl', 'rb') as ref_out:
