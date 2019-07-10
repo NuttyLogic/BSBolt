@@ -1,7 +1,6 @@
 import os
 import subprocess
 import unittest
-import pysam
 
 # get current directory
 

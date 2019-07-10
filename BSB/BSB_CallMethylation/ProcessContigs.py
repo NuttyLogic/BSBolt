@@ -61,7 +61,12 @@ class ProcessContigs:
         if output_prefix:
             assert isinstance(output_prefix, str)
         self.input_file = input_file
-        self.input_bam = pysam.Samfile(input_file, 'rb')
+        try:
+            self.input_bam = pysam.Samfile(input_file, 'rb', require_index=True)
+        except IOError:
+            print('Generating Index File')
+            pysam.index(input_file)
+            self.input_bam = pysam.Samfile(input_file, 'rb', require_index=True)
         self.text_output = text_output
         self.output_prefix = output_prefix
         self.threads = threads
