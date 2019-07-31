@@ -12,13 +12,14 @@ def convert_alpha_numeric_cigar(cigar_string):
     """
     cigar_list = re.findall(r'[^\d_]+|\d+', cigar_string)
     cigar_dict = {'M': 0,  'I': 1, 'D': 2, 'N': 3, 'S': 4, 'H': 5, 'P': 6, '=': 7, 'X': 8}
-    cigar_tuple_list = []
+    cigar_tuple = []
     for cigar_character, cigar_count in zip(cigar_list[1::2], cigar_list[0::2]):
-        cigar_tuple_list.append((cigar_dict[cigar_character], int(cigar_count)))
-    return cigar_tuple_list
+        cigar_tuple.append([cigar_dict[cigar_character], int(cigar_count)])
+    return cigar_tuple
 
 
 def convert_cigar_tuple(cigar_tuple):
+    """Convert cigar tuple to cigar string, assumes cigar tuple is from strand being reverse complemented"""
     cigar_dict = {0: 'M', 1: 'I', 2: 'D', 3: 'N', 4: 'S', 5: 'H', 6: 'P', 7: '=', 8: 'X'}
     cigar_str = ''
     for cigar_type, cigar_length in cigar_tuple:

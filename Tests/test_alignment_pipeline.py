@@ -13,7 +13,8 @@ bsbolt = f'{bsb_directory}BSBolt.py'
 # generate simulated reads
 bsb_simulate_commands = ['python3', bsbolt, 'Simulate',
                          '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
-                         '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-PE']
+                         '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-PE', '-IR1', '0.05',
+                         '-IR2', '0.05', '-DR1', '0.05', '-DR2', '0.05']
 subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
