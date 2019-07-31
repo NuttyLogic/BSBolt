@@ -122,20 +122,18 @@ class ProcessSamAlignment:
         complement_flags = {'16', '83', '147', '272', '339', '403'}
         if mapped_read['FLAG'] in complement_flags:
             mapped_read['SEQ'] = reverse_complement(mapped_read['SEQ'])
-            cigar_tuple = convert_alpha_numeric_cigar(mapped_read['CIGAR'])
-            mapped_read['CIGAR'] = convert_cigar_tuple(cigar_tuple[::-1])
+            mapped_read['QUAL'] = mapped_read['QUAL'][::-1]
         mapped_read['FLAG'] = self.watson_mapping_conversion[mapped_read['FLAG']]
 
     def format_crick_reads(self, mapped_read, contig_len, paired_end):
         """Format crick reads, some reads reverse complemented others only reversed"""
         reverse_complement_flags = {'0', '99', '163', '256', '323', '419'}
-        # cigar tuple used for both strand
-        cigar_tuple = convert_alpha_numeric_cigar(mapped_read['CIGAR'])
-        # if sequence is mapped to -crick, reverse complement sequence otherwise just reverse the sequence
+        # if sequence is mapped to -crick, reverse complement sequence
         if mapped_read['FLAG'] in reverse_complement_flags:
             mapped_read['SEQ'] = reverse_complement(mapped_read['SEQ'])
-            cigar_tuple = convert_alpha_numeric_cigar(mapped_read['CIGAR'])[::-1]
             mapped_read['QUAL'] = mapped_read['QUAL'][::-1]
+        # reverse cigar string
+        cigar_tuple = convert_alpha_numeric_cigar(mapped_read['CIGAR'])[::-1]
         # convert flag to be relative to negative strand
         mapped_read['FLAG'] = self.crick_mapping_conversion[mapped_read['FLAG']]
         # get mapping length of the read to adjust coordinates relative to watson strand

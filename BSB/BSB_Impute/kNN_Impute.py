@@ -7,6 +7,8 @@ from BSB.BSB_Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
 
 class ImputeMissingValues:
     """
+    Launch and knn imputation task. This wrapper import data for imputation, split data for batch imputation,
+    and combines data after imputation. Note, data is held in memory during imputation..
     Keyword Arguments
         :param input_matrix_file:
         :param batch_size:
