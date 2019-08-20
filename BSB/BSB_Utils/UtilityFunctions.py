@@ -3,7 +3,6 @@ import os
 import platform
 import subprocess
 import sys
-from packaging import version
 
 
 def reverse_complement(sequence):
@@ -74,8 +73,8 @@ def check_package_version():
     all_packages = True
     for package, required_version in packages.items():
         installed_version = import_package_check(package)
-        if version.parse(installed_version) < version.parse(required_version):
-            print(f'{package} {installed_version} < {package} {required_version} requirement, please update')
+        if LooseVersion(installed_version) < LooseVersion(required_version):
+            print(f'{package} {installed_version} < {package} {required_version}, please update {package}')
             print(f'pip3 install {package} --upgrade')
             all_packages = False
     return all_packages
