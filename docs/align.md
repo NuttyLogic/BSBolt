@@ -9,7 +9,8 @@ sequencing libraries this is not recommended.
 ### Adapter Trimming 
 
 Adapter sequences should be trimmed from sequencing reads before alignment with BSBolt. We recommend using 
-[CutAdapt](https://cutadapt.readthedocs.io/en/stable/) to trim sequencing adapters. Illumina adapter sequences commonly 
+[CutAdapt](https://cutadapt.readthedocs.io/en/stable/) to trim sequencing adapters. I adapters are not trimmed alignment 
+can be performed using BSB Align local mode. The Illumina adapter sequences commonly 
 used for bisulfite sequencing are listed below. 
 
 **Standard Illumina TruSeq Adapter Sequences**
@@ -24,19 +25,20 @@ Read 2
 
 ### BSB Index
 Following bisulfite conversion the Watson (sense) and  Crick (anti-sense) DNA strands are no longer complementary. 
-Correctly aligning bisulfite converted reads requires the construction of an alignment index containing bisulfite 
-converted version of each reference strand. The combined reference sequence is twice as large and results in a larger 
-alignment index. Reads mapping to different reference strands are handled during the alignment step.  
+Correctly aligning bisulfite converted reads requires the construction of an alignment index containing a bisulfite 
+converted sequence for each reference strand; resulting in a larger index. Not all regions of the genome will be 
+bisulfite unique, ie reads from these regions will not align uniquely to either a Watson or Crick sequence. 
+Reads mapping to different reference strands are handled during the alignment step.  
 
 BSB support generation of 3 types of alignment indices. Local alignment is discourage for when aligning reads against 
-as masked alignment index or RRBS index. 
+a masked alignment index or a RRBS index. 
 
 1. Whole genome bisulfite sequencing indices 
     - Index is generated for complete Watson and Crick strands
 2. Masked alignment indices for targeted bisulfite sequencing 
     - Sequence outside the reference region is masked in both the Watson and Crick strands before index generation
 3. Reduced representation bisulfite sequencing (RRBS) indices
-    - The reference sequence is *In silico* restriction enzyme digested to give a list of plausible target region
+    - The reference sequence is *In silico* restriction enzyme digested to give a list of plausible target regions
 
 **BSB Index Commands**
 ```shell
@@ -78,16 +80,12 @@ python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB
 ```
 
 ### BSB Align
-Read alignment is performed by modifying the input sequence by converting any bases not converted during bisulfite treatment. Depending on the 
-read bases are converted from cytosine to thymine, or guanine to adenine for the complement of bisulfite converted DNA. Reads from DNA that 
-has not been fully bisulfite converted will generally map to both reference strands. In this case the reads are not considered bisulfite unique 
-and reported as unmapped reads. Reads produced from the complement of bisulfite converted DNA can also be mapped. In this case the 
-pattern of *in silico* base substitution is reversed. Read mapping is handled by Bowtie2. Bowtie2 setting may be changed by passing the appropriate 
-argument through the BSBolt Align module. 
+Input reads are modified by first performing *In silico* bisulfite conversion of any unconverted cytosines (or guanines in the case of PCR products of bisulfite converted DNA).
+Read mapping is handled by Bowtie2. Bowtie2 arguments may be changed by passing the appropriate argument through the BSBolt Align module. 
 
 A mapped read is considered a valid read alignment if the number of mismatches between the reference and read is below the user set threshold, *-M*, and the 
-read is bisulfite unique. Bisulfite unique reads only map to one reference strand implying the read is fully bisulfite converted. Valid reads are further modified 
-so all Watson reads are reported as sense (+) reads and all Crick reads are reported as anti-sense (-) reads.  
+read is bisulfite unique. Bisulfite unique reads only map to one reference strand implying the read is fully bisulfite converted. Reads that are not bisulfite valid will be reported 
+as unmapped reads. Valid reads are further modified so all Watson reads are reported as sense (+) reads and all Crick reads are reported as anti-sense (-) reads.  
 
 
 **BSB Align Commands**
@@ -98,7 +96,7 @@ so all Watson reads are reported as sense (+) reads and all Crick reads are repo
 -NC                   Aligned unconverted bisulfite reads
 -OU                   Output unmapped reads
 -U                    Library undirectioinal, default=True
--BT2                  Path to bowtie2 aligner
+-BT2                  Path to bowtie2 aligner, default = bundled bowtie2
 -O                    Path to Output Prefix
 -DB                   Path to BSBolt Database
 -M                    Read mismatch threshold, reads with mismatches greater
@@ -119,11 +117,11 @@ so all Watson reads are reported as sense (+) reads and all Crick reads are repo
 **Paired End Alignment**
 ```shell
 # Paired End Alignment Using Default Commands
-python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/Tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/Tests/BSB_pe_test -S
+python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/Tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/Tests/BSB_pe_test 
 ```
 
 **Single End Alignment**
 ```shell
 # Single End Alignment Using Default Commands
-python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/Tests/BSB_pe_test -S
+python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/Tests/BSB_pe_test 
 ```
