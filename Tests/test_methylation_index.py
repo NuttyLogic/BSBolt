@@ -110,8 +110,6 @@ with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa', '
             else:
                 reference_sequences_restricted_mapping[chrome] = line.replace('\n', '')
 
-print(reference_sequences_restricted_mapping.keys())
-
 
 cut_site_offsets = list(ProcessCutSites(cut_format='C-CGG,CA-TG,CAG-G').restriction_site_dict.values())
 cut_site_sequence = list(ProcessCutSites(cut_format='C-CGG,CA-TG,CAG-G').restriction_site_dict.keys())
@@ -134,8 +132,8 @@ class TestReadSimulation(unittest.TestCase):
 
     def test_mappable_sequence(self):
         for chromosome in ['chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15']:
-            self.assertEqual(reference_sequences_restricted_mapping[chromosome],
-                             reference_sequences_restricted_mapping[f'{chromosome}_crick_bs'])
+            self.assertEqual(reference_sequences_restricted_mapping[chromosome].replace('G', 'A'),
+                             reference_sequences_restricted_mapping[f'{chromosome}_crick_bs'].replace('C', 'T'))
 
     def test_site_offsets(self):
         self.assertEqual(cut_site_offsets, [1, 2, 3, 1])

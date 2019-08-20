@@ -3,6 +3,7 @@ import os
 import platform
 import subprocess
 import sys
+from packaging import version
 
 
 def reverse_complement(sequence):
@@ -54,6 +55,30 @@ def check_bowtie2_path(bowtie2_path='bowtie2'):
         bowtie2_version = version_line.replace('\n', '').split(' ')[-1]
         if LooseVersion(bowtie2_version) < LooseVersion('2.2.9'):
             raise RuntimeWarning('BSeeker-R Performance not evaluated on Bowtie2 Versions < 2.2.9')
+
+
+def import_package_check(package_name):
+    try:
+        package = __import__(package_name)
+    except ModuleNotFoundError:
+        print(f'{package_name} not found, please install {package_name}')
+        print(f'pip3 install {package_name} --user')
+        sys.exit()
+    else:
+        return package.__version__
+
+
+def check_package_version():
+    """Check third party packages to make sure version is greater than requirement"""
+    packages = dict(pysam='0.15.2', tqdm='4.31.1', numpy='1.16.3')
+    all_packages = True
+    for package, required_version in packages.items():
+        installed_version = import_package_check(package)
+        if version.parse(installed_version) < version.parse(required_version):
+            print(f'{package} {installed_version} < {package} {required_version} requirement, please update')
+            print(f'pip3 install {package} --upgrade')
+            all_packages = False
+    return all_packages
 
 
 def check_python_version():
