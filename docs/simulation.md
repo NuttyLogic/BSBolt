@@ -3,9 +3,7 @@
 Simulating bisuflite reads is performed by assigning each cytosine and guanine (anti-sense cytosine) in the input reference file a 
 methylation value. The methylation value is assigned using an input methylation reference file (.CGmap or BSBolt Reference Directory) or 
 sampling from a binomial distribution for CpG and CH sites. After a methylation value is assigned for cytosine and 
-guanine individual reads simulated using ART are modified accordingly. 
-The methylation value represent the probability a base with be methylated, and as a result there random noise is 
-introduced to more accurately represent bisulfite sequencing reads. 
+guanine individual reads simulated using ART are modified accordingly. The methylation value represent the probability a base with be methylated. 
 
 **BSB Simulate Commands**
 ```shell

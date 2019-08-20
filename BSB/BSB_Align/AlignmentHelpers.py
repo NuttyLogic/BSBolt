@@ -1,4 +1,6 @@
 import re
+from typing import List, Tuple
+
 import pysam
 from BSB.BSB_Align.LaunchBowtie2Alignment import Bowtie2Align
 
@@ -12,9 +14,9 @@ def convert_alpha_numeric_cigar(cigar_string):
     """
     cigar_list = re.findall(r'[^\d_]+|\d+', cigar_string)
     cigar_dict = {'M': 0,  'I': 1, 'D': 2, 'N': 3, 'S': 4, 'H': 5, 'P': 6, '=': 7, 'X': 8}
-    cigar_tuple = []
+    cigar_tuple: List[Tuple[int, int]] = []
     for cigar_character, cigar_count in zip(cigar_list[1::2], cigar_list[0::2]):
-        cigar_tuple.append([cigar_dict[cigar_character], int(cigar_count)])
+        cigar_tuple.append((cigar_dict[cigar_character], int(cigar_count)))
     return cigar_tuple
 
 

@@ -9,7 +9,7 @@ due to enzymatic digestion.
 ### Methylation Calling Pre-Processing
 
 We recommend using [samtools](http://www.htslib.org/) to remove duplicates. Due to the structure of the integrated alignment file the *samtools fixmate -p* option must be disabled. 
-Removing PCR duplicates using paired sequencing reads will give better results; removal using single end reads can be overly aggressive when used with bisulfite sequencing data
+Removing PCR duplicates using paired sequencing reads will give better results; however, duplicate removal using single end reads can be overly aggressive when used with bisulfite sequencing data
  and should be performed on a case by case basis. 
 
 ```shell
@@ -25,8 +25,8 @@ samtools index BSB_pe_test.dup.bam
 
 ### BSBolt CallMethylation
 
-Methylation calling outputs a .CGmap file by default. To maintain compatibility with some downstream analysis tools 
-ATCGmap files can by output, but this feature will be removed in a future update
+Methylation calling outputs a .CGmap file by default. To maintain compatibility with downstream analysis tools 
+ATCGmap files can by output, but this feature will be deprecation in a future update.
 
 **BSB CallMethylation Commands**
 ```shell
@@ -59,14 +59,15 @@ python3 BSBolt.py CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/B
 **Output Files**
 
 CGmap is a tab separated txt format desribing the methylation status of a cytosine. 
-1. Chromosome
-2. Nucleotide, C for reads mapped to the Watson (sense) strand and G for reads mapped to the Crick (anti-sense) strand
-3. Position, base-pairs from start
-4. Context, three base pair methylation context
-5. Sub-Context, two base pair methylation context
-5. Methylation Value, proportion of methylation reads to total reads
-6. Methylation Bases, methylated nucleotides observed
-7. All Bases, total number of nucleotides observed at the mapping position
+
+    1. Chromosome
+    2. Nucleotide, C for reads mapped to the Watson (sense) strand and G for reads mapped to the Crick (anti-sense) strand
+    3. Position, base-pairs from start
+    4. Context, three base pair methylation context
+    5. Sub-Context, two base pair methylation context
+    5. Methylation Value, proportion of methylation reads to total reads
+    6. Methylation Bases, methylated nucleotides observed
+    7. All Bases, total number of nucleotides observed at the mapping position
 
 ```text
 chrom   nucleotide  position   context sub-context  methylation_value methylated_bases  all_bases 

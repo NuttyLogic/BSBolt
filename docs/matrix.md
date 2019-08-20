@@ -1,6 +1,6 @@
 ## Methylation Matrix Assembly
 
-BSBolt AggregrateMatrix takes a list of CGmap, compressed or uncompressed, and assembles a consensus methylation matrix. Methylated sites that 
+BSBolt AggregrateMatrix takes a list of CGmap files, compressed or uncompressed, and assembles a consensus methylation matrix. Methylated sites that 
 pass a read depth threshold and are present in a set proportion of samples are included in the matrix. 
 
 **BSBolt AggregateMatrix Commands**
@@ -42,7 +42,7 @@ python3 BSBolt.py AggregateMatrix -F cgmap_file_list.txt -S sample1,sample2,samp
 ## Methylation Value Imputation
 
 BSBolt Impute leverages the correlation structure between neighboring CpG sites to impute missing values through the use of a kNN sliding window.  
-Within each window the nearest neighbors are calculated using Euclidean distance using non-null sites. The average value of k nearest neighbors is used to impute the null methylation value. 
+Within each window the nearest neighbors are calculated using Euclidean distance for non-null sites. The average value of k nearest neighbors is used to impute the null methylation value. 
 To efficiently scale the algorithm, imputation can be performed in batches. 
 
 ![](img/kNN_graphic.png)

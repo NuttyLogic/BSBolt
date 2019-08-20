@@ -3,6 +3,7 @@ import os
 import subprocess
 import unittest
 from BSB.BSB_Index.ProcessCutSites import ProcessCutSites
+from BSB.BSB_Utils.UtilityFunctions import reverse_complement
 
 # get current directory
 
@@ -34,11 +35,11 @@ subprocess.run(bsb_rrbs_index_commands)
 
 mappable_test_regions = []
 
-with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked/W_C2T.fa', 'r') as w_c2t:
+with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa', 'r') as bsb_ref:
     chrome: str = None
     start: int = None
     end: int = None
-    for line in w_c2t:
+    for line in bsb_ref:
         if '>' in line:
             chrome = line.replace('\n', '').replace('>', '')
         else:
@@ -53,6 +54,18 @@ with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked/W_C2T.fa', 'r'
                         mappable_test_regions.append(f'{chrome}:{start}-{end}')
                         start = None
                         end = None
+
+watson_regions = []
+crick_regions = []
+
+for region in mappable_test_regions:
+    pos = region.split(':')[-1]
+    start, end = [int(location) for location in pos.split('-')]
+    if 'crick' in region:
+        crick_regions.append(abs(start - end))
+    else:
+        watson_regions.append(abs(start - end))
+
 
 mappable_bed = []
 
@@ -74,15 +87,31 @@ with gzip.open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs/mappable_regions
         mappable_rrbs_regions.append([chrom, int(start), int(end)])
 
 
-reference_sequences = {'chr10': None, 'chr11': None, 'chr12': None, 'chr13': None, 'chr14': None, 'chr15': None}
+reference_sequences = {}
 # retrieve contig sequences
-with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs/W_C2T.fa', 'r') as w_c2t:
+with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs/BSB_ref.fa', 'r') as bsb_ref:
     chrome: str = None
-    for line in w_c2t:
+    for line in bsb_ref:
         if '>' in line:
             chrome = line.replace('\n', '').replace('>', '')
         else:
             reference_sequences[chrome] = line.replace('\n', '')
+
+reference_sequences_restricted_mapping = {}
+# retrieve contig sequences
+with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa', 'r') as bsb_ref:
+    chrome: str = None
+    for line in bsb_ref:
+        if '>' in line:
+            chrome = line.replace('\n', '').replace('>', '')
+        else:
+            if 'crick' in chrome:
+                reference_sequences_restricted_mapping[chrome] = reverse_complement(line.replace('\n', ''))
+            else:
+                reference_sequences_restricted_mapping[chrome] = line.replace('\n', '')
+
+print(reference_sequences_restricted_mapping.keys())
+
 
 cut_site_offsets = list(ProcessCutSites(cut_format='C-CGG,CA-TG,CAG-G').restriction_site_dict.values())
 cut_site_sequence = list(ProcessCutSites(cut_format='C-CGG,CA-TG,CAG-G').restriction_site_dict.keys())
@@ -94,7 +123,19 @@ class TestReadSimulation(unittest.TestCase):
         pass
 
     def test_mappable_regions(self):
-        self.assertTrue(mappable_bed == mappable_test_regions)
+        # assert mappable regions are actually exposed in reference file
+        for map_region in mappable_bed:
+            self.assertIn(map_region, mappable_test_regions)
+
+    def test_mappable_size(self):
+        # test mappable regions for watson and crick strands are the same size
+        for map_region in watson_regions:
+            self.assertIn(map_region, crick_regions)
+
+    def test_mappable_sequence(self):
+        for chromosome in ['chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15']:
+            self.assertEqual(reference_sequences_restricted_mapping[chromosome],
+                             reference_sequences_restricted_mapping[f'{chromosome}_crick_bs'])
 
     def test_site_offsets(self):
         self.assertEqual(cut_site_offsets, [1, 2, 3, 1])
@@ -103,8 +144,8 @@ class TestReadSimulation(unittest.TestCase):
         self.assertEqual(cut_site_sequence, ['CCGG', 'CATG', 'CAGG', 'CCTG'])
 
     def test_rrbs_mappable_regions(self):
-        for region in mappable_rrbs_regions:
-            sequence = reference_sequences[region[0]][region[1]:region[2] + 1]
+        for map_region in mappable_rrbs_regions:
+            sequence = reference_sequences[map_region[0]][map_region[1]:map_region[2] + 1]
             self.assertTrue('-' not in sequence)
 
     def test_rrbs_mappable_sites(self):
