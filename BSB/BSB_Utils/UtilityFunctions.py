@@ -54,7 +54,7 @@ def check_bowtie2_path(bowtie2_path='bowtie2'):
         version_line = next(iter(bowtie2_check.stdout.readline, ''))
         bowtie2_version = version_line.replace('\n', '').split(' ')[-1]
         if LooseVersion(bowtie2_version) < LooseVersion('2.2.9'):
-            raise RuntimeWarning('BSeeker-R Performance not evaluated on Bowtie2 Versions < 2.2.9')
+            raise RuntimeWarning('BSBolt Performance not evaluated on Bowtie2 Versions < 2.2.9')
 
 
 def import_package_check(package_name):
