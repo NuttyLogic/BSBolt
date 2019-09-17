@@ -142,15 +142,11 @@ class TestReadSimulation(unittest.TestCase):
     def test_methylation_setting(self):
         aln_profile: dict = test_simulation_files.parse_aln_line(all_aln_lines[1])
         watson_changes = [1, 72]
-        watson_dict = {'chr10:355546': dict(nucleotide='C', methylation_level=1, context='CG',
-                                            methylated_reads=0, unmethylated_reads=0),
-                       'chr10:355617': dict(nucleotide='C', methylation_level=1, context='CG',
-                                            methylated_reads=0, unmethylated_reads=0)}
+        watson_dict = {'chr10:355546': ['C', 1, 'CG',0, 0],
+                       'chr10:355617': ['C', 1, 'CG', 0, 0]}
         crick_changes = [15, 93]
-        crick_dict = {'chr10:355560': dict(nucleotide='G', methylation_level=1, context='GC',
-                                           methylated_reads=0, unmethylated_reads=0),
-                      'chr10:355638': dict(nucleotide='G', methylation_level=1, context='GC',
-                                           methylated_reads=0, unmethylated_reads=0)}
+        crick_dict = {'chr10:355560': ['G', 1, 'GC', 0, 0],
+                      'chr10:355638': ['G', 1, 'GC', 0, 0]}
         test_simulation_files.cytosine_dict = {'Watson': watson_dict, 'Crick': crick_dict}
         test_simulation_files.current_contig = 'chr10'
 

@@ -116,6 +116,8 @@ class GenomeImputation:
                 pbar.update(new_windows)
                 completed_windows = len(self.neighbor_dicts)
         if self.verbose:
+            new_windows = len(self.neighbor_dicts) - completed_windows
+            pbar.update(new_windows)
             pbar.close()
         self.pool.close()
 

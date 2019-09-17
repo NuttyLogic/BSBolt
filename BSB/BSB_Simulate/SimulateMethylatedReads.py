@@ -154,12 +154,12 @@ class SimulateMethylatedReads:
             elif self.nucleotide_check(reference_nuc) and self.nucleotide_check(read_nuc):
                 location_meth_info: dict = strand_cytosine.get(f'{aln_profile["read_contig"]}:{genome_position}', False)
                 if location_meth_info:
-                    if self.random_roll(proportion_positive=location_meth_info['methylation_level']):
+                    if self.random_roll(proportion_positive=location_meth_info[1]):
                         fastq_read.append(read_nuc.lower())
-                        location_meth_info['methylated_reads'] += 1
+                        location_meth_info[3] += 1
                     else:
                         fastq_read.append(read_nuc)
-                        location_meth_info['unmethylated_reads'] += 1
+                        location_meth_info[4] += 1
                 else:
                     fastq_read.append(read_nuc)
             elif read_nuc != '-':
