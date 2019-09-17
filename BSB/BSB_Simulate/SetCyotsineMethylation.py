@@ -71,8 +71,8 @@ class SetCytosineMethylation:
             if current_chromosome != chrom:
                 self.simulation_out.output_contig_methylation_reference(cytosine_dict, chrom)
                 cytosine_dict = {'Watson': {}, 'Crick': {}}
-            meth_profile = dict(nucleotide=nucleotide, methylation_level=methlevel, context=context,
-                                methylated_reads=0, unmethylated_reads=0)
+            # nucleotide, methylation_level, ccontext, methylated_reads, unmethylated_reads
+            meth_profile = [nucleotide, methlevel, context, 0, 0]
             if nucleotide == 'G':
                 cytosine_dict['Crick'][f'{chrom}:{pos}'] = meth_profile
             elif nucleotide == 'C':
@@ -131,12 +131,12 @@ class SetCytosineMethylation:
                     # set watson methylation
                     if nucleotide == 'C':
                         c_context = context[1:]
-                        methylation_profile: dict = self.get_methylation_level(c_context, nucleotide)
+                        methylation_profile: list = self.get_methylation_level(c_context, nucleotide)
                         cytosine_dict['Watson'][f'{contig}:{index}'] = methylation_profile
                     # set crick methylation
                     elif nucleotide == 'G':
                         g_context = context[0:2]
-                        methylation_profile: dict = self.get_methylation_level(g_context, nucleotide)
+                        methylation_profile: list = self.get_methylation_level(g_context, nucleotide)
                         cytosine_dict['Crick'][f'{contig}:{index}'] = methylation_profile
             self.simulation_out.output_contig_methylation_reference(cytosine_dict, contig)
 
@@ -154,5 +154,4 @@ class SetCytosineMethylation:
             methylation_level = self.pick_cpg_methylation
         else:
             methylation_level = self.pick_ch_methylation
-        return dict(nucleotide=nucleotide, methylation_level=methylation_level, context=context,
-                    methylated_reads=0, unmethylated_reads=0)
+        return [nucleotide, methylation_level, context, 0, 0]

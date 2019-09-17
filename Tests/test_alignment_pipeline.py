@@ -13,8 +13,8 @@ bsbolt = f'{bsb_directory}BSBolt.py'
 # generate simulated reads
 bsb_simulate_commands = ['python3', bsbolt, 'Simulate',
                          '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
-                         '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-PE', '-IR1', '0.05',
-                         '-IR2', '0.05', '-DR1', '0.05', '-DR2', '0.05', '-U']
+                         '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-PE', '-IR1', '0.01',
+                         '-IR2', '0.01', '-DR1', '0.01', '-DR2', '0.01', '-U']
 subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
@@ -32,8 +32,8 @@ bsb_align_commands = ['python3', bsbolt, 'Align',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
                       f'{bsb_directory}Tests/BSB_pe_test', '-S', '-OU', '-BT2-k', '10', '-BT2-p', '10']
-subprocess.run(bsb_align_commands)
 
+subprocess.run(bsb_align_commands)
 
 print('Calling Methylation')
 
@@ -87,14 +87,14 @@ for site, cgmap_values in cgmap_sites.items():
     site_comparison = dict(coverage_difference=0, simulation_beta=0, mapped_beta=0, beta_z_value=0)
     cgmap_site_coverage = int(cgmap_values['total_reads'])
     reference_values = all_methylation_sites[site]
-    reference_coverage = int(reference_values['methylated_reads']) + int(reference_values['unmethylated_reads'])
+    reference_coverage = int(reference_values[3]) + int(reference_values[4])
     site_comparison['coverage_difference'] = abs(cgmap_site_coverage - reference_coverage)
-    site_comparison['simulation_beta'] = reference_values['methylation_level']
+    site_comparison['simulation_beta'] = reference_values[1]
     site_comparison['mapped_beta'] = cgmap_values['methylation_level']
     cgmap_meth = int(cgmap_sites[site]['methylated_reads'])
     cgmap_unmeth = int(cgmap_sites[site]['total_reads']) - int(cgmap_sites[site]['methylated_reads'])
-    ref_meth = int(reference_values['methylated_reads'])
-    ref_unmeth = int(reference_values['unmethylated_reads'])
+    ref_meth = int(reference_values[3])
+    ref_unmeth = int(reference_values[4])
     z = abs(z_test_of_proportion(a_yes=cgmap_meth, a_no=cgmap_unmeth, b_yes=ref_meth, b_no=ref_unmeth))
     site_comparison['beta_z_value'] = z
     site_comparisons[site] = site_comparison

@@ -3,6 +3,7 @@ import pysam
 from BSB.BSB_Align.LaunchBowtie2Alignment import Bowtie2Align
 from BSB.BSB_Align.ProcessSamReads import ProcessSamAlignment
 from BSB.BSB_Align.AlignmentHelpers import write_bam_line
+from collections import Counter
 
 
 class BisulfiteAlignmentAndProcessing:
@@ -29,7 +30,6 @@ class BisulfiteAlignmentAndProcessing:
         self.fastq2 (str): path to fastq1 mate pair
         self.undirectional_library (bool): perform undirectional alignment
         self.bsb_database(str): path to bsb database directory
-        self.paired_end (bool): paired end reads
         self.output_path (str): output prefix of output file
         self.mismatch_threshold (int): mismatch threshold to consider a valid read
         self.command_line_arg (str): list of commandline args to output with sam file
@@ -51,10 +51,6 @@ class BisulfiteAlignmentAndProcessing:
         self.fastq2 = fastq2
         self.command_line_arg = command_line_arg
         self.unmapped_output = unmapped_output
-        self.paired_end = False
-        # if self.fastq2 provided assume library is paired end
-        if self.fastq2:
-            self.paired_end = True
         self.output_path = output_path
         self.mismatch_threshold = mismatch_threshold
         self.contig_lens = self.get_contig_lens
@@ -84,26 +80,41 @@ class BisulfiteAlignmentAndProcessing:
     def align_reads(self):
         """ Instance Bowtie2Alingment class and map reads"""
         alignment = iter(Bowtie2Align(**self.bowtie2_mapping))
-        sam_reads, read_name = [], None
+        sam_read = next(alignment)
+        read_group, read_name = [sam_read], sam_read['QNAME']
         while True:
             try:
                 sam_read = next(alignment)
             except StopIteration:
+                self.process_reads(read_group)
                 break
-            if not read_name:
-                read_name = sam_read['QNAME']
-            elif sam_read['QNAME'] != read_name:
-                self.process_sam_reads(sam_reads)
-                self.mapping_statistics['total_reads'] += 1
-                sam_reads, read_name = [], sam_read['QNAME']
-            if self.paired_end:
-                sam_read_paired = next(alignment)
-                assert sam_read['QNAME'] == sam_read_paired['QNAME'], '.fastq files are not paired, sort .fastq files'
-                sam_reads.append([sam_read, sam_read_paired])
             else:
-                sam_reads.append([sam_read])
-        if sam_reads:
-            self.process_sam_reads(sam_reads)
+                if sam_read['QNAME'] != read_name:
+                    self.process_reads(read_group)
+                    read_group, read_name = [sam_read], sam_read['QNAME']
+                else:
+                    read_group.append(sam_read)
+
+    def process_reads(self, read_group):
+        self.process_sam_reads(self.get_sam_reads(read_group))
+        self.mapping_statistics['total_reads'] += 1
+
+    @staticmethod
+    def get_sam_reads(read_group):
+        paired_flags = {'1', '3', '5', '7', '9'}
+        sam_reads = []
+        paired_read = None
+        for read in read_group:
+            # paired end reads are even numbers, this check avoids type conversion
+            if read['FLAG'][-1] not in paired_flags:
+                sam_reads.append([read])
+            else:
+                if not paired_read:
+                    paired_read = read
+                else:
+                    sam_reads.append([paired_read, read])
+                    paired_read = None
+        return sam_reads
 
     @property
     def get_contig_lens(self):
