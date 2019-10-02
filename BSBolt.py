@@ -54,6 +54,7 @@ align_parser.add_argument('-BT2-I', type=int, default=0, help='Bowtie2, minimum 
                                                               'for a valid paired-end alignment')
 align_parser.add_argument('-BT2-X', type=int, default=500, help='Bowtie2, maximum fragment length '
                                                                 'for a valid paired-end alignment')
+align_parser.add_argument('-discordant', action='store_true', help='Allow discordant and mixed reads')
 
 # Add Index Parser Commands
 
