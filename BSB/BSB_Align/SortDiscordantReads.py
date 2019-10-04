@@ -1,5 +1,12 @@
 
 class SortDiscordantReads:
+    """
+    Sorts mapped reads that pass quality control filters, but a mate pair is filtered or reads didn't map as a pair
+    originally. Discordant reads, then mixed reads are returned.
+    Attributes:
+        self.sense_flags (set): flags of reads mapped to sense strand
+        self.non_primary_flag_conversion (dict): discordant flags plus 256 to indicate non-primary alignment
+    """
 
     def __init__(self):
         self.sense_flags = {'65', '67', '73', '97', '99', '129', '137', '161', '163',
@@ -106,7 +113,7 @@ class SortDiscordantReads:
         unmapped_read['POS'] = mapped_read['POS']
         unmapped_read['PNEXT'] = mapped_read['POS']
         unmapped_read['RNAME'] = mapped_read['RNAME']
-        unmapped_read['PNAME'] = mapped_read['RNAME']
+        unmapped_read['RNEXT'] = '='
         unmapped_read['SAM_TAGS'] = ['YT:Z:UP']
         unmapped_read['TLEN'] = '0'
 

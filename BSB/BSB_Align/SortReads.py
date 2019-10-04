@@ -7,20 +7,31 @@ class ReadSortingError(Exception):
 
 
 class SortReads(object):
+    """ Reads are sorted based the number of mapping strands and the quality of mapping status as asssessed by the
+    number of non-bisulfite mismatches observed in the alignments. Reads are only returned if they map exclusively
+    to a single bisulfite reference (same conversion pattern and strand). Paired end reads are first evaluated for
+    proper paired alignments. If a proper paired alignment isn't observed, discordant and mixed reads are evaluated
+    and returned if valid.
+    Keywoard Arguments:
+        mismatch_threshold (int): reads with observed mismatches > threshold returned as unmapped
+        allow_discordant (bool): if true evaluate mixed and discordant alignments
+            """
 
-    def __init__(self, mismatch_threshold=4, allow_discordant=True):
+    def __init__(self, mismatch_threshold: int = None, allow_discordant: bool = True):
         self.mismatch_threshold = mismatch_threshold
         self.allow_discordant = allow_discordant
         self.discordant_sorter = SortDiscordantReads()
 
     def get_reads(self, read_group):
+        # return read group mapping strand and copies of reads with original sequence
         mapping_references, read_copies = self.check_mapping_status(read_group=read_group)
         # return single ended mapped or unmapped reads
         if len(read_copies) == 1:
+            # if mapping isn't observed return unmapped reads
             if not mapping_references:
-                return False, None, self.set_unmapped_read(read_copies[0],
+                return False, None, self.set_unmapped_read(read_copies,
                                                            mapping_strands=list(mapping_references))
-            return self.handle_single_end(mapping_references, read_copies)
+            return self.handle_single_end(mapping_references, read_group, read_copies)
         # if no mapped paired end reads return unmapped reads
         if not mapping_references:
             return False, mapping_references, self.set_unmapped_read(read_copies,
@@ -41,18 +52,22 @@ class SortReads(object):
             return False, discord_mapping, self.set_unmapped_read(read_copies, mapping_strands=discord_mapping)
         return discord_status, discord_mapping, discordant_reads
 
-    def handle_single_end(self, mapping_references, read_copies, read_group):
+    def handle_single_end(self, mapping_references, read_group, read_copies):
         if len(mapping_references) != 1:
-            return False, mapping_references, self.set_unmapped_read(read_copies[0],
+            return False, mapping_references, self.set_unmapped_read(read_copies,
                                                                      mapping_strands=list(mapping_references))
         else:
             return 'Single', mapping_references, [read for read in read_group if read['mapping_status']]
 
     def check_mapping_status(self, read_group):
+        """Evaluate individual read mapping, set mapping status to False if read fails QC. Also return copy of
+        1st read and 2nd read if present (used for setting mapping status)."""
+        # first read will always be present
         read_1, read_2 = read_group[0], None
         mate_conversion = 'G2A' if read_1['conversion_bases'] == 'C2T' else 'C2T'
         mapping_references = set()
         for read in read_group:
+            # a paired read should have the opposite mate conversion pattern as read 1
             if read['read_group'] == '1' and read['conversion_bases'] == mate_conversion:
                 read_2 = read
             if self.check_mismatch(read):
@@ -60,6 +75,7 @@ class SortReads(object):
             else:
                 read['mapping_status'] = True
                 mapping_references.add(read['mapping_reference'])
+        # shallow copy reads, reset params so shouldn't be an issue
         read_copies = [dict(read_1)]
         if read_2:
             read_copies.append(dict(read_2))
@@ -71,7 +87,8 @@ class SortReads(object):
         Return sorted proper reads pair if present.
         Prefer valid read pairs to discordant / mixed read mappings
         """
-        properly_paired_flags = {'83', '99', '147', '163', '256', '272', '339', '355', '403', '419'}
+        properly_paired_flags = {'83', '99', '147', '163', '339', '355', '403', '419'}
+        paired_assertion = {'83': '163', '99': '147', '339': '419', '355': '403'}
         paired_reads = []
         for read in read_group:
             if read['FLAG'] in properly_paired_flags:
@@ -81,6 +98,7 @@ class SortReads(object):
         for read_1, read_2 in zip(paired_reads[::2], paired_reads[1::2]):
             if read_1['mapping_status'] and read_2['mapping_status']:
                 assert read_1['mapping_reference'] == read_2['mapping_reference']
+                assert paired_assertion[read_1['FLAG']] == read_2['FLAG']
                 mapping_references.add(read_1['mapping_reference'])
                 sorted_reads.extend([read_1, read_2])
         return mapping_references, sorted_reads
@@ -123,6 +141,8 @@ class SortReads(object):
                 unmapped_read['CIGAR'] = '*'
                 unmapped_read['PNEXT'] = '0'
                 unmapped_read['TLEN'] = '0'
+                unmapped_read['MAPQ'] = '0'
+                unmapped_read['RNEXT'] = '*'
                 if mapping_strand_id:
                     unmapped_read['SAM_TAGS'] = ['YT:Z:UP', f'XO:Z:{mapping_strand_id}']
                 else:

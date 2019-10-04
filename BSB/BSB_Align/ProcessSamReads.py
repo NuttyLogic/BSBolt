@@ -4,10 +4,22 @@ from BSB.BSB_Utils.UtilityFunctions import reverse_complement
 
 class ProcessSamAlignment:
     """
-
+    Sets mapped reads relative to the regular genomic space by placing all watson reads on sense strand and placing
+    all crick reads on anti-sense strand. As crick reads map to reverse complement strand coordinate space has to
+    adjusted. Note, unmapped reads with a mapped mate aren't modified except for the report flag to reflect the
+    mapping strand of the mate.
+    Keyword Arguments:
+        self.contig_lens (dict[str: int]): chromosome mapping to the length of the mapping contig used to
+                                           put crick reads into normal mapping space
+    Attributes:
+        self.sense_flags (set): flags associated with reads mapped to the sense strand
+        self.mixed_unmapped (set): flags for unmapped reads that don't have to be modified unless the
+                                   mate read switches strands
+        self.watson_mapping_conversion (dict): flag changes to move reads relative to sense strand
+        self.crick_mapping_conversion (dict): flag changes to move reads relative to the anti-sense strand
     """
 
-    def __init__(self, contig_lens=None):
+    def __init__(self, contig_lens: dict = None):
         self.contig_lens = contig_lens
         # when crick strands are reversed, mapping strand flips so set appropriate sam flag
         self.sense_flags = {'0', '99', '163', '256', '323', '419', '65', '67', '73', '97', '99', '129', '137', '161',
@@ -68,7 +80,7 @@ class ProcessSamAlignment:
         mapping_length = get_mapping_length(cigar_tuple)
         mapping_loc = self.contig_lens[sam_read['RNAME']] - int(sam_read['POS']) - mapping_length + 2
         sam_read['POS'] = str(mapping_loc)
-        if sam_read['PNEXT'] != '*':
+        if sam_read['PNEXT'] != '0':
             mate_chrom = sam_read['RNAME'] if sam_read['RNEXT'] == '=' else sam_read['RNEXT']
             mate_pos = self.contig_lens[mate_chrom] - int(sam_read['PNEXT']) - mapping_length + 2
             sam_read['PNEXT'] = str(mate_pos)

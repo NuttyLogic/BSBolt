@@ -48,25 +48,27 @@ def align_bisulfite(alignment_kwargs):
     alignment_time = datetime.timedelta(seconds=round(time.time() - start))
     print(f'Alignment Complete: Time {alignment_time}')
     print('------------------------------')
-    mapping_stats = process_mapping_statistics(bs_alignment.mapping_statistics)
+    mapping_stats = process_mapping_statistics(bs_alignment.mapping_statistics, alignment_kwargs['allow_discordant'])
     print(mapping_stats)
 
 
-def process_mapping_statistics(mapping_dict):
+def process_mapping_statistics(mapping_dict, allow_discordant):
     total_umapped = mapping_dict["unmapped_reads"] + mapping_dict["multireference_reads"]
-    try:
-        multi_ref_prop = mapping_dict["multireference_reads"] / total_umapped
-    except ZeroDivisionError:
-        multi_ref_prop = 0
-    total_mapped = mapping_dict['reads_mapped_1'] + mapping_dict["reads_mapped_more_than_1"] + \
-                   mapping_dict['discordant_reads'] + mapping_dict['mixed_reads']
+    mapped_proper = mapping_dict['reads_mapped_1'] + mapping_dict["reads_mapped_more_than_1"]
+    mapped_discordant = mapping_dict['discordant_reads_1'] + mapping_dict['discordant_reads_more_than_1']
+    mapped_mixed = mapping_dict['mixed_reads_1'] + mapping_dict['mixed_reads_more_than_1']
+    total_mapped = mapped_proper + mapped_discordant + mapped_mixed
     processed_list = [f'Total Reads: {mapping_dict["total_reads"]}',
-                      f'Reads Mapped 0 Times: {total_umapped}, {multi_ref_prop * 100 : .2f} % Multi-reference',
+                      f'Reads Mapped 0 Times: {total_umapped}, {mapping_dict["multireference_reads"]} Multi-reference',
                       f'Reads Mapped 1 Time: {mapping_dict["reads_mapped_1"]}',
                       f'Reads Mapped >1 Times: {mapping_dict["reads_mapped_more_than_1"]}']
-    if mapping_dict['discordant_reads']:
-        processed_list.append(f'Reads Mapped Discordantly: {mapping_dict["discordant_reads"]}')
-        processed_list.append(f'Reads with Mixed Mapping: {mapping_dict["mixed_reads"]}')
+    if allow_discordant:
+        processed_list.append('------------------------------')
+        processed_list.append(f'Reads Mapped Discordantly 1 Time: {mapping_dict["discordant_reads_1"]}')
+        processed_list.append(f'Reads Mapped Discordantly >1 Times: {mapping_dict["discordant_reads_more_than_1"]}')
+        processed_list.append(f'Reads with Mixed Mapping 1 Time: {mapping_dict["mixed_reads_1"]}')
+        processed_list.append(f'Reads with Mixed Mapping >1 Times: {mapping_dict["mixed_reads_more_than_1"]}')
+        processed_list.append('------------------------------')
     mappability = total_mapped / mapping_dict['total_reads']
     processed_list.append(f'Mappability: {mappability * 100:.3f} %')
     processed_list.append('------------------------------')
@@ -108,7 +110,7 @@ def launch_alignment(arguments):
                            bowtie2_commands=bowtie2_commands, bsb_database=arguments.DB,
                            bowtie2_path=arguments.BT2, output_path=arguments.O, mismatch_threshold=arguments.M,
                            command_line_arg=command_line_arg, non_converted_output=arguments.NC,
-                           unmapped_output=arguments.OU, allow_discordant=arguments.discordant)
+                           allow_discordant=arguments.discordant)
     align_bisulfite(aligment_kwargs)
     if arguments.S:
         pysam.sort('-o', f'{arguments.O}.sorted.bam', f'{arguments.O}.bam')

@@ -142,7 +142,7 @@ class TestReadSimulation(unittest.TestCase):
     def test_methylation_setting(self):
         aln_profile: dict = test_simulation_files.parse_aln_line(all_aln_lines[1])
         watson_changes = [1, 72]
-        watson_dict = {'chr10:355546': ['C', 1, 'CG',0, 0],
+        watson_dict = {'chr10:355546': ['C', 1, 'CG', 0, 0],
                        'chr10:355617': ['C', 1, 'CG', 0, 0]}
         crick_changes = [15, 93]
         crick_dict = {'chr10:355560': ['G', 1, 'GC', 0, 0],
