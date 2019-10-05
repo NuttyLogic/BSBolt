@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages, find_namespace_packages
+from setuptools import setup
 
 setup(name='BSBolt',
       version='0.1.1',
@@ -8,10 +8,10 @@ setup(name='BSBolt',
       author='Colin P. Farrell',
       author_email='colinpfarrell@gmail.com',
       license='GPLv3',
-      packages=['BSB'],
+      packages=['BSBolt'],
       dependencies=['pysam >= 0.15.2', 'tqdm >= 4.31.1', 'numpy >= 1.16.3'],
       requires=['pysam', 'numpy', 'tqdm'],
-      entry_points={'console_scripts': ['BSBolt = BSB.BSBRun:launch_bsb']},
+      entry_points={'console_scripts': ['BSBolt = BSB.BSB_Launch:launch_bsb']},
       python_requires='>=3.6',
       test_suite='Test.test',
       include_package_data=True)
