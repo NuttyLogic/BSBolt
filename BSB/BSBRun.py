@@ -1,4 +1,3 @@
-
 import sys
 from BSB.BSB_Utils.UtilityFunctions import check_python_version, check_package_version
 from BSB.BSB_Utils.Launcher import bsb_launch
@@ -23,6 +22,7 @@ def launch_bsb():
 
     launcher = bsb_launch[arguments.subparser_name]
     launcher(arguments)
+
 
 def test_func():
     print('yeah')
