@@ -39,24 +39,38 @@ def launch_index(arguments):
 
 def align_bisulfite(alignment_kwargs):
     start = time.time()
-    print(f'Aligning {alignment_kwargs["fastq1"]} {alignment_kwargs["fastq2"]}')
+    if alignment_kwargs['fastq2']:
+        print(f'Aligning {alignment_kwargs["fastq1"]} {alignment_kwargs["fastq2"]}')
+    else:
+        print(f'Aligning {alignment_kwargs["fastq1"]}')
     bs_alignment = BisulfiteAlignmentAndProcessing(**alignment_kwargs)
     bs_alignment.align_reads()
     alignment_time = datetime.timedelta(seconds=round(time.time() - start))
     print(f'Alignment Complete: Time {alignment_time}')
     print('------------------------------')
-    mapping_stats = process_mapping_statistics(bs_alignment.mapping_statistics)
+    mapping_stats = process_mapping_statistics(bs_alignment.mapping_statistics, alignment_kwargs['allow_discordant'])
     print(mapping_stats)
 
 
-def process_mapping_statistics(mapping_dict):
+def process_mapping_statistics(mapping_dict, allow_discordant):
+    total_umapped = mapping_dict["unmapped_reads"] + mapping_dict["multireference_reads"]
+    mapped_proper = mapping_dict['reads_mapped_1'] + mapping_dict["reads_mapped_more_than_1"]
+    mapped_discordant = mapping_dict['discordant_reads_1'] + mapping_dict['discordant_reads_more_than_1']
+    mapped_mixed = mapping_dict['mixed_reads_1'] + mapping_dict['mixed_reads_more_than_1']
+    total_mapped = mapped_proper + mapped_discordant + mapped_mixed
     processed_list = [f'Total Reads: {mapping_dict["total_reads"]}',
-                      f'Multi-mapped Reads: {mapping_dict["multimapped_reads"]}',
-                      f'Multi-reference Reads: {mapping_dict["multireference_reads"]}',
-                      f'Unmapped Reads: {mapping_dict["unmapped_reads"]}',
-                      f'Uniquely Mapping Reads: {mapping_dict["unique_reads"]}']
-    mappability = mapping_dict['unique_reads'] / mapping_dict["total_reads"]
-    processed_list.append(f'Mappability: {mappability:.3f}')
+                      f'Reads Mapped 0 Times: {total_umapped}, {mapping_dict["multireference_reads"]} Multi-reference',
+                      f'Reads Mapped 1 Time: {mapping_dict["reads_mapped_1"]}',
+                      f'Reads Mapped >1 Times: {mapping_dict["reads_mapped_more_than_1"]}']
+    if allow_discordant:
+        processed_list.append('------------------------------')
+        processed_list.append(f'Reads Mapped Discordantly 1 Time: {mapping_dict["discordant_reads_1"]}')
+        processed_list.append(f'Reads Mapped Discordantly >1 Times: {mapping_dict["discordant_reads_more_than_1"]}')
+        processed_list.append(f'Reads with Mixed Mapping 1 Time: {mapping_dict["mixed_reads_1"]}')
+        processed_list.append(f'Reads with Mixed Mapping >1 Times: {mapping_dict["mixed_reads_more_than_1"]}')
+        processed_list.append('------------------------------')
+    mappability = total_mapped / mapping_dict['total_reads']
+    processed_list.append(f'Mappability: {mappability * 100:.3f} %')
     processed_list.append('------------------------------')
     processed_list.append(f'Reads Mapped to Watson_C2T: {mapping_dict["W_C2T"]}')
     processed_list.append(f'Reads Mapped to Crick_C2T: {mapping_dict["C_C2T"]}')
@@ -71,15 +85,17 @@ def launch_alignment(arguments):
     bsb_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
     arg_order = ['F1', 'F2', 'U', 'BT2', 'NC', 'O', 'DB', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
                  'BT2_X', 'BT2_k', 'BT2_local', 'BT2_p', 'BT2_score_min']
-    bowtie2_commands = ['--quiet', '--sam-nohead', '--reorder', '--no-mixed', '--no-discordant',
+    bowtie2_commands = ['--quiet', '--sam-nohead', '--reorder',
                         '-k', str(arguments.BT2_k),
                         '-p', str(arguments.BT2_p),
                         '-L', str(arguments.BT2_L),
                         '-D', str(arguments.BT2_D)]
+    if not arguments.discordant:
+        bowtie2_commands.extend(['--no-mixed --no-discordant'])
     if arguments.BT2_local:
         bowtie2_commands.append('--local')
         if arguments.BT2_score_min == 'L,-0.6,-0.6':
-            arguments.BT2_score_min = 'G,20,8'
+            arguments.BT2_score_min = 'S,10,8'
     else:
         bowtie2_commands.append('--end-to-end')
     bowtie2_commands.extend(['--score-min', arguments.BT2_score_min])
@@ -94,7 +110,7 @@ def launch_alignment(arguments):
                            bowtie2_commands=bowtie2_commands, bsb_database=arguments.DB,
                            bowtie2_path=arguments.BT2, output_path=arguments.O, mismatch_threshold=arguments.M,
                            command_line_arg=command_line_arg, non_converted_output=arguments.NC,
-                           unmapped_output=arguments.OU)
+                           allow_discordant=arguments.discordant)
     align_bisulfite(aligment_kwargs)
     if arguments.S:
         pysam.sort('-o', f'{arguments.O}.sorted.bam', f'{arguments.O}.bam')

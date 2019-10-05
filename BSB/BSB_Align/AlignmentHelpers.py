@@ -46,10 +46,11 @@ def get_mapping_length(cigar):
 
 def write_bam_line(sam_line=None, output_object=None):
     """Convert sam line to bam line and write out"""
-    output_values = list(sam_line.values())[0:-3]
-    sam1 = '\t'.join(output_values[:-1])
-    sam2 = '\t'.join(output_values[-1])
-    formatted_read = f'{sam1}\t{sam2}'
+    sam_line_1 = f'{sam_line["QNAME"]}\t{sam_line["FLAG"]}\t{sam_line["RNAME"]}\t{sam_line["POS"]}\t'
+    sam_line_2 = f'{sam_line["MAPQ"]}\t{sam_line["CIGAR"]}\t{sam_line["RNEXT"]}\t{sam_line["PNEXT"]}\t'
+    sam_line_3 = f'{sam_line["TLEN"]}\t{sam_line["SEQ"]}\t{sam_line["QUAL"]}\t'
+    sam_tags = '\t'.join(sam_line['SAM_TAGS'])
+    formatted_read = f'{sam_line_1}{sam_line_2}{sam_line_3}{sam_tags}'
     bam_line = pysam.AlignedSegment.fromstring(formatted_read, output_object.header)
     output_object.write(bam_line)
 

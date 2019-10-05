@@ -1,0 +1,10 @@
+include BSB/External/ART/art_illumina_src/*
+include BSB/External/ART/art_illumina_src/.deps/*
+include BSB/External/ART/ART_linux/*
+include BSB/External/ART/ART_mac/*
+include BSB/External/BT2/bowtie2-2.3.4.3-linux-x86_64/*
+include BSB/External/BT2/bowtie2-2.3.4.3-macos-x86_64/*
+include Tests/TestData/BSB_test.fa
+include Tests/TestData/kNN_test_matrix.txt
+include Tests/TestData/test_wgbs_masking.bed
+include Tests/TestData/test_cgmap_files/*

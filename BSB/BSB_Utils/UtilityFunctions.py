@@ -88,7 +88,7 @@ def check_python_version():
 
 def get_external_paths():
     utility_directory = os.path.dirname(os.path.realpath(__file__))
-    external_directory = '/'.join(utility_directory.split('/')[:-2]) + '/External/'
+    external_directory = '/'.join(utility_directory.split('/')[:-1]) + '/External/'
     bt2 = None
     art = None
     if platform.system() == 'Linux':
@@ -101,4 +101,4 @@ def get_external_paths():
         return bt2, art
     if not bt2 and not art:
         print(f'Unsupported platform version; {platform.system()}. Please proved bowtie2 paths and ART paths. '
-              f'BSBolts functionality may be affected.')
+              f'BSBolt functionality may be affected.')

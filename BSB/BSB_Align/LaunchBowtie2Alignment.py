@@ -90,6 +90,7 @@ class Bowtie2Align:
             read_name, FLAG, RNAME, POS, MAPQ, CIGAR, RNEXT, PNEXT, TLEN, SEQ, QUAL, *SAM_TAGS = processed_sam_line
             QNAME, read_group, conversion_bases, SEQ = self.process_read_name(read_name)
             RNAME, mapping_reference = self.process_mapping_chrom(RNAME, read_group)
+            RNEXT = RNEXT.replace('_crick_bs', '')
             return dict(QNAME=QNAME, FLAG=FLAG, RNAME=RNAME, POS=POS,
                         MAPQ=MAPQ, CIGAR=CIGAR, RNEXT=RNEXT, PNEXT=PNEXT,
                         TLEN=TLEN, SEQ=SEQ, QUAL=QUAL, SAM_TAGS=SAM_TAGS,

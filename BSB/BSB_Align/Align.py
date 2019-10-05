@@ -3,7 +3,7 @@ import pysam
 from BSB.BSB_Align.LaunchBowtie2Alignment import Bowtie2Align
 from BSB.BSB_Align.ProcessSamReads import ProcessSamAlignment
 from BSB.BSB_Align.AlignmentHelpers import write_bam_line
-from collections import Counter
+from BSB.BSB_Align.SortReads import SortReads
 
 
 class BisulfiteAlignmentAndProcessing:
@@ -22,12 +22,10 @@ class BisulfiteAlignmentAndProcessing:
         output_path(str): output prefix of output file
         mismatch_threshold (int): mismatch threshold to consider a valid read
         command_line_arg (str): list of commandline args to output with sam file
-        unmapped_output (bool): write unmapped reads to bam (unmapped and multireference reads)
         non_converted_output (bool): map non in silico converted reads to bisulfite reference
+        allow_discordant (bool): all discordant and mixed read pairs
     Attributes:
         self.bowtie2_mapping (dict): argument for launching bowtie2 mapping
-        self.fastq1 (str): path to fastq file
-        self.fastq2 (str): path to fastq1 mate pair
         self.undirectional_library (bool): perform undirectional alignment
         self.bsb_database(str): path to bsb database directory
         self.output_path (str): output prefix of output file
@@ -35,31 +33,31 @@ class BisulfiteAlignmentAndProcessing:
         self.command_line_arg (str): list of commandline args to output with sam file
         self.sam_output (pysam.AlignmentFile): TextIO instance to output processed sam reads.
         self.mapping_statistics (dict): dict of mapping statistics
-        self.unmapped_output (bool); write unmapped reads to bam (unmapped and multireference reads)
-        self.non_converted_output (bool); map non in silico converted reads to bisulfite reference
+        self.read_sorter (SortReads):  sort and return mapped / unmapped reads
+        self.read_processor (ProcessSamAlignment): process mapped reads and orient them to reference strand
     """
 
     def __init__(self, fastq1=None, fastq2=None, undirectional_library=False, bowtie2_commands=None,
-                 bsb_database=None, bowtie2_path=None, output_path=None,
-                 mismatch_threshold=4, command_line_arg=None, unmapped_output=False, non_converted_output=False):
+                 bsb_database=None, bowtie2_path=None, output_path=None, mismatch_threshold=4, command_line_arg=None,
+                 non_converted_output=False, allow_discordant=False):
         self.bowtie2_mapping = dict(fastq1=fastq1, fastq2=fastq2, undirectional_library=undirectional_library,
                                     bowtie2_commands=bowtie2_commands, bowtie2_path=bowtie2_path,
                                     bsb_database=bsb_database, no_conversion=non_converted_output)
         self.bsb_database = bsb_database
-        self.undirectional_library = undirectional_library
-        self.fastq1 = fastq1
-        self.fastq2 = fastq2
         self.command_line_arg = command_line_arg
-        self.unmapped_output = unmapped_output
         self.output_path = output_path
-        self.mismatch_threshold = mismatch_threshold
         self.contig_lens = self.get_contig_lens
         self.sam_output = self.get_output_object
-        self.mapping_statistics = dict(total_reads=1, multimapped_reads=0,
+        self.mapping_statistics = dict(total_reads=0,
                                        unmapped_reads=0, multireference_reads=0,
-                                       unique_reads=0,
+                                       reads_mapped_1=0, reads_mapped_more_than_1=0,
+                                       discordant_reads_1=0, discordant_reads_more_than_1=0,
+                                       mixed_reads_1=0, mixed_reads_more_than_1=0,
                                        W_C2T=0, W_G2A=0,
                                        C_C2T=0, C_G2A=0)
+        self.read_sorter = SortReads(mismatch_threshold=mismatch_threshold,
+                                     allow_discordant=allow_discordant)
+        self.read_processor = ProcessSamAlignment(contig_lens=self.contig_lens)
 
     @property
     def get_output_object(self):
@@ -82,6 +80,7 @@ class BisulfiteAlignmentAndProcessing:
         alignment = iter(Bowtie2Align(**self.bowtie2_mapping))
         sam_read = next(alignment)
         read_group, read_name = [sam_read], sam_read['QNAME']
+        # iterate and process reads
         while True:
             try:
                 sam_read = next(alignment)
@@ -96,56 +95,52 @@ class BisulfiteAlignmentAndProcessing:
                     read_group.append(sam_read)
 
     def process_reads(self, read_group):
-        self.process_sam_reads(self.get_sam_reads(read_group))
+        # retrieve sorted reads
+        read_status, mapping_references, sorted_reads = self.read_sorter.get_reads(read_group=read_group)
+        # processes sorted reads and update number of observed reads by read name
+        self.process_sam_reads(read_status, mapping_references, sorted_reads)
         self.mapping_statistics['total_reads'] += 1
-
-    @staticmethod
-    def get_sam_reads(read_group):
-        paired_flags = {'1', '3', '5', '7', '9'}
-        sam_reads = []
-        paired_read = None
-        for read in read_group:
-            # paired end reads are even numbers, this check avoids type conversion
-            if read['FLAG'][-1] not in paired_flags:
-                sam_reads.append([read])
-            else:
-                if not paired_read:
-                    paired_read = read
-                else:
-                    sam_reads.append([paired_read, read])
-                    paired_read = None
-        return sam_reads
 
     @property
     def get_contig_lens(self):
         with open(f'{self.bsb_database}genome_index.pkl', 'rb') as contig_lens:
             return pickle.load(contig_lens)
 
-    def write_alignment_reads(self, read_grouping):
-        for read in read_grouping:
-            write_bam_line(read, self.sam_output)
+    def update_mapping_statistics(self, read_status, mapping_references, sorted_reads):
+        """Mapping statistics are updated per read group based on the mapping status"""
+        if not read_status:
+            if mapping_references:
+                self.mapping_statistics['multireference_reads'] += 1
+            else:
+                self.mapping_statistics['unmapped_reads'] += 1
+        elif read_status in {'Single', 'Paired'}:
+            self.mapping_statistics[sorted_reads[0]['mapping_reference']] += 1
+            read_len = len(sorted_reads)
+            if read_status == 'Paired':
+                read_len = read_len / 2
+            if read_len > 1:
+                self.mapping_statistics['reads_mapped_more_than_1'] += 1
+            else:
+                self.mapping_statistics['reads_mapped_1'] += 1
+        elif read_status == 'Discordant':
+            if len(sorted_reads) > 2:
+                self.mapping_statistics['discordant_reads_more_than_1'] += 1
+            else:
+                self.mapping_statistics['discordant_reads_1'] += 1
+        else:
+            if len(sorted_reads) > 2:
+                self.mapping_statistics['mixed_reads_more_than_1'] += 1
+            else:
+                self.mapping_statistics['mixed_reads_1'] += 1
 
-    def process_sam_reads(self, sam_reads):
+    def process_sam_reads(self, read_status, mapping_references, sorted_reads):
         """Launch sam read processing
         Arguments:
-            sam_reads (list): list of sam_read dictionaries and fastq lists"""
-        process_sam = ProcessSamAlignment(sam_reads=sam_reads,
-                                          contig_lens=self.contig_lens,
-                                          mismatch_threshold=self.mismatch_threshold)
-        mapping_number, processed_reads = process_sam.output_reads
-        if mapping_number == 1:
-            for read_grouping in processed_reads:
-                self.write_alignment_reads(read_grouping)
-            self.mapping_statistics[processed_reads[0][0]['mapping_reference']] += 1
-            if len(processed_reads) > 1:
-                self.mapping_statistics['multimapped_reads'] += 1
-            else:
-                self.mapping_statistics['unique_reads'] += 1
-        else:
-            if self.unmapped_output:
-                for read_grouping in processed_reads:
-                    self.write_alignment_reads(read_grouping)
-            if mapping_number < 1:
-                self.mapping_statistics['unmapped_reads'] += 1
-            else:
-                self.mapping_statistics['multireference_reads'] += 1
+            read_status (str): type of reads being passed, (single, paired, mapped, discordant, mixed)
+            mapping_references (list or None): list of mapping strands
+            sorted_reads ([dicts]): list of processed sam reads"""
+        self.update_mapping_statistics(read_status, mapping_references, sorted_reads)
+        for read in sorted_reads:
+            if read_status:
+                self.read_processor.process_read(sam_read=read)
+            write_bam_line(read, self.sam_output)

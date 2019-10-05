@@ -96,10 +96,10 @@ class CallMethylationVector:
                     continue
                 meth_calls = self.get_methylation_call(nucleotide, read_names, base_counts)
                 for read, call in meth_calls:
-                    try:
+                    if read in methylation_vectors:
                         methylation_vectors[read]['pos'].append(pileup_col.reference_pos)
                         methylation_vectors[read]['calls'].append(call)
-                    except KeyError:
+                    else:
                         methylation_vectors[read] = {'pos': [pileup_col.reference_pos],
                                                      'calls': [call],
                                                      'chrom': self.contig}
