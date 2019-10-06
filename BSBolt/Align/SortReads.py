@@ -74,10 +74,10 @@ class SortReads(object):
                 read_2 = read
             if self.check_mismatch(read):
                 read['mapping_status'] = False
-                if 'C_' == read['mapping_reference'][0:2]:
-                    self.convert_crick_mapping_space(read)
             else:
                 read['mapping_status'] = True
+                if 'C_' in read['mapping_reference']:
+                    self.convert_crick_mapping_space(read)
                 mapping_references.add(read['mapping_reference'])
         # shallow copy reads, reset params so shouldn't be an issue
         read_copies = [dict(read_1)]
@@ -115,7 +115,7 @@ class SortReads(object):
                 proper_flag_pair = paired_assertion.get(read_1['FLAG'], 'x') == read_2['FLAG']
                 if same_reference and proper_flag_pair:
                     mapping_references.add(read_1['mapping_reference'])
-                    if read_1['mapping_reference'][0:2] == 'C_':
+                    if 'C_' in read_1['mapping_reference']:
                         read_1['PNEXT'] = str(read_2['POS'])
                         read_2['PNEXT'] = str(read_1['POS'])
                     sorted_reads.extend([read_1, read_2])
