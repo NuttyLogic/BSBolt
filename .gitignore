@@ -82,9 +82,9 @@ celerybeat-schedule
 *.sage.py
 
 # test files
-/Tests/TestData/BSB_Test_DB
-/Tests/TestSimulations/BSB*
-/Tests/BSB*
+/tests/TestData/BSB_Test_DB
+/tests/TestSimulations/BSB*
+/tests/BSB*
 
 
 # Environments
