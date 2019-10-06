@@ -145,4 +145,3 @@ class BisulfiteAlignmentAndProcessing:
             if read_status:
                 self.read_processor.process_read(sam_read=read)
             write_bam_line(read, self.sam_output)
-
