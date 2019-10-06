@@ -21,7 +21,3 @@ def launch_bsb():
 
     launcher = bsb_launch[arguments.subparser_name]
     launcher(arguments)
-
-
-def test_func():
-    print('yeah')

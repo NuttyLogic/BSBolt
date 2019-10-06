@@ -120,7 +120,6 @@ matrix_parser.add_argument('-verbose', action="store_true", default=False, help=
 
 sim_parser.add_argument('-G', type=str, required=True,
                         help='Path for reference genome fasta file, fasta file should contain all contigs')
-sim_parser.add_argument('-A', type=str, default=art_path, help='Path to ART executable, default = bundled ART')
 sim_parser.add_argument('-O', type=str, required=True, help='Output prefix')
 sim_parser.add_argument('-PE', default=False, action='store_true', help='Simulate Paired End Reads, default Single End')
 sim_parser.add_argument('-RL', type=int, default=125, help='Simulated Read Lenghth')

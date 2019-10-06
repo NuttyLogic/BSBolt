@@ -10,7 +10,9 @@ from BSBolt.Index.RRBSGenomeBuild import RRBSGenomeIndexBuild
 from BSBolt.Index.WholeGenomeBuild import WholeGenomeIndexBuild
 from BSBolt.Matrix.MatrixAggregator import AggregateMatrix
 from BSBolt.Simulate.SimulateMethylatedReads import SimulateMethylatedReads
-from BSBolt.Utils.UtilityFunctions import check_bowtie2_path
+from BSBolt.Utils.UtilityFunctions import get_external_paths
+
+bt2_path, art_path = get_external_paths()
 
 
 def launch_index(arguments):
@@ -20,7 +22,7 @@ def launch_index(arguments):
               f'Cut Format {arguments.rrbs_cut_format}')
         index = RRBSGenomeIndexBuild(reference_file=arguments.G,
                                      genome_database=arguments.DB,
-                                     bowtie2_path=arguments.BT2,
+                                     bowtie2_path=bt2_path,
                                      bowtie2_threads=arguments.BT2_p,
                                      cut_format=arguments.rrbs_cut_format,
                                      lower_bound=arguments.rrbs_lower,
@@ -30,7 +32,7 @@ def launch_index(arguments):
         print(f'Generating WGBS Database at {arguments.DB}')
         index = WholeGenomeIndexBuild(reference_file=arguments.G,
                                       genome_database=arguments.DB,
-                                      bowtie2_path=arguments.BT2,
+                                      bowtie2_path=bt2_path,
                                       bowtie2_threads=arguments.BT2_p,
                                       mappable_regions=arguments.MR)
         index.generate_bsb_database()
@@ -80,7 +82,6 @@ def process_mapping_statistics(mapping_dict, allow_discordant):
 
 
 def launch_alignment(arguments):
-    check_bowtie2_path(bowtie2_path=arguments.BT2)
     bsb_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
     arg_order = ['F1', 'F2', 'U', 'BT2', 'NC', 'O', 'DB', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
                  'BT2_X', 'BT2_k', 'BT2_local', 'BT2_p', 'BT2_score_min']
@@ -107,7 +108,7 @@ def launch_alignment(arguments):
     command_line_arg = 'BSBolt Align ' + ' '.join([f'-{arg} {bsb_command_dict[arg]}' for arg in arg_order])
     aligment_kwargs = dict(fastq1=arguments.F1, fastq2=arguments.F2, undirectional_library=arguments.U,
                            bowtie2_commands=bowtie2_commands, bsb_database=arguments.DB,
-                           bowtie2_path=arguments.BT2, output_path=arguments.O, mismatch_threshold=arguments.M,
+                           bowtie2_path=bt2_path, output_path=arguments.O, mismatch_threshold=arguments.M,
                            command_line_arg=command_line_arg, non_converted_output=arguments.NC,
                            allow_discordant=arguments.discordant)
     align_bisulfite(aligment_kwargs)
@@ -162,7 +163,7 @@ def launch_matrix_aggregation(arguments):
 
 def launch_simulation(arguments):
     if os.path.isfile(arguments.A):
-        read_simulation = SimulateMethylatedReads(reference_file=arguments.G, art_path=arguments.A,
+        read_simulation = SimulateMethylatedReads(reference_file=arguments.G, art_path=art_path,
                                                   output_path=arguments.O, paired_end=arguments.PE,
                                                   read_length=arguments.RL, read_depth=arguments.RD,
                                                   undirectional=arguments.U, methylation_reference_output=arguments.RO,

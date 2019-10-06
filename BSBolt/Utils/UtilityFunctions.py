@@ -1,6 +1,5 @@
 from distutils.version import LooseVersion
 import os
-import subprocess
 import sys
 
 
@@ -33,26 +32,6 @@ def retrieve_iupac(nucleotide):
     except KeyError:
         iupac_tuple = tuple(nucleotide)
     return iupac_tuple
-
-
-def check_bowtie2_path(bowtie2_path='bowtie2'):
-    """Simple function to check bowti2 path. If path is valid and version >= 2.3.4.2 function exits normally. If path
-    not valid raise FileNotFoundError. If version < 2.3.4.2 raise RuntimeWarning.
-    Keyword Arguments:
-        bowtie2_path (str): path to bowtie executable, default = bowtie2, default assumes bowtie2 is in system path
-    """
-    # external command
-    bowtie2_version_command = [bowtie2_path, '--version']
-    try:
-        bowtie2_check = subprocess.Popen(bowtie2_version_command, stdout=subprocess.PIPE, universal_newlines=True)
-    except FileNotFoundError:
-        raise FileNotFoundError('Bowtie2 not in system path or Bowtie2 Executable Path Incorrect')
-    else:
-        # get first line of stdout
-        version_line = next(iter(bowtie2_check.stdout.readline, ''))
-        bowtie2_version = version_line.replace('\n', '').split(' ')[-1]
-        if LooseVersion(bowtie2_version) < LooseVersion('2.2.9'):
-            raise RuntimeWarning('BSBolt Performance not evaluated on Bowtie2 Versions < 2.2.9')
 
 
 def import_package_check(package_name):
