@@ -83,7 +83,7 @@ def process_mapping_statistics(mapping_dict, allow_discordant):
 
 def launch_alignment(arguments):
     bsb_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
-    arg_order = ['F1', 'F2', 'U', 'BT2', 'NC', 'O', 'DB', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
+    arg_order = ['F1', 'F2', 'U', 'NC', 'O', 'DB', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
                  'BT2_X', 'BT2_k', 'BT2_local', 'BT2_p', 'BT2_score_min']
     bowtie2_commands = ['--quiet', '--sam-nohead', '--reorder',
                         '-k', str(arguments.BT2_k),
@@ -162,21 +162,18 @@ def launch_matrix_aggregation(arguments):
 
 
 def launch_simulation(arguments):
-    if os.path.isfile(arguments.A):
-        read_simulation = SimulateMethylatedReads(reference_file=arguments.G, art_path=art_path,
-                                                  output_path=arguments.O, paired_end=arguments.PE,
-                                                  read_length=arguments.RL, read_depth=arguments.RD,
-                                                  undirectional=arguments.U, methylation_reference_output=arguments.RO,
-                                                  methylation_reference=arguments.BR, methylation_profile=arguments.RC,
-                                                  insertion_rate1=arguments.IR1, insertion_rate2=arguments.IR2,
-                                                  deletion_rate1=arguments.DR1, deletion_rate2=arguments.DR2,
-                                                  n_base_cutoff=arguments.NF, sequencing_system=arguments.SS,
-                                                  pe_fragment_size=arguments.M, fragment_size_deviation=arguments.SM,
-                                                  read1_quality_profile=arguments.Q1,
-                                                  read2_quality_profile=arguments.Q2)
-        read_simulation.run_simulation()
-    else:
-        print('ART Executable Path not Valid')
+    read_simulation = SimulateMethylatedReads(reference_file=arguments.G, art_path=art_path,
+                                              output_path=arguments.O, paired_end=arguments.PE,
+                                              read_length=arguments.RL, read_depth=arguments.RD,
+                                              undirectional=arguments.U, methylation_reference_output=arguments.RO,
+                                              methylation_reference=arguments.BR, methylation_profile=arguments.RC,
+                                              insertion_rate1=arguments.IR1, insertion_rate2=arguments.IR2,
+                                              deletion_rate1=arguments.DR1, deletion_rate2=arguments.DR2,
+                                              n_base_cutoff=arguments.NF, sequencing_system=arguments.SS,
+                                              pe_fragment_size=arguments.M, fragment_size_deviation=arguments.SM,
+                                              read1_quality_profile=arguments.Q1,
+                                              read2_quality_profile=arguments.Q2)
+    read_simulation.run_simulation()
 
 
 def launch_imputation(arguments):

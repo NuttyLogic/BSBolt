@@ -8,10 +8,10 @@ class SortDiscordantReads:
     """
 
     def __init__(self):
-        self.sense_flags = {'65', '67', '73', '97', '99', '129', '137', '161', '163',
-                            '321', '323', '329', '353', '355', '385', '393', '417', '419'}
+        self.sense_flags = {'65', '67', '73', '97', '99', '129', '131', '137', '161', '163',
+                            '321', '323', '329', '353', '355', '385', '387', '393', '417', '419'}
         self.non_primary_flag_conversion = {'65': '321', '129': '385', '97': '353', '145': '401',
-                                            '81': '337', '161': '417', '131': '387', '177': '433',
+                                            '81': '337', '161': '417', '113': '369', '177': '433',
                                             '73': '329', '137': '393', '89': '345', '153': '409'}
 
     def check_discordant_read_pairing(self, read_group, read_copies):
@@ -66,12 +66,13 @@ class SortDiscordantReads:
             read['FLAG'] = self.non_primary_flag_conversion[flag]
         return first_reads + second_reads
 
-    def set_dicordant_read(self, read, reference_read):
+    @staticmethod
+    def set_dicordant_read(read, reference_read):
         if read['RNAME'] == reference_read['RNAME']:
             read['RNEXT'] = '='
         else:
-            read['RNEXT'] = reference_read['RNAME']
-        read['PNEXT'] = reference_read['POS']
+            read['RNEXT'] = str(reference_read['RNAME'])
+        read['PNEXT'] = str(reference_read['POS'])
         read['TLEN'] = '0'
 
     def get_discordant_flag(self, first_read, second_read):
@@ -85,7 +86,7 @@ class SortDiscordantReads:
         elif not first_strand and second_strand:
             return '81', '161'
         else:
-            return '131', '177'
+            return '113', '177'
 
     def get_mixed_reads(self, read_group, read_copies, first=True):
         unmapped_read = read_copies[1] if first else read_copies[0]
@@ -101,7 +102,7 @@ class SortDiscordantReads:
 
     @staticmethod
     def set_mapped_mixed(mapped_read):
-        mapped_read['PNEXT'] = mapped_read['POS']
+        mapped_read['PNEXT'] = str(mapped_read['POS'])
         mapped_read['RNEXT'] = '='
         mapped_read['TLEN'] = '0'
 
@@ -109,12 +110,13 @@ class SortDiscordantReads:
     def set_unmapped_mixed(mapped_read, unmapped_read):
         unmapped_read['MAPQ'] = '0'
         unmapped_read['CIGAR'] = '*'
-        unmapped_read['POS'] = mapped_read['POS']
-        unmapped_read['PNEXT'] = mapped_read['POS']
-        unmapped_read['RNAME'] = mapped_read['RNAME']
+        unmapped_read['POS'] = str(mapped_read['POS'])
+        unmapped_read['PNEXT'] = str(mapped_read['POS'])
+        unmapped_read['RNAME'] = str(mapped_read['RNAME'])
         unmapped_read['RNEXT'] = '='
         unmapped_read['SAM_TAGS'] = ['YT:Z:UP']
         unmapped_read['TLEN'] = '0'
+        unmapped_read['mapping_reference'] = str(mapped_read['mapping_reference'])
 
     def get_mixed_flags(self, read, first=True):
         if read['FLAG'] in self.sense_flags:

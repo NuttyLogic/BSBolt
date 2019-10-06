@@ -1,4 +1,5 @@
 from BSBolt.Align.SortDiscordantReads import SortDiscordantReads
+from BSBolt.Align.AlignmentHelpers import convert_alpha_numeric_cigar, get_mapping_length, convert_cigar_tuple
 
 
 class ReadSortingError(Exception):
@@ -17,9 +18,10 @@ class SortReads(object):
         allow_discordant (bool): if true evaluate mixed and discordant alignments
             """
 
-    def __init__(self, mismatch_threshold: int = None, allow_discordant: bool = True):
+    def __init__(self, mismatch_threshold: int = None, allow_discordant: bool = True, contig_lens: dict = None):
         self.mismatch_threshold = mismatch_threshold
         self.allow_discordant = allow_discordant
+        self.contig_lens = contig_lens
         self.discordant_sorter = SortDiscordantReads()
 
     def get_reads(self, read_group):
@@ -72,6 +74,8 @@ class SortReads(object):
                 read_2 = read
             if self.check_mismatch(read):
                 read['mapping_status'] = False
+                if 'C_' == read['mapping_reference'][0:2]:
+                    self.convert_crick_mapping_space(read)
             else:
                 read['mapping_status'] = True
                 mapping_references.add(read['mapping_reference'])
@@ -81,14 +85,24 @@ class SortReads(object):
             read_copies.append(dict(read_2))
         return mapping_references, read_copies
 
+    def convert_crick_mapping_space(self, read):
+        cigar_tuple = convert_alpha_numeric_cigar(read['CIGAR'])[::-1]
+        # convert flag to be relative to negative strand
+        mapping_length = get_mapping_length(cigar_tuple)
+        mapping_loc = self.contig_lens[read['RNAME']] - int(read['POS']) - mapping_length + 2
+        read['POS'] = str(mapping_loc)
+        read['CIGAR'] = convert_cigar_tuple(cigar_tuple)
+
     @staticmethod
     def check_proper_read_pairing(read_group):
         """
         Return sorted proper reads pair if present.
         Prefer valid read pairs to discordant / mixed read mappings
         """
-        properly_paired_flags = {'83', '99', '147', '163', '339', '355', '403', '419'}
-        paired_assertion = {'83': '163', '99': '147', '339': '419', '355': '403'}
+        properly_paired_flags = {'67', '83', '99', '115', '131', '147', '163', '179'
+                                 '323', '339', '355', '371', '387', '403', '419', '435'}
+        paired_assertion = {'83': '163', '99': '147', '339': '419', '355': '403',
+                            '67': '131', '115': '179', '323': '387', '371': '435'}
         paired_reads = []
         for read in read_group:
             if read['FLAG'] in properly_paired_flags:
@@ -97,10 +111,14 @@ class SortReads(object):
         sorted_reads = []
         for read_1, read_2 in zip(paired_reads[::2], paired_reads[1::2]):
             if read_1['mapping_status'] and read_2['mapping_status']:
-                assert read_1['mapping_reference'] == read_2['mapping_reference']
-                assert paired_assertion[read_1['FLAG']] == read_2['FLAG']
-                mapping_references.add(read_1['mapping_reference'])
-                sorted_reads.extend([read_1, read_2])
+                same_reference = read_1['mapping_reference'] == read_2['mapping_reference']
+                proper_flag_pair = paired_assertion.get(read_1['FLAG'], 'x') == read_2['FLAG']
+                if same_reference and proper_flag_pair:
+                    mapping_references.add(read_1['mapping_reference'])
+                    if read_1['mapping_reference'][0:2] == 'C_':
+                        read_1['PNEXT'] = str(read_2['POS'])
+                        read_2['PNEXT'] = str(read_1['POS'])
+                    sorted_reads.extend([read_1, read_2])
         return mapping_references, sorted_reads
 
     def check_discordant(self, read_group, read_copies):
@@ -134,18 +152,17 @@ class SortReads(object):
             if read['FLAG'] in unmapped_read_flags:
                 unmapped_reads.append(read)
             else:
-                unmapped_read = dict(read)
-                unmapped_read['FLAG'] = flag
-                unmapped_read['RNAME'] = '*'
-                unmapped_read['POS'] = '0'
-                unmapped_read['CIGAR'] = '*'
-                unmapped_read['PNEXT'] = '0'
-                unmapped_read['TLEN'] = '0'
-                unmapped_read['MAPQ'] = '0'
-                unmapped_read['RNEXT'] = '*'
+                read['FLAG'] = flag
+                read['RNAME'] = '*'
+                read['POS'] = '0'
+                read['CIGAR'] = '*'
+                read['PNEXT'] = '0'
+                read['TLEN'] = '0'
+                read['MAPQ'] = '0'
+                read['RNEXT'] = '*'
                 if mapping_strand_id:
-                    unmapped_read['SAM_TAGS'] = ['YT:Z:UP', f'XO:Z:{mapping_strand_id}']
+                    read['SAM_TAGS'] = ['YT:Z:UP', f'XO:Z:{mapping_strand_id}']
                 else:
-                    unmapped_read['SAM_TAGS'] = ['YT:Z:UP']
-                unmapped_reads.append(unmapped_read)
+                    read['SAM_TAGS'] = ['YT:Z:UP']
+                unmapped_reads.append(read)
         return unmapped_reads

@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
 import argparse
-from FastqIterator import OpenFastq
-from UtilityFunctions import check_python_version
+from BSBolt.Utils.FastqIterator import OpenFastq
+from BSBolt.Utils.UtilityFunctions import check_python_version
 
 check_python_version()
 

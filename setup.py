@@ -22,10 +22,7 @@ def compile_dependency(compilation_command, cwd):
 def make_external_dependencies():
     make_bowtie2_1 = ['make', 'static-libs']
     make_bowtie2_2 = ['make', 'STATIC_BUILD=1']
-    art_src = 'art_illumina_src/'
-    make_art = ['g++', '-static', '-g', '-O2', '-o', 'art_illumina', f'{art_src}art_illumina.o',
-                f'{art_src}art_qual_scale.o', f'{art_src}empdist.o', f'{art_src}readSeqFile.o',
-                f'{art_src}seqRead.o', f'{art_src}samRead.o', '-lgsl', '-lgslcblas', '-lm']
+    make_art = ['sh', 'art_comp.sh']
     if not os.path.exists(f'{art_directory}/art_illumina'):
         print('Compiling ART')
         compile_dependency(make_art, art_directory)

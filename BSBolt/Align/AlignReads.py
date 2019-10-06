@@ -56,8 +56,9 @@ class BisulfiteAlignmentAndProcessing:
                                        W_C2T=0, W_G2A=0,
                                        C_C2T=0, C_G2A=0)
         self.read_sorter = SortReads(mismatch_threshold=mismatch_threshold,
-                                     allow_discordant=allow_discordant)
-        self.read_processor = ProcessSamAlignment(contig_lens=self.contig_lens)
+                                     allow_discordant=allow_discordant,
+                                     contig_lens=self.contig_lens)
+        self.read_processor = ProcessSamAlignment()
 
     @property
     def get_output_object(self):
@@ -144,3 +145,4 @@ class BisulfiteAlignmentAndProcessing:
             if read_status:
                 self.read_processor.process_read(sam_read=read)
             write_bam_line(read, self.sam_output)
+
