@@ -3,7 +3,7 @@ import os
 import subprocess
 import time
 import pysam
-from BSBolt.Align.Align import BisulfiteAlignmentAndProcessing
+from BSBolt.Align.AlignReads import BisulfiteAlignmentAndProcessing
 from BSBolt.CallMethylation.ProcessContigs import ProcessContigs
 from BSBolt.Impute.kNN_Impute import ImputeMissingValues
 from BSBolt.Index.RRBSGenomeBuild import RRBSGenomeIndexBuild
@@ -14,7 +14,6 @@ from BSBolt.Utils.UtilityFunctions import check_bowtie2_path
 
 
 def launch_index(arguments):
-    check_bowtie2_path(bowtie2_path=arguments.BT2)
     if arguments.rrbs:
         print(f'Generating RRBS Database at {arguments.DB}: '
               f'lower bound {arguments.rrbs_lower}, upper bound {arguments.rrbs_upper}: '

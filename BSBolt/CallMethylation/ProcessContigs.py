@@ -3,7 +3,7 @@ import gzip
 import multiprocessing
 import pysam
 from tqdm import tqdm
-from BSBolt.CallMethylation.CallMethylation import CallMethylation
+from BSBolt.CallMethylation.CallMethylationValues import CallMethylation
 
 
 class MethylationCallingError(Exception):

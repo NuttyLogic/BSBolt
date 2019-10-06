@@ -24,8 +24,6 @@ align_parser.add_argument('-F1', type=str, default=None, help='Path to fastq 1',
 align_parser.add_argument('-F2', type=str, default=None, help='Path to fastq 2')
 align_parser.add_argument('-NC', action='store_true', default=False, help='Aligned unconverted bisulfite reads')
 align_parser.add_argument('-U', action="store_false", default=True, help='Library undirectional, default=True')
-align_parser.add_argument('-BT2', type=str, default=bt2_path, help='Path to bowtie2 aligner, default = bundled '
-                                                                   'bowtie2')
 align_parser.add_argument('-O', type=str, default=None, help='Path to Output Prefix', required=True)
 align_parser.add_argument('-DB', type=str, default=None, help='Path to BSSeeker Database', required=True)
 align_parser.add_argument('-M', type=int, default=4, help='Read mismatch threshold, reads with mismatches greater than '
@@ -53,8 +51,6 @@ index_parser.add_argument('-DB', type=str, required=True,
                           help='Path to index directory, will create directory if folder does not exist')
 index_parser.add_argument('-MR', type=str, default=None, help='Path to bed file of mappable regions, build Bowtie2 '
                                                               'reference using masked contig sequence')
-index_parser.add_argument('-BT2', type=str, default=bt2_path, help='Path to bowtie2 executable, default = bundled '
-                                                                   'bowtie2')
 index_parser.add_argument('-BT2-p', type=int, default=2, help='Number of threads for Bowtie2 to use')
 index_parser.add_argument('-rrbs', action="store_true", default=False, help='Generate Reduced Representative'
                                                                             ' Bisulfite Sequencing Index')
