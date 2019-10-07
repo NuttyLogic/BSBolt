@@ -2,30 +2,34 @@ import os
 from setuptools import setup
 from setuptools.command.install import install
 from setuptools.command.develop import develop
+from setuptools.command.build_ext import build_ext
 import subprocess
+import glob
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
-working_directory = os.path.dirname(os.path.realpath(__file__))
-bowtie2_directory = f'{working_directory}/BSBolt/External/BT2'
-art_directory = f'{working_directory}/BSBolt/External/ART'
 
 
 def compile_dependency(compilation_command, cwd):
-    print(' '.join(compilation_command))
     comp = subprocess.Popen(compilation_command, stdout=subprocess.PIPE,
                             universal_newlines=True, cwd=cwd)
+    comp.wait()
     for line in iter(comp.stdout.readline, ''):
         print(line)
 
 
 def make_external_dependencies():
+    working_directory = os.path.dirname(os.path.realpath(__file__))
+    bowtie2_directory = f'{working_directory}/BSBolt/External/BT2'
+    art_directory = f'{working_directory}/BSBolt/External/ART'
     make_bowtie2_1 = ['make', 'static-libs']
     make_bowtie2_2 = ['make', 'STATIC_BUILD=1']
     make_art = ['sh', 'art_comp.sh']
     if not os.path.exists(f'{art_directory}/art_illumina'):
         print('Compiling ART')
         compile_dependency(make_art, art_directory)
+        print(os.path.exists(f'{art_directory}/art_illumina'))
+        print(glob.glob(f'{art_directory}/*'))
     if not os.path.exists(f'{bowtie2_directory}/bowtie2-align-l'):
         print('Compiling Bowtie2')
         compile_dependency(make_bowtie2_1, bowtie2_directory)
@@ -35,18 +39,25 @@ def make_external_dependencies():
 class InstallCmd(install):
 
     def run(self):
+        print('YESSLKSDLKJFJKL:SKL:DJFKL:J')
         make_external_dependencies()
-        install.run(self)
+        super().run()
 
 
 class DevelopCmd(develop):
 
     def run(self):
         make_external_dependencies()
-        develop.run(self)
+        super().run()
 
 
-make_external_dependencies()
+class BuildCmd(build_ext):
+
+    def run(self):
+        make_external_dependencies()
+        super().run()
+
+
 
 setup(name='BSBolt',
       version='0.1.1',
@@ -76,5 +87,9 @@ setup(name='BSBolt',
       entry_points={'console_scripts': ['BSBolt = BSBolt.Launch:launch_bsb']},
       python_requires='>=3.6',
       test_suite='tests',
-      include_package_data=True
+      include_package_data=True,
+      cmdclass={'install': InstallCmd,
+                'develop': DevelopCmd,
+                'build_ext': BuildCmd},
+      zip_safe=False
       )

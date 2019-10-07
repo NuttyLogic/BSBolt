@@ -2,5 +2,5 @@ include BSBolt/External/ART/*
 include BSBolt/External/ART/ART_profiler_illumina/*
 include BSBolt/External/ART/Illumina_profiles/*
 include BSBolt/External/BT2/bowtie*
-
+include BSBolt/External/BT2/third_party/*
 
