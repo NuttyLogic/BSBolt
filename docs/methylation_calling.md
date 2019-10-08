@@ -54,7 +54,7 @@ observed at each cytonsine. Relative to the reference genome methylation status 
 can only be called using reads mapped to Watson and Crick strands respectively. 
 ```shell
 # Methylation Calling with 2 threads, 
-python3 BSBolt.py CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose > methylation_stats.txt
+BSBolt CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose > methylation_stats.txt
 ```
 **Output Files**
 

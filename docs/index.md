@@ -11,29 +11,35 @@ and targeted methylation sequencing data. BSBolt utilizes
 Illumina reads. 
 
 ### Installation
-BSBolt requires [python3.6](python.org) or greater to run, with the external *pysam*, *numpy*, and *tqdm* packages. BSBolt is 
-distributed with [Bowtie2]( http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml)
+
+At installation BSBolt compiles two external dependencies 
+[Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml)
 and [ART Read Simulation Tools](https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm) 
-under the terms of the [GPLv3 License](https://www.gnu.org/licenses/gpl-3.0.html). BSBolt is implemented for Unix like
-operating systems (MacOS, Linux). Windows support under the Windows Subsystem for Linux (WSL) if functional, but has been 
-minimally tested. After installing python >= 3.6 follow the instructions below to complete the installation process.
+under the terms of the [GPLv3 License](https://www.gnu.org/licenses/gpl-3.0.html). Installation failures are generally 
+due to external C libraries not being installed or not being on path. 
 
-1. **Clone BSBolt**
-    ```shell
-    git clone  https://github.com/NuttyLogic/BSBolt.git
-    ```
-2. **Installing Dependencies**
-    ```shell
-    cd BSBolt
-    pip3 install -r requirements.txt 
-    ```
+```shell
+pip3 install BSBolt -v
+```
 
+1. Python Dependencies
+    - [pysam](https://github.com/pysam-developers/pysam) >= 0.15.2
+    - [numpy](https://numpy.org/) >=1.16.3
+    - [tqdm](https://github.com/tqdm/tqdm) >= 4.31.1
+2. External C Dependencies
+    - libgsl
+    - zlib      
+    - libbz2
+    - liblzma
+    - libcurl
+    - libcrypto  
+ 
 ### Usage
 BSBolt modules can be invoked  by calling *BSBolt.py*. Module documentation can be called by calling the module followed by 
 **-h**.
  
 ```shell
-python3 BSBolt.py Module
+BSBolt Module
 
 Align               Alignment Module
 Index               Index Generation Module

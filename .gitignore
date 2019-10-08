@@ -82,9 +82,9 @@ celerybeat-schedule
 *.sage.py
 
 # test files
-/Tests/TestData/BSB_Test_DB
-/Tests/TestSimulations/BSB*
-/Tests/BSB*
+/tests/TestData/BSB_Test_DB
+/tests/TestSimulations/BSB*
+/tests/BSB*
 
 
 # Environments
@@ -116,3 +116,20 @@ venv.bak/
 .idea/workspace.xml
 .DS_Store
 scratch*
+
+# compiled binaries
+BSBolt/External/ART/art_illumina
+BSBolt/External/BT2/bowtie2-align-l
+BSBolt/External/BT2/bowtie2-align-s
+BSBolt/External/BT2/bowtie2-build-l
+BSBolt/External/BT2/bowtie2-build-s
+BSBolt/External/BT2/bowtie2-inspect-l
+BSBolt/External/BT2/bowtie2-inspect-s
+BSBolt/External/BT2/.tmp
+BSBolt/External/BT2/bowtie2-align-l.dSYM
+BSBolt/External/BT2/bowtie2-align-s.dSYM
+BSBolt/External/BT2/bowtie2-build-l.dSYM
+BSBolt/External/BT2/bowtie2-build-s.dSYM
+BSBolt/External/BT2/bowtie2-inspect-l.dSYM
+BSBolt/External/BT2/bowtie2-inspect-s.dSYM
+BSBolt/External/ART/art_illumina_src/*.o
