@@ -1,5 +1,4 @@
 import datetime
-import os
 import subprocess
 import time
 import pysam
@@ -83,7 +82,7 @@ def process_mapping_statistics(mapping_dict, allow_discordant):
 
 def launch_alignment(arguments):
     bsb_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
-    arg_order = ['F1', 'F2', 'U', 'NC', 'O', 'DB', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
+    arg_order = ['F1', 'F2', 'D', 'NC', 'O', 'DB', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
                  'BT2_X', 'BT2_k', 'BT2_local', 'BT2_p', 'BT2_score_min']
     bowtie2_commands = ['--quiet', '--sam-nohead', '--reorder',
                         '-k', str(arguments.BT2_k),
@@ -95,7 +94,7 @@ def launch_alignment(arguments):
     if arguments.BT2_local:
         bowtie2_commands.append('--local')
         if arguments.BT2_score_min == 'L,-0.6,-0.6':
-            arguments.BT2_score_min = 'S,10,8'
+            arguments.BT2_score_min = 'L,10,1.1'
     else:
         bowtie2_commands.append('--end-to-end')
     bowtie2_commands.extend(['--score-min', arguments.BT2_score_min])
@@ -106,7 +105,8 @@ def launch_alignment(arguments):
     if not arguments.DB.endswith('/'):
         arguments.DB = f'{arguments.DB}/'
     command_line_arg = 'BSBolt Align ' + ' '.join([f'-{arg} {bsb_command_dict[arg]}' for arg in arg_order])
-    aligment_kwargs = dict(fastq1=arguments.F1, fastq2=arguments.F2, undirectional_library=arguments.U,
+    undirectional_library = True if not arguments.D else False
+    aligment_kwargs = dict(fastq1=arguments.F1, fastq2=arguments.F2, undirectional_library=undirectional_library,
                            bowtie2_commands=bowtie2_commands, bsb_database=arguments.DB,
                            bowtie2_path=bt2_path, output_path=arguments.O, mismatch_threshold=arguments.M,
                            command_line_arg=command_line_arg, non_converted_output=arguments.NC,

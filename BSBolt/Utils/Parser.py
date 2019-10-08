@@ -5,7 +5,7 @@ from BSBolt.Utils.UtilityFunctions import get_external_paths
 bt2_path, art_path = get_external_paths()
 
 parser = argparse.ArgumentParser(description='BiSulfite Bolt, A Bisulfite sequencing processing tool.',
-                                 usage='python3 BSB.py Module {Module Arguments}')
+                                 usage='BSBolt Module {Module Arguments}')
 
 subparsers = parser.add_subparsers(description='BSBolt Modules, Please Invoke BSBolt Modules for Help',
                                    metavar='Index, Align, CallMethylation, AggregateMatrix, Simulate, Impute',
@@ -23,7 +23,9 @@ imputation_parser = subparsers.add_parser('Impute', help='kNN Imputation Module'
 align_parser.add_argument('-F1', type=str, default=None, help='Path to fastq 1', required=True)
 align_parser.add_argument('-F2', type=str, default=None, help='Path to fastq 2')
 align_parser.add_argument('-NC', action='store_true', default=False, help='Aligned unconverted bisulfite reads')
-align_parser.add_argument('-U', action="store_false", default=True, help='Library undirectional, default=True')
+align_parser.add_argument('-D', action="store_true", default=False, help='Library directional, only the bisulfite '
+                                                                         'converted DNA is sequenced a not the PCR '
+                                                                         'complement, default=False')
 align_parser.add_argument('-O', type=str, default=None, help='Path to Output Prefix', required=True)
 align_parser.add_argument('-DB', type=str, default=None, help='Path to BSSeeker Database', required=True)
 align_parser.add_argument('-M', type=int, default=4, help='Read mismatch threshold, reads with mismatches greater than '

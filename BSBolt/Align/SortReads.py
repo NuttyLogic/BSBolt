@@ -96,13 +96,11 @@ class SortReads(object):
     @staticmethod
     def check_proper_read_pairing(read_group):
         """
-        Return sorted proper reads pair if present.
+        Return sorted proper reads pair if present. Assume proper Illumina FR orientation.
         Prefer valid read pairs to discordant / mixed read mappings
         """
-        properly_paired_flags = {'67', '83', '99', '115', '131', '147', '163', '179'
-                                 '323', '339', '355', '371', '387', '403', '419', '435'}
-        paired_assertion = {'83': '163', '99': '147', '339': '419', '355': '403',
-                            '67': '131', '115': '179', '323': '387', '371': '435'}
+        properly_paired_flags = {'83', '99', '147', '163', '339', '355', '403', '419'}
+        paired_assertion = {'83': '163', '99': '147', '339': '419', '355': '403'}
         paired_reads = []
         for read in read_group:
             if read['FLAG'] in properly_paired_flags:

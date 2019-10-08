@@ -49,7 +49,6 @@ a masked alignment index or a RRBS index.
                         folder does not exist
   -MR                   Path to bed file of mappable regions, build Bowtie2
                         reference using masked contig sequence
-  -BT2                  Path to bowtie2 executable, default = bundled bowtie2
   -BT2-p                Number of threads for Bowtie2 to use
   -rrbs                 Generate Reduced Representative Bisulfite Sequencing
                         Index
@@ -64,19 +63,19 @@ a masked alignment index or a RRBS index.
 **WGBS Index Generation Example**
 ```shell
 # WGBS Index with 4 BT2 Threads
-python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4
+BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4
 ```
 
 **Masked Alignment Index Generation Example**
 ```shell
 # WGBS Index with 4 BT2 Threads
-python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4 -MR /Tests/TestData/test_wgbs_madking.bed
+BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4 -MR /Tests/TestData/test_wgbs_madking.bed
 ```
 
 **RRBS Index Generation Example**
 ```shell
 # RRBS Index Using 4 BT2 Threads, MSPI Cut Format, 40bp Lower Fragment Bound, and 400bp Upper Fragment Bound
-python3 BSBolt.py Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4 -rrbs -rrbs-cut-format C-CGG -rrbs-lower 40 -rrbs-upper 400
+BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4 -rrbs -rrbs-cut-format C-CGG -rrbs-lower 40 -rrbs-upper 400
 ```
 
 ### BSB Align
@@ -94,9 +93,7 @@ as unmapped reads. Valid reads are further modified so all Watson reads are repo
 -F1                   Path to fastq 1
 -F2                   Path to fastq 2
 -NC                   Aligned unconverted bisulfite reads
--OU                   Output unmapped reads
--U                    Library undirectioinal, default=True
--BT2                  Path to bowtie2 aligner, default = bundled bowtie2
+-D                    Library directional, default=False
 -O                    Path to Output Prefix
 -DB                   Path to BSBolt Database
 -M                    Read mismatch threshold, reads with mismatches greater
@@ -113,15 +110,16 @@ as unmapped reads. Valid reads are further modified so all Watson reads are repo
                       end alignment
 -BT2-X                Bowtie2, maximum fragment length for a valid paired-
                       end alignment
+-discord              Allow discordant and mixed reads
 ```
 **Paired End Alignment**
 ```shell
 # Paired End Alignment Using Default Commands
-python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/Tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/Tests/BSB_pe_test 
+BSBolt Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/Tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/Tests/BSB_pe_test 
 ```
 
 **Single End Alignment**
 ```shell
 # Single End Alignment Using Default Commands
-python3 BSBolt.py Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/Tests/BSB_pe_test 
+BSBolt Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/Tests/BSB_pe_test 
 ```

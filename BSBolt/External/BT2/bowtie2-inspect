@@ -62,7 +62,7 @@ def main():
         inspect_bin_l += '-debug'
 
     if script_options.sanitized:
-        inpsect_bin_spec += '-sanitized'
+        inspect_bin_spec += '-sanitized'
         inspect_bin_l += '-sanitized'
 
     if script_options.large_index:
