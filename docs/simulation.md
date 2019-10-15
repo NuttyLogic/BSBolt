@@ -46,5 +46,5 @@ guanine individual reads simulated using ART are modified accordingly. The methy
 
 **Simulate Paired End, Undirectional Methylation Reads**
 ```shell
-python3 BSBolt.py Simulate -G ~/Tests/TestData/BSB_test.fa -O ~/Tests/TestSimulations/BSB_pe -U -PE
+python3 -m BSBolt Simulate -G ~/Tests/TestData/BSB_test.fa -O ~/Tests/TestSimulations/BSB_pe -U -PE
 ```

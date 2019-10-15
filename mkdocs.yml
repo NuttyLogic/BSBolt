@@ -12,3 +12,4 @@ nav:
     - Pipelines: pipelines.md
     - Simulation: simulation.md
     - Python API: API.md
+    - Tutorial: tutorial.md

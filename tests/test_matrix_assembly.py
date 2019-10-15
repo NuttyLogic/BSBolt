@@ -367,7 +367,7 @@ cg_only_test_high.aggregate_matrix()
 # test_command line
 test_matrix_output = f'{test_directory}/TestData/test_cgmap_files/matrix_test.txt'
 
-bsb_matrix_commands = ['python3', bsbolt, 'AggregateMatrix',
+bsb_matrix_commands = ['python3', '-m', 'BSBolt', 'AggregateMatrix',
                        '-F', f'{test_cgmap_file[0]},{test_cgmap_file[1]},{test_cgmap_file[2]}',
                        '-S', f'S1,S2,S3', '-O', test_matrix_output,
                        '-verbose', '-min-coverage', '10', '-min-sample', '0.9']

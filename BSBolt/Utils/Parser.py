@@ -7,7 +7,8 @@ bt2_path, art_path = get_external_paths()
 parser = argparse.ArgumentParser(description='BiSulfite Bolt, A Bisulfite sequencing processing tool.',
                                  usage='BSBolt Module {Module Arguments}')
 
-subparsers = parser.add_subparsers(description='BSBolt Modules, Please Invoke BSBolt Modules for Help',
+subparsers = parser.add_subparsers(description='BSBolt Modules, Please Invoke BSBolt Modules for Help\n '
+                                               'Documentation at bsbolt.readthedocs.io',
                                    metavar='Index, Align, CallMethylation, AggregateMatrix, Simulate, Impute',
                                    dest='subparser_name')
 
