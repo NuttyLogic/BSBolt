@@ -35,8 +35,12 @@ pip3 install BSBolt -v
     - libcrypto  
  
 ### Usage
-BSBolt modules can be invoked  by calling *BSBolt.py*. Module documentation can be called by calling the module followed by 
-**-h**.
+Following installation BSBolt can be called by invoking the BSBolt module. Please see the [tutorial][https://bsbolt.readthedocs.io/en/latest/tutorial/] for 
+a detailed walk through.
+
+```shell
+python3 -m BSBolt
+```
  
 ```shell
 BSBolt Module
@@ -48,3 +52,7 @@ AggregateMatrix     CGmap Matrix Aggregation Module
 Simulate            BSBolt Illumina Read Simulation Module
 Impute              kNN Imputation Module
 ```
+
+
+
+

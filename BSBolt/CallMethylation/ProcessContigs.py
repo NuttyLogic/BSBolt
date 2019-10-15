@@ -52,7 +52,7 @@ class ProcessContigs:
     """
 
     def __init__(self, input_file=None, genome_database=None, output_prefix=None,
-                 remove_sx_reads=True, ignore_overlap=False, text_output=False, remove_ccgg=False,
+                 remove_sx_reads=True, ignore_overlap=True, text_output=False, remove_ccgg=False,
                  min_read_depth=10, max_read_depth=8000, threads=1, verbose=True, min_base_quality=0,
                  ATCGmap=False, cg_only=True):
         assert isinstance(input_file, str), 'Path to input file not valid'

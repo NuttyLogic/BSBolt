@@ -124,11 +124,13 @@ class BisulfiteAlignmentAndProcessing:
             else:
                 self.mapping_statistics['reads_mapped_1'] += 1
         elif read_status == 'Discordant':
+            self.mapping_statistics[sorted_reads[0]['mapping_reference']] += 1
             if len(sorted_reads) > 2:
                 self.mapping_statistics['discordant_reads_more_than_1'] += 1
             else:
                 self.mapping_statistics['discordant_reads_1'] += 1
         else:
+            self.mapping_statistics[sorted_reads[0]['mapping_reference']] += 1
             if len(sorted_reads) > 2:
                 self.mapping_statistics['mixed_reads_more_than_1'] += 1
             else:

@@ -13,10 +13,10 @@ BSBolt documentation can be found at [bsbolt.readthedocs.io](https://bsbolt.read
 
 ### Installation
 
-At installation BSBolt compiles two external dependencies 
+At installation two external dependencies 
 [Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml)
 and [ART Read Simulation Tools](https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm) 
-under the terms of the [GPLv3 License](https://www.gnu.org/licenses/gpl-3.0.html). Installation failures are generally 
+are compiled under the terms of the [GPLv3 License](https://www.gnu.org/licenses/gpl-3.0.html). Installation failures are generally 
 due to external C libraries not being installed or not being on path. 
 
 ```shell
@@ -34,4 +34,3 @@ pip3 install BSBolt -v
     - liblzma
     - libcurl
     - libcrypto  
- 

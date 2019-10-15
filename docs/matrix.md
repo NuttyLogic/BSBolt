@@ -25,18 +25,18 @@ optional arguments:
 **Aggregate Matrix Default Settings**
 
 ```shell
-BSBolt AggregateMatrix -F cgmap_1,cgmap_2,cgmap_3 -O ~/test_matrix.txt
+python3 -m BSBolt AggregateMatrix -F cgmap_1,cgmap_2,cgmap_3 -O ~/test_matrix.txt
 ```
 **Aggregate Matrix Default Settings - File List**
 
 ```shell
-BSBolt AggregateMatrix -F cgmap_file_list.txt -O ~/test_matrix.txt
+python3 -m BSBolt AggregateMatrix -F cgmap_file_list.txt -O ~/test_matrix.txt
 ```
 
 **Aggregate Matrix Default Settings - File List, Sample Labels, Verbose**
 
 ```shell
-BSBolt AggregateMatrix -F cgmap_file_list.txt -S sample1,sample2,sample3 -O ~/test_matrix.txt -verbose
+python3 -m BSBolt AggregateMatrix -F cgmap_file_list.txt -S sample1,sample2,sample3 -O ~/test_matrix.txt -verbose
 ```
 
 ## Methylation Value Imputation
@@ -62,10 +62,10 @@ To efficiently scale the algorithm, imputation can be performed in batches.
 
 **Impute No Batches**
 ```shell
-BSBolt Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt
+python3 -m BSBolt Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt
 ```
 
 **Batch Imputation**
 ```shell
-BSBolt Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt -B 10 -R
+python3 -m BSBolt Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt -B 10 -R
 ```
