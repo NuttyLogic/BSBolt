@@ -89,6 +89,7 @@ class CallMethylationVector:
                         methylation_calls[0].append(methylation_value)
                         methylation_calls[1].append(reference_position)
                     current_pos = self.update_position(positions, aligned_read)
+                # if observed cytosines are exhausted break loop
                 if not current_pos:
                     break
             if not methylation_calls[0]:
