@@ -51,9 +51,9 @@ class CallMethylationVector:
         are buffered and accessed as needed.
         """
         # set search pattern for only CG sites or all Cs
-        search_pattern = ('C', 'G')
+        search_pattern = 'C'
         if self.cg_only:
-            search_pattern = ('CG', 'GC')
+            search_pattern = 'CG'
         # iterate through pileup
         contig_chunk = []
         methylation_vectors = {}
@@ -63,10 +63,10 @@ class CallMethylationVector:
             methylation_calls = [[], []]
             # get sequence around pileup site
             reference_seq = chrom_seq[aligned_read.reference_start - 1: aligned_read.reference_end + 1].upper()
-            c_search_pattern, reference_nuc, strand = search_pattern[0], 'C', 'watson'
+            reference_nuc, strand = 'C', 'watson'
             if aligned_read.is_reverse:
-                c_search_pattern, reference_nuc, strand = search_pattern[1], 'G', 'crick'
-            c_search = [match.start() for match in re.finditer(c_search_pattern, reference_seq)]
+                reference_nuc, strand = 'G', 'crick'
+            c_search = [match.start() for match in re.finditer(search_pattern, reference_seq)]
             # if reference sequence not found proceed to next sequence
             if not c_search:
                 continue
