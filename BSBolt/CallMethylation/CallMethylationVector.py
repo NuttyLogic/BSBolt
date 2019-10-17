@@ -58,11 +58,12 @@ class CallMethylationVector:
         contig_chunk = []
         methylation_vectors = {}
         for aligned_read in self.input_bam.fetch(contig=self.contig, start=self.start, end=self.end):
-            if aligned_read.is_unmapped:
-                continue
             methylation_calls = [[], []]
             # get sequence around pileup site
-            reference_seq = chrom_seq[aligned_read.reference_start - 1: aligned_read.reference_end + 1].upper()
+            try:
+                reference_seq = chrom_seq[aligned_read.reference_start - 1: aligned_read.reference_end + 1].upper()
+            except TypeError:
+                continue
             c_search_pattern, reference_nuc, strand = search_pattern[0], 'C', 'watson'
             if aligned_read.is_reverse:
                 c_search_pattern, reference_nuc, strand = search_pattern[1], 'G', 'crick'
