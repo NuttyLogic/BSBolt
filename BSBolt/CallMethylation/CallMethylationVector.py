@@ -2,6 +2,7 @@ import pickle
 import re
 import pysam
 import numpy as np
+from BSBolt.Align.AlignmentHelpers import convert_alpha_numeric_cigar
 
 
 class CallMethylationVector:
@@ -51,49 +52,27 @@ class CallMethylationVector:
         are buffered and accessed as needed.
         """
         # set search pattern for only CG sites or all Cs
-        search_pattern = 'C'
+        search_pattern = ('C', 'G')
         if self.cg_only:
-            search_pattern = 'CG'
+            search_pattern = ('CG', 'CG')
         # iterate through pileup
         contig_chunk = []
         methylation_vectors = {}
         for aligned_read in self.input_bam.fetch(contig=self.contig, start=self.start, end=self.end):
             if aligned_read.is_unmapped:
                 continue
-            methylation_calls = [[], []]
             # get sequence around pileup site
-            reference_seq = chrom_seq[aligned_read.reference_start - 1: aligned_read.reference_end + 1].upper()
-            reference_nuc, strand = 'C', 'watson'
+            reference_seq = chrom_seq[aligned_read.reference_start - 1: aligned_read.reference_end + 2].upper()
+            c_search_pattern, reference_nuc, strand, offset = search_pattern[0], 'C', 'watson', 0
             if aligned_read.is_reverse:
-                reference_nuc, strand = 'G', 'crick'
-            c_search = [match.start() for match in re.finditer(search_pattern, reference_seq)]
+                c_search_pattern, reference_nuc, strand = search_pattern[1], 'G', 'crick'
+                if self.cg_only:
+                    offset = 1
+            c_search = [match.start() + offset for match in re.finditer(c_search_pattern, reference_seq)]
             # if reference sequence not found proceed to next sequence
             if not c_search:
                 continue
-            positions = iter(c_search)
-            # set relative to genomic position so add reference start and one since capturing the first base
-            current_pos = next(positions) + aligned_read.reference_start - 1
-            for alignment_pos, reference_position, base in aligned_read.get_aligned_pairs(with_seq=True):
-                # if insertion skip call
-                if alignment_pos is None or reference_position is None:
-                    continue
-                while current_pos:
-                    if reference_position > current_pos:
-                        current_pos = self.update_position(positions, aligned_read)
-                    else:
-                        break
-                # if quality below threshold continue
-                if aligned_read.query_qualities[alignment_pos] < self.min_base_quality:
-                    continue
-                elif reference_position == current_pos:
-                    call_made, methylation_value = self.get_methylation_call(reference_nuc, base.upper())
-                    if call_made:
-                        methylation_calls[0].append(methylation_value)
-                        methylation_calls[1].append(reference_position)
-                    current_pos = self.update_position(positions, aligned_read)
-                # if observed cytosines are exhausted break loop
-                if not current_pos:
-                    break
+            methylation_calls = self.call_vector(aligned_read, c_search, reference_nuc)
             if not methylation_calls[0]:
                 continue
             processed_vector = self.process_methylation_vector(aligned_read, methylation_calls,
@@ -101,7 +80,7 @@ class CallMethylationVector:
             if processed_vector:
                 contig_chunk.append(processed_vector)
             if len(contig_chunk) == self.chunk_size:
-                self.return_queue.append((self.contig, contig_chunk))
+                self.return_queue.put((self.contig, contig_chunk))
                 contig_chunk = []
         # process reads that didn't have a pair with a observed methylation site
         for call in methylation_vectors.values():
@@ -109,7 +88,46 @@ class CallMethylationVector:
                                  np.asarray(call['calls'][0]), np.asarray(call['calls'][1]), call['flag'],
                                  self.mate_flags[call['flag']], call['strand']))
         if contig_chunk:
-            self.return_queue.append((self.contig, contig_chunk))
+            self.return_queue.put((self.contig, contig_chunk))
+
+    def call_vector(self, aligned_read, c_search, reference_nuc):
+        methylation_calls = [[], []]
+        reference_consumers = {0, 2, 3, 7, 8}
+        query_consumers = {0, 1, 4, 7, 8}
+        positions = iter(c_search)
+        # set relative to genomic position so add reference start and one since capturing the first base
+        current_pos = next(positions) + aligned_read.reference_start - 1
+        reference_pos = aligned_read.reference_start
+        query_sequence = aligned_read.query_sequence
+        query_qualities = aligned_read.query_qualities
+        print(len(query_sequence))
+        print(len(query_qualities))
+        query_position = 0
+        print(aligned_read.cigartuples)
+        while current_pos:
+            for cigar_type, cigar_count in aligned_read.cigartuples:
+                if cigar_type in reference_consumers and cigar_type in query_consumers:
+                    for _ in range(cigar_count):
+                        while reference_pos > current_pos:
+                            current_pos = self.update_position(positions, aligned_read)
+                        if reference_pos == current_pos:
+                            print(query_position)
+                            if query_qualities[query_position] > self.min_base_quality:
+                                query_base = query_sequence[query_position]
+                                call_made, methylation_value = self.get_methylation_call(reference_nuc, query_base)
+                                if call_made:
+                                    methylation_calls[0].append(methylation_value)
+                                    methylation_calls[1].append(reference_pos)
+                            current_pos = self.update_position(positions, aligned_read)
+                        reference_pos += 1
+                        query_position += 1
+                elif cigar_type in reference_consumers and cigar_type not in query_consumers:
+                    for _ in range(cigar_count):
+                        reference_pos += 1
+                elif cigar_type in query_consumers and cigar_type not in reference_consumers:
+                    for _ in range(cigar_count):
+                        query_position += 1
+        return methylation_calls
 
     def process_methylation_vector(self, aligned_read, methylation_calls, strand, methylation_vectors):
         if aligned_read.is_proper_pair:
