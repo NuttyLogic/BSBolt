@@ -38,18 +38,18 @@ value_start = time.time()
 value_caller = CallMethylationValues(input_file=f'{bsb_directory}tests/BSB_pe_test.sorted.bam',
                                      genome_database=f'{bsb_directory}tests/TestData/BSB_Test_DB/',
                                      contig='chr11', return_queue=value_queue, ignore_orphans=False)
-#value_caller.call_methylation()
+value_caller.call_methylation()
 
 print(f'Values Called: {time.time() - value_start: .3f} sec')
 
 all_values = []
 
 
-#while True:
-    #values = value_queue.get()
-   # all_values.extend(values)
-    #if value_queue.empty():
-     #   break
+while True:
+    values = value_queue.get()
+    all_values.extend(values)
+    if value_queue.empty():
+        break
 
 # process methylation values
 
@@ -116,7 +116,7 @@ for site, vector_values in vector_point_values.items():
     pileup_values = cleaned_values[site]
     if vector_values != pileup_values:
         mismatch_count += 1
-        #print(vector_values, pileup_values, chr11_methylation_sites[site], site)
+        print(vector_values, pileup_values, chr11_methylation_sites[site], site)
         difference = abs(vector_values[0] - pileup_values[0]) + abs(vector_values[1] - pileup_values[1])
         differences.append(difference)
 
