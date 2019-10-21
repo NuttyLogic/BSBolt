@@ -37,7 +37,8 @@ value_start = time.time()
 
 value_caller = CallMethylationValues(input_file=f'{bsb_directory}tests/BSB_pe_test.sorted.bam',
                                      genome_database=f'{bsb_directory}tests/TestData/BSB_Test_DB/',
-                                     contig='chr11', return_queue=value_queue, ignore_orphans=False)
+                                     contig='chr11', return_queue=value_queue, ignore_orphans=False,
+                                     ignore_overlap=True, min_base_quality=1)
 value_caller.call_methylation()
 
 print(f'Values Called: {time.time() - value_start: .3f} sec')
@@ -88,8 +89,6 @@ vector_point_start = time.time()
 
 def get_vector_point_values(vector, chromosome, value_dict):
     for meth_call, pos in zip(vector[3], vector[4]):
-        if pos == 423715:
-            print(meth_call, vector)
         if f'{chromosome}:{pos}' in value_dict:
             if meth_call:
                 value_dict[f'{chromosome}:{pos}'][0] += 1

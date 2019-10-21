@@ -26,7 +26,7 @@ class CallMethylationValues:
     """
 
     def __init__(self, input_file: str = None, genome_database: str = None,
-                 ignore_overlap: bool = False, remove_ccgg: bool = False, ignore_orphans: bool = True,
+                 ignore_overlap: bool = True, remove_ccgg: bool = False, ignore_orphans: bool = True,
                  max_read_depth: int = 8000, contig: str = None, min_base_quality: int = 0, return_queue=None,
                  cg_only: bool = False):
         self.input_file = str(input_file)
