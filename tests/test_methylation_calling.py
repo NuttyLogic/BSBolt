@@ -67,7 +67,7 @@ vector_start = time.time()
 
 vector_caller = CallMethylationVector(input_file=f'{bsb_directory}tests/BSB_pe_test.sorted.bam',
                                       genome_database=f'{bsb_directory}tests/TestData/BSB_Test_DB/',
-                                      contig='chr11', return_queue=vector_queue)
+                                      contig='chr11', return_queue=vector_queue, min_base_quality=1)
 vector_caller.call_methylation()
 
 print(f'Vectors Called: {time.time() - vector_start: .3f} sec')
@@ -115,12 +115,8 @@ for site, vector_values in vector_point_values.items():
     pileup_values = cleaned_values[site]
     if vector_values != pileup_values:
         mismatch_count += 1
-        print(vector_values, pileup_values, chr11_methylation_sites[site], site)
         difference = abs(vector_values[0] - pileup_values[0]) + abs(vector_values[1] - pileup_values[1])
         differences.append(difference)
-
-print(max(differences), np.mean(differences))
-print(mismatch_count, len(vector_point_values))
 
 
 def z_test_of_proportion(a_yes, a_no, b_yes, b_no):
@@ -135,8 +131,58 @@ def z_test_of_proportion(a_yes, a_no, b_yes, b_no):
         return 0
 
 
-for site, site_values in chr11_methylation_sites.items():
+site_comparisons = {}
+
+for site, values in vector_point_values.items():
     site_comparison = dict(coverage_difference=0, simulation_beta=0, mapped_beta=0, beta_z_value=0)
+    site_coverage = sum(values)
+    reference_values = chr11_methylation_sites[site]
+    ref_meth = int(reference_values[3])
+    ref_unmeth = int(reference_values[4])
+    reference_coverage = ref_meth + ref_unmeth
+    site_comparison['coverage_difference'] = abs(site_coverage - reference_coverage)
+    site_comparison['mapped_beta'] = values[0] / site_coverage
+    site_comparison['simulation_beta'] = ref_meth / reference_coverage
+    z = abs(z_test_of_proportion(a_yes=values[0], a_no=values[1], b_yes=ref_meth, b_no=ref_unmeth))
+    site_comparison['beta_z_value'] = z
+    site_comparisons[site] = site_comparison
+
+
+class TestMethylationCalling(unittest.TestCase):
+    """
+    Simulated sites will not always map uniquely to reference genome, set tight difference limits to test correct
+    methylation calling, but not absolute differences
+    """
+
+    def setUp(self):
+        pass
+
+    def test_meth_point_vector(self):
+        self.assertLess(len(differences), 5)
+
+    def test_read_coverage(self):
+        # set coverage difference between simulated and mapped reads to consider site out of tolerance
+        coverage_difference_tolerance = 5
+        # count number of sites out of tolerance
+        out_of_tolerance_sites = 0
+        for test_site in site_comparisons.values():
+            if test_site['coverage_difference'] > coverage_difference_tolerance:
+                out_of_tolerance_sites += 1
+        self.assertLessEqual(out_of_tolerance_sites, 20)
+
+    def test_beta_proportion(self):
+        # set z threshold
+        z_threshold = 3
+        # count site with z score above threshold
+        z_site_count = 0
+        for test_site in site_comparisons.values():
+            if test_site['beta_z_value'] >= z_threshold:
+                z_site_count += 1
+        self.assertLessEqual(z_site_count, 20)
+
+
+if __name__ == '__main__':
+    unittest.main()
 
 
 

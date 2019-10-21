@@ -23,7 +23,7 @@ print('Reads Simulated')
 print('Building Methylation Index')
 bsb_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB']
-#subprocess.run(bsb_index_commands)
+subprocess.run(bsb_index_commands)
 print('BSBolt Index Built')
 
 

@@ -100,7 +100,6 @@ class CallMethylationValues:
             if len(fivemer) == 5:
                 nucleotide = fivemer[2]
                 context, subcontext = self.get_context(nucleotide, fivemer)
-
                 if self.cg_only and subcontext != 'CG':
                     continue
                 # check if CCGG in sequence, skip loop if filter True
