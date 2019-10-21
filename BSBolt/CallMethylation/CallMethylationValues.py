@@ -3,15 +3,13 @@ import pickle
 import pysam
 
 
-class CallMethylation:
+class CallMethylationValues:
     """
     Keyword Arguments
         input_file (str): str to input bam/sam file
         genome_database (str): str to genome directory
-        remove_sx_reads (bool): remove incompletely converted reads
         rm_overlap (bool):  remove overlapping signal, by default calls from one overlapping read
         remove_ccgg (bool): don't call CCGG sequences
-        min_read_depth (int): default = 1
         max_read_depth (int): default = 8000
         contig (str): contig to process
         min_base_quality (int): minimum quality for a base to be reported for methylation calling
@@ -19,18 +17,16 @@ class CallMethylation:
         self.input_file (str): path to input bam/sam file
         self.input_bam (pysam.Samfile): pysam.Samfile object to retrieve pileup information
         self.genome_database (str): formatted path to genome database
-        self.remove_sx_reads (bool): remove incompletely converted reads
         self.rm_overlap (bool):  remove overlapping signal, by default calls from one overlapping read
         self.remove_ccgg (bool): don't call CCGG sequences
-        self.min_read_depth (int): default = 1
         self.max_read_depth (int): default = 8000
         self.contig (str): contig to process
         self.min_base_quality (int): minimum quality for a base to be reported for methylation calling
         self.context_tables (dict): dict of dicts listing nucleotide context
     """
 
-    def __init__(self, input_file: str = None, genome_database: str = None, remove_sx_reads: bool = True,
-                 ignore_overlap: bool = False, remove_ccgg: bool = False, min_read_depth: int = 10,
+    def __init__(self, input_file: str = None, genome_database: str = None,
+                 ignore_overlap: bool = True, remove_ccgg: bool = False, ignore_orphans: bool = True,
                  max_read_depth: int = 8000, contig: str = None, min_base_quality: int = 0, return_queue=None,
                  cg_only: bool = False):
         self.input_file = str(input_file)
@@ -38,10 +34,9 @@ class CallMethylation:
         self.genome_database = str(genome_database)
         if self.genome_database[-1] != '/':
             self.genome_database = f'{self.genome_database}/'
-        self.remove_sx_reads = remove_sx_reads
         self.ignore_overlap = ignore_overlap
         self.remove_ccgg = remove_ccgg
-        self.min_read_depth = min_read_depth
+        self.ignore_orphans = ignore_orphans
         self.max_read_depth = max_read_depth
         self.contig = contig
         self.min_base_quality = min_base_quality
@@ -96,7 +91,8 @@ class CallMethylation:
         for pileup_col in self.input_bam.pileup(max_depth=self.max_read_depth,
                                                 contig=self.contig,
                                                 ignore_overlaps=self.ignore_overlap,
-                                                min_base_quality=self.min_base_quality):
+                                                min_base_quality=self.min_base_quality,
+                                                ignore_orphans=self.ignore_orphans):
             # get sequence around pileup site
             reference_seq = chrom_seq[(pileup_col.reference_pos - 3):(pileup_col.reference_pos + 4)].upper()
             # get nucleotide context
@@ -104,7 +100,6 @@ class CallMethylation:
             if len(fivemer) == 5:
                 nucleotide = fivemer[2]
                 context, subcontext = self.get_context(nucleotide, fivemer)
-
                 if self.cg_only and subcontext != 'CG':
                     continue
                 # check if CCGG in sequence, skip loop if filter True
@@ -184,11 +179,11 @@ class CallMethylation:
             # if cytosines present call methylation
             meth_level = round(float(meth_cytosines) / float(all_cytosines), 3)
         f'{base_counts.get("A", 0)}\t{base_counts.get("T", 0)}\t{base_counts.get("C", 0)}' \
-        f'\t{base_counts.get("G", 0)}\t{base_counts.get("N", 0)}'
+            f'\t{base_counts.get("G", 0)}\t{base_counts.get("N", 0)}'
         forward_counts = f'{base_counts.get("A", 0)}\t{base_counts.get("T", 0)}\t{base_counts.get("C", 0)}' \
-                         f'\t{base_counts.get("G", 0)}\t{base_counts.get("N", 0)}'
+            f'\t{base_counts.get("G", 0)}\t{base_counts.get("N", 0)}'
         reverse_counts = f'{base_counts.get("a", 0)}\t{base_counts.get("t", 0)}\t{base_counts.get("c", 0)}' \
-                         f'\t{base_counts.get("g", 0)}\t{base_counts.get("n", 0)}'
+            f'\t{base_counts.get("g", 0)}\t{base_counts.get("n", 0)}'
         return {'nucleotide': nucleotide, 'meth_cytosines': meth_cytosines, 'unmeth_cytosines': unmeth_cytosines,
                 'all_cytosines': all_cytosines, 'meth_level': meth_level, 'forward_counts': forward_counts,
                 'reverse_counts': reverse_counts}

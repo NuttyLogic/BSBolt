@@ -47,50 +47,35 @@ class CallMethylationVector:
             self.call_contig(chrom_seq)
 
     def call_contig(self, chrom_seq):
-        """Iterates through bam pileup, calling methylation values if the reference nucleotide is a C or G. Pileup reads
-        are buffered and accessed as needed.
+        """Iterates through bam reads call methylation along vectors. When a read overlaps a site where methylation is
+         called the site with a higher quality is taken. If overlapping sites with the same quality are observed
+         the first observed site is reported. If an overlapping site is reported as a mismatch only the site with
+         a methylation call is reported (this should be extremely rare but is observed in the test cases)
         """
         # set search pattern for only CG sites or all Cs
         search_pattern = ('C', 'G')
         if self.cg_only:
-            search_pattern = ('CG', 'GC')
+            search_pattern = ('CG', 'CG')
         # iterate through pileup
         contig_chunk = []
         methylation_vectors = {}
         for aligned_read in self.input_bam.fetch(contig=self.contig, start=self.start, end=self.end):
-            methylation_calls = [[], []]
+            if aligned_read.is_unmapped:
+                continue
             # get sequence around pileup site
-            reference_seq = chrom_seq[aligned_read.reference_start - 1: aligned_read.reference_end + 1].upper()
-            c_search_pattern, reference_nuc, strand = search_pattern[0], 'C', 'watson'
+            reference_start = aligned_read.reference_start
+            reference_seq = chrom_seq[reference_start - 1: aligned_read.reference_end + 2].upper()
+            c_search_pattern, reference_nuc, strand, offset = search_pattern[0], 'C', 'watson', 0
             if aligned_read.is_reverse:
                 c_search_pattern, reference_nuc, strand = search_pattern[1], 'G', 'crick'
-            c_search = [match.start() for match in re.finditer(c_search_pattern, reference_seq)]
+                if self.cg_only:
+                    offset = 1
+            c_search = [match.start() + offset + reference_start - 1 for match in
+                        re.finditer(c_search_pattern, reference_seq)]
             # if reference sequence not found proceed to next sequence
             if not c_search:
                 continue
-            positions = iter(c_search)
-            # set relative to genomic position so add reference start and one since capturing the first base
-            current_pos = next(positions) + aligned_read.reference_start - 1
-            for alignment_pos, reference_position, base in aligned_read.get_aligned_pairs(with_seq=True):
-                # if insertion skip call
-                if alignment_pos is None or reference_position is None:
-                    continue
-                while current_pos:
-                    if reference_position > current_pos:
-                        current_pos = self.update_position(positions, aligned_read)
-                    else:
-                        break
-                # if quality below threshold continue
-                if aligned_read.query_qualities[alignment_pos] < self.min_base_quality:
-                    continue
-                elif reference_position == current_pos:
-                    call_made, methylation_value = self.get_methylation_call(reference_nuc, base.upper())
-                    if call_made:
-                        methylation_calls[0].append(methylation_value)
-                        methylation_calls[1].append(reference_position)
-                    current_pos = self.update_position(positions, aligned_read)
-                if not current_pos:
-                    break
+            methylation_calls = self.call_vector(aligned_read, set(c_search), reference_nuc)
             if not methylation_calls[0]:
                 continue
             processed_vector = self.process_methylation_vector(aligned_read, methylation_calls,
@@ -98,7 +83,7 @@ class CallMethylationVector:
             if processed_vector:
                 contig_chunk.append(processed_vector)
             if len(contig_chunk) == self.chunk_size:
-                self.return_queue.append((self.contig, contig_chunk))
+                self.return_queue.put((self.contig, contig_chunk))
                 contig_chunk = []
         # process reads that didn't have a pair with a observed methylation site
         for call in methylation_vectors.values():
@@ -106,7 +91,36 @@ class CallMethylationVector:
                                  np.asarray(call['calls'][0]), np.asarray(call['calls'][1]), call['flag'],
                                  self.mate_flags[call['flag']], call['strand']))
         if contig_chunk:
-            self.return_queue.append((self.contig, contig_chunk))
+            self.return_queue.put((self.contig, contig_chunk))
+
+    def call_vector(self, aligned_read, positions: set, reference_nuc: str):
+        methylation_calls = [[], [], []]
+        reference_consumers = {0, 2, 3, 7, 8}
+        query_consumers = {0, 1, 4, 7, 8}
+        # set relative to genomic position so add reference start and one since capturing the first base
+        reference_pos = aligned_read.reference_start
+        query_sequence = aligned_read.query_sequence
+        query_qualities = aligned_read.query_qualities
+        query_position = 0
+        for cigar_type, cigar_count in aligned_read.cigartuples:
+            if cigar_type in reference_consumers and cigar_type in query_consumers:
+                for _ in range(cigar_count):
+                    if reference_pos in positions:
+                        pos_qual = query_qualities[query_position]
+                        if pos_qual > self.min_base_quality:
+                            query_base = query_sequence[query_position]
+                            call_made, methylation_value = self.get_methylation_call(reference_nuc, query_base)
+                            if call_made:
+                                methylation_calls[0].append(methylation_value)
+                                methylation_calls[1].append(reference_pos)
+                                methylation_calls[2].append(pos_qual)
+                    reference_pos += 1
+                    query_position += 1
+            elif cigar_type in reference_consumers and cigar_type not in query_consumers:
+                reference_pos += cigar_count
+            elif cigar_type in query_consumers and cigar_type not in reference_consumers:
+                query_position += cigar_count
+        return methylation_calls
 
     def process_methylation_vector(self, aligned_read, methylation_calls, strand, methylation_vectors):
         if aligned_read.is_proper_pair:
@@ -116,6 +130,7 @@ class CallMethylationVector:
                 paired_calls = methylation_vectors.pop(mate_pair_label)['calls']
                 paired_calls[0].extend(methylation_calls[0])
                 paired_calls[1].extend(methylation_calls[1])
+                paired_calls[2].extend(methylation_calls[2])
                 paired_calls = self.clean_overlap(paired_calls)
                 return (aligned_read.query_name, paired_calls[1][0], paired_calls[1][-1],
                         np.array(paired_calls[0]), np.array(paired_calls[1]),
@@ -132,24 +147,14 @@ class CallMethylationVector:
 
     @staticmethod
     def clean_overlap(methylation_calls):
-        cleaned_calls = []
-        cleaned_pos = []
-        current_pos = -1
-        for meth_call, pos in zip(methylation_calls[0], methylation_calls[1]):
-            if pos > current_pos:
-                cleaned_calls.append(meth_call)
-                cleaned_pos.append(pos)
-                current_pos = pos
-        return [cleaned_calls, cleaned_pos]
-
-    @staticmethod
-    def update_position(positions, aligned_read):
-        try:
-            current_pos = next(positions)
-        except StopIteration:
-            return None
-        else:
-            return current_pos + aligned_read.reference_start - 1
+        cleaned_calls = {}
+        for meth_call, pos, qual in zip(methylation_calls[0], methylation_calls[1], methylation_calls[2]):
+            if pos not in cleaned_calls:
+                cleaned_calls[pos] = (meth_call, qual)
+            else:
+                if qual > cleaned_calls[pos][1]:
+                    cleaned_calls[pos] = (meth_call, qual)
+        return [[call[0] for call in cleaned_calls.values()], list(cleaned_calls.keys())]
 
     @staticmethod
     def get_methylation_call(reference_nucleotide, base_call):

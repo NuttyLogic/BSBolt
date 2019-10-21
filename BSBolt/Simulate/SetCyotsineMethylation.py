@@ -148,9 +148,7 @@ class SetCytosineMethylation:
         Return:
             methylation_profile (dict): context, methylation level, unpopulated methylation read information
             """
-        if nucleotide == 'G' and context == 'GC':
-            methylation_level = self.pick_cpg_methylation
-        elif nucleotide == 'G' and context == 'CG':
+        if context == 'CG':
             methylation_level = self.pick_cpg_methylation
         else:
             methylation_level = self.pick_ch_methylation

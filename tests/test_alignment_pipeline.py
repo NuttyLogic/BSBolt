@@ -9,9 +9,9 @@ import numpy as np
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
-bsbolt = 'BSBolt'
+bsbolt = 'python3 -m BSBolt'
 # generate simulated reads
-bsb_simulate_commands = [bsbolt, 'Simulate',
+bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
                          '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                          '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-PE', '-IR1', '0.01',
                          '-IR2', '0.01', '-DR1', '0.01', '-DR2', '0.01', '-U']
@@ -21,13 +21,13 @@ print('Reads Simulated')
 # map simulated reads
 
 print('Building Methylation Index')
-bsb_index_commands = [bsbolt, 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
+bsb_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB']
 subprocess.run(bsb_index_commands)
 print('BSBolt Index Built')
 
 
-bsb_align_commands = [bsbolt, 'Align',
+bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
@@ -37,7 +37,7 @@ subprocess.run(bsb_align_commands)
 
 print('Calling Methylation')
 
-bs_call_methylation_args = [bsbolt, 'CallMethylation', '-I',
+bs_call_methylation_args = ['python3', '-m', 'BSBolt', 'CallMethylation', '-I',
                             f'{bsb_directory}tests/BSB_pe_test.sorted.bam',
                             '-O', f'{bsb_directory}tests/BSB_pe_test',
                             '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB',

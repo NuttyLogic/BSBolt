@@ -3,7 +3,7 @@ import gzip
 import multiprocessing
 import pysam
 from tqdm import tqdm
-from BSBolt.CallMethylation.CallMethylationValues import CallMethylation
+from BSBolt.CallMethylation.CallMethylationValues import CallMethylationValues
 
 
 class MethylationCallingError(Exception):
@@ -17,9 +17,9 @@ def call_contig_methylation(completed_contigs, call_methylation_kwargs):
         completed_contigs (multiprocessing.mangager.list): List of contigs with completed methylation calls
         call_methylation_kwargs (dict): dict of argument for CallMethylation class
     """
-    contig_methylation_call = CallMethylation(**call_methylation_kwargs)
+    contig_methylation_call = CallMethylationValues(**call_methylation_kwargs)
     contig_methylation_call.call_methylation()
-    assert isinstance(contig_methylation_call, CallMethylation)
+    assert isinstance(contig_methylation_call, CallMethylationValues)
     completed_contigs.append(call_methylation_kwargs['contig'])
 
 
@@ -72,10 +72,8 @@ class ProcessContigs:
         self.threads = threads
         self.call_methylation_kwargs = dict(input_file=input_file,
                                             genome_database=genome_database,
-                                            remove_sx_reads=remove_sx_reads,
                                             ignore_overlap=ignore_overlap,
                                             remove_ccgg=remove_ccgg,
-                                            min_read_depth=min_read_depth,
                                             max_read_depth=max_read_depth,
                                             min_base_quality=min_base_quality,
                                             cg_only=cg_only)
