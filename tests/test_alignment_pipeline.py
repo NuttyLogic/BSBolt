@@ -33,6 +33,8 @@ bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
                       f'{bsb_directory}tests/BSB_pe_test', '-S', '-BT2-k', '10', '-BT2-p', '10']
 
+print(' '.join(bsb_align_commands))
+
 subprocess.run(bsb_align_commands)
 
 print('Calling Methylation')
@@ -113,7 +115,7 @@ class TestBSBPipeline(unittest.TestCase):
         for test_site in site_comparisons.values():
             if test_site['coverage_difference'] > coverage_difference_tolerance:
                 out_of_tolerance_sites += 1
-        self.assertLessEqual(out_of_tolerance_sites, 250)
+        self.assertLessEqual(out_of_tolerance_sites, 300)
 
     def test_beta_proportion(self):
         # set z threshold
@@ -123,7 +125,7 @@ class TestBSBPipeline(unittest.TestCase):
         for test_site in site_comparisons.values():
             if test_site['beta_z_value'] >= z_threshold:
                 z_site_count += 1
-        self.assertLessEqual(z_site_count, 250)
+        self.assertLessEqual(z_site_count, 300)
 
 
 if __name__ == '__main__':

@@ -33,6 +33,17 @@ def make_external_dependencies():
         compile_dependency(make_bowtie2_2, bowtie2_directory)
 
 
+try:
+    from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
+    class bdist_wheel(_bdist_wheel):
+        def finalize_options(self):
+            _bdist_wheel.finalize_options(self)
+            self.root_is_pure = False
+except ImportError:
+    bdist_wheel = None
+
+
 class DevelopCmd(develop):
 
     def run(self):
@@ -115,6 +126,10 @@ setup(name='BSBolt',
                 'BSBolt.Simulate',
                 'BSBolt.Utils',
                 'BSBolt.Variant'],
+      classifiers=['Programming Language :: Python :: 3.6',
+                   'Programming Language :: Python :: 3.7',
+                   'Programming Language :: Python :: 3.8'],
+      platforms=["Linux", "Mac OS-X", "Unix"],
       requires=['pysam', 'numpy', 'tqdm'],
       install_requires=['pysam>=0.15.2', 'numpy>=1.16.3', 'tqdm>=4.31.1'],
       entry_points={'console_scripts': ['BSBolt = BSBolt.__main__:launch_bsb']},
@@ -122,6 +137,7 @@ setup(name='BSBolt',
       test_suite='tests',
       include_package_data=True,
       cmdclass={'develop': DevelopCmd,
-                'build_py': BuildCmd},
+                'build_py': BuildCmd,
+                'bdist_wheel': bdist_wheel},
       zip_safe=False
       )
