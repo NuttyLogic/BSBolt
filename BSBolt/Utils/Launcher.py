@@ -132,7 +132,8 @@ def launch_methylation_call(arguments):
                                       verbose=arguments.verbose,
                                       min_base_quality=arguments.min_qual,
                                       cg_only=arguments.CG,
-                                      ATCGmap=arguments.ATCG)
+                                      ATCGmap=arguments.ATCG,
+                                      ignore_orphans=arguments.IO)
     methylation_call.process_contigs()
     methylation_call.watch_pool()
 
