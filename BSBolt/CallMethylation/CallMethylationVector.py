@@ -167,7 +167,7 @@ class CallMethylationVector:
         Returns:
              methylation call dictionary
         """
-        # call cytonsines with watson
+        # call cytosines with watson
         if reference_nucleotide == 'C':
             if base_call == 'C':
                 return True, 1

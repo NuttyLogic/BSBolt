@@ -95,6 +95,7 @@ call_meth_parser.add_argument('-min-qual', type=int, default=0, help='Minimum ba
                                                                      'methylation calling, default=0')
 call_meth_parser.add_argument('-CG', action="store_true", default=False, help='Only output CpG sites in CGmap file')
 call_meth_parser.add_argument('-ATCG', action="store_true", default=False, help='Output ATCGmap file')
+call_meth_parser.add_argument('-IO', action="store_true", default=False, help='Ignore orphans during methylation call')
 
 # Add Matrix Aggregation Parser Args
 

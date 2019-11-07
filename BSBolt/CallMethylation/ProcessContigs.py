@@ -54,7 +54,7 @@ class ProcessContigs:
     def __init__(self, input_file=None, genome_database=None, output_prefix=None,
                  remove_sx_reads=True, ignore_overlap=True, text_output=False, remove_ccgg=False,
                  min_read_depth=10, max_read_depth=8000, threads=1, verbose=True, min_base_quality=0,
-                 ATCGmap=False, cg_only=True):
+                 ATCGmap=False, cg_only=True, ignore_orphans=False):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(text_output, bool), 'Not valid bool'
         assert isinstance(threads, int), 'Threads must be specified with integer'
@@ -73,6 +73,7 @@ class ProcessContigs:
         self.call_methylation_kwargs = dict(input_file=input_file,
                                             genome_database=genome_database,
                                             ignore_overlap=ignore_overlap,
+                                            ignore_orphans=False,
                                             remove_ccgg=remove_ccgg,
                                             max_read_depth=max_read_depth,
                                             min_base_quality=min_base_quality,
