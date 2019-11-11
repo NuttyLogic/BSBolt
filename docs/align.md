@@ -43,15 +43,15 @@ a masked alignment index or a RRBS index.
 **BSB Index Commands**
 ```shell
   -h, --help            show this help message and exit
-  -G                    Path for reference genome fasta file, fasta file
-                        should contain all contigs
+  -G                    Path to reference genome fasta file, fasta file should
+                        contain all contigs
   -DB                   Path to index directory, will create directory if
                         folder does not exist
-  -MR                   Path to bed file of mappable regions, build Bowtie2
-                        reference using masked contig sequence
-  -BT2-p                Number of threads for Bowtie2 to use
-  -rrbs                 Generate Reduced Representative Bisulfite Sequencing
-                        Index
+  -MR                   Path to bed file of mappable regions. Index will be
+                        built using using masked contig sequence
+  -BT2-p                Bowtie2; Number of threads
+  -rrbs                 Generate a Reduced Representative Bisulfite Sequencing
+                        (RRBS) index
   -rrbs-cut-format      Cut format to use for generation of RRBS database,
                         default= C-CGG (MSPI), input multiple enzymes as a
                         comma seperate string, C-CGG,C-CGG,...
@@ -59,6 +59,7 @@ a masked alignment index or a RRBS index.
                         indexgeneration, default = 40
   -rrbs-upper           Upper bound fragment size to consider RRBS
                         indexgeneration, default = 500
+ 
 ```
 **WGBS Index Generation Example**
 ```shell
@@ -89,28 +90,33 @@ as unmapped reads. Valid reads are further modified so all Watson reads are repo
 
 **BSB Align Commands**
 ```shell
--h, --help            show this help message and exit
--F1                   Path to fastq 1
--F2                   Path to fastq 2
--NC                   Aligned unconverted bisulfite reads
--D                    Library directional, default=False
--O                    Path to Output Prefix
--DB                   Path to BSBolt Database
--M                    Read mismatch threshold, reads with mismatches greater
-                      than threshold will be discarded
--S                    Position Sort Output Bam, default=False
--BT2-local            Bowtie2 local alignment, default end-to-end
--BT2-D                Bowtie2 number of consecutive seed extension attempts
-                      that can fail before Bowtie2 move on
--BT2-k                Bowtie2 alignment search limit
--BT2-p                Number of threads for Bowtie2 to use
--BT2-L                Length of subseeds during alignment
--BT2-score-min        Bowtie2 scoring function
--BT2-I                Bowtie2, minimum fragment length for a valid paired-
-                      end alignment
--BT2-X                Bowtie2, maximum fragment length for a valid paired-
-                      end alignment
--discord              Allow discordant and mixed reads
+  -h, --help            show this help message and exit
+  -F1                   Path to fastq 1
+  -F2                   Path to fastq 2
+  -NC                   Aligned unconverted bisulfite reads
+  -D                    Library directional, in silico modificaiton of
+                        sequening bases will only account for bisulfite
+                        converted DNA and not the PCR products of converted
+                        DNA, default=False
+  -O                    Path to Output Prefix
+  -DB                   Path to BSBolt Database
+  -M                    Read mismatch threshold, reads where the total number
+                        of observed mismatches greater than the threshold will
+                        be discarded
+  -S                    Position sort output .bam, default=False
+  -BT2-local            Bowtie2; local alignment, default end-to-end
+  -BT2-D                Bowtie2; number of consecutive seed extension attempts
+                        that can fail before Bowtie2 move on
+  -BT2-k                Bowtie2; alignment search limit
+  -BT2-p                Bowtie2; Number of threads for Bowtie2 to use
+  -BT2-L                Bowtie2; Length of subseeds during alignment
+  -BT2-score-min        Bowtie2; scoring function
+  -BT2-I                Bowtie2; minimum fragment length for a valid paired-
+                        end alignment
+  -BT2-X                Bowtie2; maximum fragment length for a valid paired-
+                        end alignment
+  -discordant           Report discordant and mixed reads, default=False
+
 ```
 **Paired End Alignment**
 ```shell
