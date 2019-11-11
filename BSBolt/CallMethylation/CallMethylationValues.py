@@ -94,7 +94,8 @@ class CallMethylationValues:
                                                 ignore_overlaps=self.ignore_overlap,
                                                 min_base_quality=self.min_base_quality,
                                                 ignore_orphans=self.ignore_orphans,
-                                                flag_filter=512):
+                                                stepper='nofilter',
+                                                flag_require=0):
             # get sequence around pileup site
             reference_seq = chrom_seq[(pileup_col.reference_pos - 3):(pileup_col.reference_pos + 4)].upper()
             # get nucleotide context
