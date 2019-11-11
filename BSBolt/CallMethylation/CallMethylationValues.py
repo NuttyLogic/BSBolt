@@ -30,7 +30,8 @@ class CallMethylationValues:
                  max_read_depth: int = 8000, contig: str = None, min_base_quality: int = 0, return_queue=None,
                  cg_only: bool = False):
         self.input_file = str(input_file)
-        self.input_bam = pysam.AlignmentFile(self.input_file, 'rb')
+        self.input_bam = pysam.AlignmentFile(self.input_file, mode='rb',
+                                             require_index=True)
         self.genome_database = str(genome_database)
         if self.genome_database[-1] != '/':
             self.genome_database = f'{self.genome_database}/'
@@ -92,7 +93,8 @@ class CallMethylationValues:
                                                 contig=self.contig,
                                                 ignore_overlaps=self.ignore_overlap,
                                                 min_base_quality=self.min_base_quality,
-                                                ignore_orphans=self.ignore_orphans):
+                                                ignore_orphans=self.ignore_orphans,
+                                                flag_filter=512):
             # get sequence around pileup site
             reference_seq = chrom_seq[(pileup_col.reference_pos - 3):(pileup_col.reference_pos + 4)].upper()
             # get nucleotide context

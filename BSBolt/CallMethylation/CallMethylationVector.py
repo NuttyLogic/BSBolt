@@ -14,7 +14,8 @@ class CallMethylationVector:
                  contig: str = None, min_base_quality: int = 0, return_queue=None,
                  cg_only: bool = False, start=None, end=None):
         self.input_file = str(input_file)
-        self.input_bam = pysam.AlignmentFile(self.input_file, 'rb')
+        self.input_bam = pysam.AlignmentFile(self.input_file, 'rb',
+                                             require_index=True)
         self.genome_database = str(genome_database)
         if self.genome_database[-1] != '/':
             self.genome_database = f'{self.genome_database}/'
@@ -59,7 +60,8 @@ class CallMethylationVector:
         # iterate through pileup
         contig_chunk = []
         methylation_vectors = {}
-        for aligned_read in self.input_bam.fetch(contig=self.contig, start=self.start, end=self.end):
+        for aligned_read in self.input_bam.fetch(contig=self.contig, start=self.start, end=self.end,
+                                                 multiple_iterators=True):
             if aligned_read.is_unmapped:
                 continue
             # get sequence around pileup site
