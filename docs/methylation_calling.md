@@ -9,7 +9,7 @@ due to enzymatic digestion.
 ### Methylation Calling Pre-Processing
 
 We recommend using [samtools](http://www.htslib.org/) to remove duplicates. Due to the structure of the integrated alignment file the *samtools fixmate -p* option must be disabled. 
-Removing PCR duplicates using paired sequencing reads will give better results; however, duplicate removal using single end reads can be overly aggressive when used with bisulfite sequencing data
+Removing PCR duplicates using paired sequencing reads will give better results; however, duplicate removal using single end reads can be overly aggressive when used on bisulfite sequencing data
  and should be performed on a case by case basis. 
 
 ```shell
@@ -26,26 +26,31 @@ samtools index BSB_pe_test.dup.bam
 ### BSBolt CallMethylation
 
 Methylation calling outputs a .CGmap file by default. To maintain compatibility with downstream analysis tools 
-ATCGmap files can by output, but this feature will be deprecation in a future update.
+ATCGmap files can by output, but this feature will be deprecation in a future update. Methylation values are called for 
+all mapped reads at a position by default.
 
 **BSB CallMethylation Commands**
 ```shell
   -h, --help          show this help message and exit
-  -I                  Input BAM, input file must be in BAM format
+  -I                  Input BAM, input file must be in BAM format with index
+                      file
   -DB                 Path to index directory
   -O                  Output prefix
   -remove-ccgg        Remove methylation calls in ccgg sites,default=False
   -verbose            Verbose Output, default=False
   -text               Output plain text files, default=False
+  -remove-sx          deprecated
   -ignore-overlap     Only consider higher quality base when paired end reads
                       overlap, default=False
   -max                Max read depth to call methylation
   -min                Minimum read depth required to report methylation site
   -t                  Number of threads to use when calling methylation values
   -min-qual           Minimum base quality for a base to considered
-                      for methylation calling, default=0
+                      formethylation calling, default=0
   -CG                 Only output CpG sites in CGmap file
   -ATCG               Output ATCGmap file
+  -IO                 Ignore orphans during methylation call
+
 ```
 
 **Methylation Calling**
