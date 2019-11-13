@@ -27,7 +27,7 @@ class CallMethylationValues:
 
     def __init__(self, input_file: str = None, genome_database: str = None,
                  ignore_overlap: bool = True, remove_ccgg: bool = False, ignore_orphans: bool = True,
-                 max_read_depth: int = 8000, contig: str = None, min_base_quality: int = 0, return_queue=None,
+                 max_read_depth: int = 8000, contig: str = None, min_base_quality: int = 1, return_queue=None,
                  cg_only: bool = False):
         self.input_file = str(input_file)
         self.input_bam = pysam.AlignmentFile(self.input_file, mode='rb',
@@ -75,7 +75,6 @@ class CallMethylationValues:
         try:
             chrom_seq = self.get_reference_sequence(f'{self.genome_database}{self.contig}.pkl')
         except FileNotFoundError:
-            self.return_queue.put([])
             print(f'{self.contig} not found in BSBolt DB, Methylation Calls for {self.contig} skipped. Methylation '
                   f'values should be called using the same DB used for alignment.')
             self.return_queue.put([])
@@ -89,13 +88,15 @@ class CallMethylationValues:
         # iterate through pileup
         line_count = 0
         contig_chunk = []
+        # flag_require (0) mapped read
+        # flag_filter 1540 = pcr duplicates (1024) + read unmapped (4) + read fails platform/vendor quality checks (512)
         for pileup_col in self.input_bam.pileup(max_depth=self.max_read_depth,
                                                 contig=self.contig,
                                                 ignore_overlaps=self.ignore_overlap,
                                                 min_base_quality=self.min_base_quality,
                                                 ignore_orphans=self.ignore_orphans,
-                                                stepper='nofilter',
-                                                flag_require=0):
+                                                flag_require=0,
+                                                flag_filter=1540):
             # get sequence around pileup site
             reference_seq = chrom_seq[(pileup_col.reference_pos - 3):(pileup_col.reference_pos + 4)].upper()
             # get nucleotide context
