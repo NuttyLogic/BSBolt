@@ -119,6 +119,7 @@ matrix_parser.add_argument('-min-sample', type=float, default=0.80,
 matrix_parser.add_argument('-O', type=str, default=None, required=True, help='Aggregate matrix output path')
 matrix_parser.add_argument('-CG', action="store_true", default=False, help='Only output CG sites')
 matrix_parser.add_argument('-verbose', action="store_true", default=False, help='Verbose aggregation')
+matrix_parser.add_argument('-t', type=int, default=1, help='Number of threads to use when assembling matrix')
 
 # Add Simulation Parser Args
 

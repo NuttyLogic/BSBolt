@@ -72,3 +72,7 @@ def get_external_paths():
     if not os.path.exists(bt2) or not os.path.exists(art):
         print(f'Must compile external dependencies\n python3 setup.py build')
     return bt2, art
+
+
+def propagate_error(error):
+    raise error

@@ -25,14 +25,7 @@ pip3 install BSBolt -v
     - [pysam](https://github.com/pysam-developers/pysam) >= 0.15.2
     - [numpy](https://numpy.org/) >=1.16.3
     - [tqdm](https://github.com/tqdm/tqdm) >= 4.31.1
-2. External C Dependencies
-    - libgsl
-    - zlib      
-    - libbz2
-    - liblzma
-    - libcurl
-    - libcrypto  
- 
+    
 ### Usage
 Following installation BSBolt can be called by invoking the BSBolt module. Please see the [tutorial][https://bsbolt.readthedocs.io/en/latest/tutorial/] for 
 a detailed walk through.
