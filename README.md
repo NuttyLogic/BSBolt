@@ -36,5 +36,4 @@ python3 setup.py install .
     - [pysam](https://github.com/pysam-developers/pysam) >= 0.15.2
     - [numpy](https://numpy.org/) >=1.16.3
     - [tqdm](https://github.com/tqdm/tqdm) >= 4.31.1
-2. C Dependencies
-    - libgsl
+

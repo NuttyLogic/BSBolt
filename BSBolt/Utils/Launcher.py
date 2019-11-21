@@ -158,7 +158,8 @@ def launch_matrix_aggregation(arguments):
                              site_proportion_threshold=arguments.min_sample,
                              output_path=arguments.O,
                              cg_only=arguments.CG,
-                             verbose=arguments.verbose)
+                             verbose=arguments.verbose,
+                             threads=arguments.t)
     matrix.aggregate_matrix()
 
 

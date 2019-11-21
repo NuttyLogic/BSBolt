@@ -344,23 +344,23 @@ val_sites = ['chr14:3687', 'chr14:4105', 'chr14:4428', 'chr14:5629', 'chr14:5700
 
 # missing and low count sites should be excluded in matrix
 missing_and_low_count = AggregateMatrix(file_list=test_cgmap_file[0:3], min_site_coverage=10,
-                                        site_proportion_threshold=.9, verbose=True)
+                                        site_proportion_threshold=.9, verbose=True, threads=4)
 missing_and_low_count.aggregate_matrix()
 
 # missing sites with low count should be included in matrix
 missing_and_five_count = AggregateMatrix(file_list=test_cgmap_file[0:3], min_site_coverage=5,
-                                         site_proportion_threshold=.9, verbose=True)
+                                         site_proportion_threshold=.9, verbose=True, threads=4)
 missing_and_five_count.aggregate_matrix()
 
 # cg only sites
 cg_only_test = AggregateMatrix(file_list=test_cgmap_file, min_site_coverage=5,
-                               site_proportion_threshold=.9, verbose=True, cg_only=True)
+                               site_proportion_threshold=.9, verbose=True, cg_only=True, threads=4)
 cg_only_test.aggregate_matrix()
 
 
 # cg only high proportion
 cg_only_test_high = AggregateMatrix(file_list=test_cgmap_file, min_site_coverage=10,
-                                    site_proportion_threshold=1, verbose=True, cg_only=True)
+                                    site_proportion_threshold=1, verbose=True, cg_only=True, threads=4)
 cg_only_test_high.aggregate_matrix()
 
 
@@ -370,7 +370,7 @@ test_matrix_output = f'{test_directory}/TestData/test_cgmap_files/matrix_test.tx
 bsb_matrix_commands = ['python3', '-m', 'BSBolt', 'AggregateMatrix',
                        '-F', f'{test_cgmap_file[0]},{test_cgmap_file[1]},{test_cgmap_file[2]}',
                        '-S', f'S1,S2,S3', '-O', test_matrix_output,
-                       '-verbose', '-min-coverage', '10', '-min-sample', '0.9']
+                       '-verbose', '-min-coverage', '10', '-min-sample', '0.9', '-t', '4']
 subprocess.run(bsb_matrix_commands)
 
 test_matrix, test_site_order, test_samples = get_bsb_matrix(test_matrix_output)
@@ -384,20 +384,20 @@ class TestMatrixAggregation(unittest.TestCase):
     def test_site_missing_low_count(self):
         # test site missing in 2.cgmap and low coverage in 3.cgmap are not included
         for site in val_sites:
-            self.assertNotIn(site, missing_and_low_count.collapsed_matrix)
+            self.assertNotIn(site, missing_and_low_count.matrix_sites)
 
     def test_five_count(self):
         # test sites missing in 2.cgmap and low coverage in 3.cgmap are included with lower read count threshold
         for site in val_sites:
-            self.assertIn(site, missing_and_five_count.collapsed_matrix)
+            self.assertIn(site, missing_and_five_count.matrix_sites)
 
     def test_cg_only(self):
         # test only cg sites are included
-        self.assertEqual(len(cg_only_test.collapsed_matrix), 22344)
+        self.assertEqual(len(cg_only_test.matrix_sites), 22344)
 
     def test_cg_only_high(self):
         # test missing and low count cg sites are not included in final matrix
-        self.assertEqual(len(cg_only_test_high.collapsed_matrix), 19120)
+        self.assertEqual(len(cg_only_test_high.matrix_sites), 19120)
 
     def test_command_line(self):
         for site in val_sites:
