@@ -21,6 +21,7 @@ optional arguments:
   -O                    Aggregate matrix output path
   -CG                   Only output CG sites
   -verbose              Verbose aggregation
+  -t                    Number of threads to use when assembling matrix
 ```
 **Aggregate Matrix Default Settings**
 

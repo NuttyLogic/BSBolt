@@ -94,5 +94,3 @@ class CGmapSiteCollector:
                 return True
             return False
         return True
-
-
