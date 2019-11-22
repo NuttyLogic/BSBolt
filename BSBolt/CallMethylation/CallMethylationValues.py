@@ -181,7 +181,7 @@ class CallMethylationValues:
         meth_level = 'na'
         if all_cytosines > 0:
             # if cytosines present call methylation
-            meth_level = round(float(meth_cytosines) / float(all_cytosines), 3)
+            meth_level = round(float(meth_cytosines) / float(all_cytosines), 6)
         f'{base_counts.get("A", 0)}\t{base_counts.get("T", 0)}\t{base_counts.get("C", 0)}' \
             f'\t{base_counts.get("G", 0)}\t{base_counts.get("N", 0)}'
         forward_counts = f'{base_counts.get("A", 0)}\t{base_counts.get("T", 0)}\t{base_counts.get("C", 0)}' \

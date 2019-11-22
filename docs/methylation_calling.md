@@ -70,13 +70,13 @@ CGmap is a tab separated txt format desribing the methylation status of a cytosi
     3. Position, base-pairs from start
     4. Context, three base pair methylation context
     5. Sub-Context, two base pair methylation context
-    5. Methylation Value, proportion of methylation reads to total reads
-    6. Methylation Bases, methylated nucleotides observed
-    7. All Bases, total number of nucleotides observed at the mapping position
+    6. Methylation Value, proportion of methylation reads to total reads
+    7. Methylation Bases, methylated nucleotides observed
+    8. All Bases, total number of nucleotides observed at the mapping position
 
 ```text
 chrom   nucleotide  position   context sub-context  methylation_value methylated_bases  all_bases 
-chr11	G	422436	CHH	CC	0.091	1	10
+chr11	G	422436	CHH	CC	0.1	1	10
 chr12	G	389290	CHH	CT	0.0	0	10
 chr13	G	200552	CHH	CT	0.0	0	10
 chr11	C	142826	CG	CG	0.0	0	10

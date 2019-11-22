@@ -159,7 +159,8 @@ def launch_matrix_aggregation(arguments):
                              output_path=arguments.O,
                              cg_only=arguments.CG,
                              verbose=arguments.verbose,
-                             threads=arguments.t)
+                             threads=arguments.t,
+                             count_matrix=arguments.count)
     matrix.aggregate_matrix()
 
 
