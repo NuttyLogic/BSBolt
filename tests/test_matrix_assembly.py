@@ -37,12 +37,12 @@ val_sites = set(random.sample(missing_low_count, 100))
 
 # missing and low count sites should be excluded in matrix
 missing_and_low_count = AggregateMatrix(file_list=test_cgmap_file[0:3], min_site_coverage=10,
-                                        site_proportion_threshold=.9, verbose=True, threads=4)
+                                        site_proportion_threshold=.9, verbose=False, threads=4)
 missing_and_low_count.aggregate_matrix()
 
 # assess count matrix
 missing_and_low_count_count = AggregateMatrix(file_list=test_cgmap_file[0:3], min_site_coverage=10,
-                                              site_proportion_threshold=.9, verbose=True, threads=4,
+                                              site_proportion_threshold=.9, verbose=False, threads=4,
                                               count_matrix=True)
 missing_and_low_count_count.aggregate_matrix()
 # extract methylation values from count matrix
@@ -53,18 +53,18 @@ missing_and_low_count_meth_values = meth_count / total_counts
 
 # missing sites with low count should be included in matrix
 missing_and_five_count = AggregateMatrix(file_list=test_cgmap_file[0:3], min_site_coverage=5,
-                                         site_proportion_threshold=.9, verbose=True, threads=4)
+                                         site_proportion_threshold=.9, verbose=False, threads=4)
 missing_and_five_count.aggregate_matrix()
 
 # cg only sites
 cg_only_test = AggregateMatrix(file_list=test_cgmap_file, min_site_coverage=5,
-                               site_proportion_threshold=.9, verbose=True, cg_only=True, threads=4)
+                               site_proportion_threshold=.9, verbose=False, cg_only=True, threads=4)
 cg_only_test.aggregate_matrix()
 
 
 # cg only high proportion
 cg_only_test_high = AggregateMatrix(file_list=test_cgmap_file, min_site_coverage=10,
-                                    site_proportion_threshold=1, verbose=True, cg_only=True, threads=4)
+                                    site_proportion_threshold=1, verbose=False, cg_only=True, threads=4)
 cg_only_test_high.aggregate_matrix()
 
 
@@ -81,8 +81,8 @@ test_matrix, test_site_order, test_samples = get_bsb_matrix(test_matrix_output)
 
 bsb_count_matrix_commands = ['python3', '-m', 'BSBolt', 'AggregateMatrix',
                              '-F', f'{test_cgmap_file[0]},{test_cgmap_file[1]},{test_cgmap_file[2]}',
-                             '-S', f'S1,S2,S3', '-O', f'{test_matrix_output}_count', '-count',
-                             '-verbose', '-min-coverage', '10', '-min-sample', '0.9', '-t', '4']
+                             '-S', f'S1,S2,S3', '-O', f'{test_matrix_output}_count', '-count', '-min-coverage',
+                             '10', '-min-sample', '0.9', '-t', '4']
 subprocess.run(bsb_count_matrix_commands)
 
 

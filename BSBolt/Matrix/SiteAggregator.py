@@ -59,7 +59,8 @@ class CGmapSiteAggregator:
                 update_number = len(completed_samples) - update_count
                 pbar.update(update_number)
                 update_count = len(completed_samples)
-        pbar.close()
+        if pbar:
+            pbar.close()
 
     def collect_methylation_sites(self, sample_pos: int = None, cgmap_path: str = None, return_queue: Deque = None,
                                   completed_samples: List = None, matrix_sites: Dict = None):
