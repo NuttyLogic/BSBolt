@@ -120,6 +120,10 @@ matrix_parser.add_argument('-O', type=str, default=None, required=True, help='Ag
 matrix_parser.add_argument('-CG', action="store_true", default=False, help='Only output CG sites')
 matrix_parser.add_argument('-verbose', action="store_true", default=False, help='Verbose aggregation')
 matrix_parser.add_argument('-t', type=int, default=1, help='Number of threads to use when assembling matrix')
+matrix_parser.add_argument('-count', action='store_true', default=False,
+                           help='Output a count matrix with count of methylated cytosines and '
+                                'total observed cytosines, Sample_meth_cytosines   Sample_total_cytosines')
+
 
 # Add Simulation Parser Args
 

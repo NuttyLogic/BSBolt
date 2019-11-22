@@ -42,7 +42,8 @@ class AggregateMatrix:
     """
 
     def __init__(self, file_list=None, sample_list=None, min_site_coverage=10,
-                 site_proportion_threshold=0.9, output_path=None, cg_only=False, verbose=True, threads=1):
+                 site_proportion_threshold=0.9, output_path=None, cg_only=False, verbose=True, threads=1,
+                 count_matrix=False):
         self.file_list = file_list
         self.sample_list = sample_list
         if not self.sample_list:
@@ -55,6 +56,7 @@ class AggregateMatrix:
         self.output_path = output_path
         self.cg_only = cg_only
         self.threads = threads
+        self.count_matrix = count_matrix
         self.meth_matrix = None
         self.matrix_sites = None
 
@@ -67,18 +69,6 @@ class AggregateMatrix:
         else:
             self.meth_matrix = meth_matrix
             self.matrix_sites = matrix_sites
-
-    @staticmethod
-    def sort_sites(key_list):
-        """Takes list of chrx:XXXX sites and sorts them based on chr then genomic location"""
-        sorting_list = [[], []]
-        for site in key_list:
-            site_split = site.split(':')
-            sorting_list[0].append(site_split[0])
-            sorting_list[1].append(int(site_split[1]))
-        key_list = [x for (z, y, x) in sorted(zip(sorting_list[0], sorting_list[1], key_list),
-                                              key=lambda sorting_values: (sorting_values[0], sorting_values[1]))]
-        return key_list
 
     def collect_matrix_sites(self):
         """Iterate through individual files to get consensus site counts"""
@@ -102,7 +92,8 @@ class AggregateMatrix:
         site_aggregator = CGmapSiteAggregator(cgmap_files=self.file_list,
                                               min_site_coverage=self.min_coverage,
                                               verbose=self.verbose,
-                                              threads=self.threads)
+                                              threads=self.threads,
+                                              count_matrix=self.count_matrix)
         site_aggregator.assemble_matrix(matrix_sites=matrix_sites)
         return site_aggregator.meth_matrix
 
@@ -116,7 +107,13 @@ class AggregateMatrix:
         out = self.get_output_object()
         with out as matrix:
             sample_labels = '\t'.join([str(sample) for sample in self.sample_list])
+            if self.count_matrix:
+                sample_labels = '\t'.join([f'{sample}_meth_cytosine\t{sample}_total_cytosine'
+                                          for sample in self.sample_list])
             matrix.write(f'Site\t{sample_labels}\n')
             for site, site_values in zip(matrix_sites, meth_matrix):
-                meth_values = '\t'.join([f'{value:.4f}' for value in site_values])
+                if self.count_matrix:
+                    meth_values = '\t'.join([f'{value}' for value in site_values])
+                else:
+                    meth_values = '\t'.join([f'{value:.6f}' for value in site_values])
                 matrix.write(f'{site}\t{meth_values}\n')
