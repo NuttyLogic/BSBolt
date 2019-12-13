@@ -33,8 +33,6 @@ bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
                       f'{bsb_directory}tests/BSB_pe_test', '-S', '-BT2-k', '10', '-BT2-p', '10']
 
-print(' '.join(bsb_align_commands))
-
 subprocess.run(bsb_align_commands)
 
 print('Calling Methylation')
@@ -103,6 +101,8 @@ for site, cgmap_values in cgmap_sites.items():
 
 
 class TestBSBPipeline(unittest.TestCase):
+    """ The first 5000bp for chr10 are duplicated as chr15 in the simulation reference. These regions will have
+    mixed methylation values and coverage values"""
 
     def setUp(self):
         pass
@@ -112,20 +112,26 @@ class TestBSBPipeline(unittest.TestCase):
         coverage_difference_tolerance = 5
         # count number of sites out of tolerance
         out_of_tolerance_sites = 0
-        for test_site in site_comparisons.values():
+        for label, test_site in site_comparisons.items():
+            chromosome, pos = label.split(':')
+            if chromosome in {'chr10', 'chr15'} and int(pos) < 5000:
+                continue
             if test_site['coverage_difference'] > coverage_difference_tolerance:
                 out_of_tolerance_sites += 1
-        self.assertLessEqual(out_of_tolerance_sites, 300)
+        self.assertLessEqual(out_of_tolerance_sites, 5)
 
     def test_beta_proportion(self):
         # set z threshold
         z_threshold = 3
         # count site with z score above threshold
         z_site_count = 0
-        for test_site in site_comparisons.values():
+        for label, test_site in site_comparisons.items():
+            chromosome, pos = label.split(':')
+            if chromosome in {'chr10', 'chr15'} and int(pos) < 5000:
+                continue
             if test_site['beta_z_value'] >= z_threshold:
                 z_site_count += 1
-        self.assertLessEqual(z_site_count, 300)
+        self.assertLessEqual(z_site_count, 5)
 
 
 if __name__ == '__main__':

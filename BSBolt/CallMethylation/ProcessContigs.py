@@ -73,7 +73,7 @@ class ProcessContigs:
         self.call_methylation_kwargs = dict(input_file=input_file,
                                             genome_database=genome_database,
                                             ignore_overlap=ignore_overlap,
-                                            ignore_orphans=False,
+                                            ignore_orphans=ignore_orphans,
                                             remove_ccgg=remove_ccgg,
                                             max_read_depth=max_read_depth,
                                             min_base_quality=min_base_quality,
