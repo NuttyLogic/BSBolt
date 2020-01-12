@@ -4,10 +4,10 @@ import copy
 import unittest
 from BSBolt.Align.SortReads import SortReads
 
-read_sorter = SortReads(mismatch_threshold=4, allow_discordant=False)
-discordant_read_sorter = SortReads(mismatch_threshold=4, allow_discordant=True)
-discordant_medium_mismatch = SortReads(mismatch_threshold=5, allow_discordant=True)
-discordant_high_mismatch = SortReads(mismatch_threshold=10, allow_discordant=True)
+read_sorter = SortReads(mismatch_threshold=4, allow_discordant=False, contig_lens={'chr1': 1000})
+discordant_read_sorter = SortReads(mismatch_threshold=4, allow_discordant=True, contig_lens={'chr1': 1000})
+discordant_medium_mismatch = SortReads(mismatch_threshold=5, allow_discordant=True, contig_lens={'chr1': 1000})
+discordant_high_mismatch = SortReads(mismatch_threshold=10, allow_discordant=True, contig_lens={'chr1': 1000})
 
 # get current directory
 
@@ -26,6 +26,9 @@ def get_test_read(read_flag=None, read_mismatch='XM:i:0', read_group='1',
     read['read_group'] = read_group
     read['conversion_bases'] = read_conversion
     read['mapping_reference'] = mapping_ref
+    read['CIGAR'] = '50M'
+    read['POS'] = '100'
+    read['RNAME'] = 'chr1'
     return read
 
 # return unmapped pared end reads if discordant not allowed, mixed if allowed
@@ -68,9 +71,10 @@ single_mismatch = ['XM:i:0', 'XM:i:0', 'XM:i:5']
 single_conversion = ['C2T', 'C2T', 'G2A']
 single_mapping_ref = ['C_C2T', 'C_C2T', 'W_G2A']
 single_read_group = ['1', '1', '2']
-singe_mapping_stats = [single_flags, single_mismatch, single_conversion, single_mapping_ref, single_read_group]
+single_mapping_stats = [single_flags, single_mismatch, single_conversion,
+                        single_mapping_ref, single_read_group]
 
-for flag, mismatch, conversion, ref, group in zip(*singe_mapping_stats):
+for flag, mismatch, conversion, ref, group in zip(*single_mapping_stats):
     single_end_mapped_reads.append(get_test_read(read_flag=flag,
                                                  read_mismatch=mismatch,
                                                  read_conversion=conversion,
@@ -138,7 +142,7 @@ class TestReadSorting(unittest.TestCase):
         self.assertEqual(discordant_read_pairs[2][0]['FLAG'], '65')
         self.assertEqual(discordant_read_pairs[2][1]['FLAG'], '129')
 
-    def test_discorant_proper_pairing(self):
+    def test_discordant_proper_pairing(self):
         discordant_proper = discordant_medium_mismatch.get_reads(read_group=copy.deepcopy(discordant_paired_reads))
         # assert paired mapping
         self.assertEqual(discordant_proper[0], 'Paired')

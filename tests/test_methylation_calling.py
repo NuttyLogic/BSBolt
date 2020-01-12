@@ -140,11 +140,14 @@ for site, values in vector_point_values.items():
     ref_meth = int(reference_values[3])
     ref_unmeth = int(reference_values[4])
     reference_coverage = ref_meth + ref_unmeth
-    site_comparison['coverage_difference'] = abs(site_coverage - reference_coverage)
-    site_comparison['mapped_beta'] = values[0] / site_coverage
-    site_comparison['simulation_beta'] = ref_meth / reference_coverage
-    z = abs(z_test_of_proportion(a_yes=values[0], a_no=values[1], b_yes=ref_meth, b_no=ref_unmeth))
-    site_comparison['beta_z_value'] = z
+    try:
+        site_comparison['coverage_difference'] = abs(site_coverage - reference_coverage)
+        site_comparison['mapped_beta'] = values[0] / site_coverage
+        site_comparison['simulation_beta'] = ref_meth / reference_coverage
+        z = abs(z_test_of_proportion(a_yes=values[0], a_no=values[1], b_yes=ref_meth, b_no=ref_unmeth))
+        site_comparison['beta_z_value'] = z
+    except ZeroDivisionError:
+        site_comparison[site] = dict(coverage_difference=0, simulation_beta=0, mapped_beta=0, beta_z_value=0)
     site_comparisons[site] = site_comparison
 
 

@@ -18,11 +18,12 @@ class SortDiscordantReads:
         """Return discordant reads, read that don't map with correct inter-mate distance or strand orientation is
         incorrect, but both reads map uniquely. All read should come with a matched pair"""
         first_reads, second_reads = [], []
-        first_conversion_bases = read_copies[0]['conversion_bases']
         for read in read_group:
-            if read['read_group'] == 2:
-                first_conversion_bases = read_copies[1]['conversion_bases']
-            if read['conversion_bases'] == first_conversion_bases:
+            if read['read_group'] == '2':
+                first = True if read['conversion_bases'] == 'G2A' else False
+            else:
+                first = True if read['conversion_bases'] == 'C2T' else False
+            if first:
                 first_reads.append(read)
             else:
                 second_reads.append(read)
@@ -54,20 +55,20 @@ class SortDiscordantReads:
         primary_first_read, primary_second_read = first_reads[0], second_reads[0]
         primary_flags = self.get_discordant_flag(primary_first_read, primary_second_read)
         primary_first_read['FLAG'], primary_second_read['FLAG'] = primary_flags
-        self.set_dicordant_read(primary_first_read, primary_second_read)
-        self.set_dicordant_read(primary_second_read, primary_first_read)
+        self.set_discordant_read(primary_first_read, primary_second_read)
+        self.set_discordant_read(primary_second_read, primary_first_read)
         for read in first_reads[1:]:
-            self.set_dicordant_read(read, primary_second_read)
+            self.set_discordant_read(read, primary_second_read)
             flag, _ = self.get_discordant_flag(read, primary_second_read)
             read['FLAG'] = self.non_primary_flag_conversion[flag]
         for read in second_reads[1:]:
-            self.set_dicordant_read(read, primary_first_read)
+            self.set_discordant_read(read, primary_first_read)
             _, flag = self.get_discordant_flag(primary_first_read, read)
             read['FLAG'] = self.non_primary_flag_conversion[flag]
         return first_reads + second_reads
 
     @staticmethod
-    def set_dicordant_read(read, reference_read):
+    def set_discordant_read(read, reference_read):
         if read['RNAME'] == reference_read['RNAME']:
             read['RNEXT'] = '='
         else:

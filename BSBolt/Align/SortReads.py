@@ -8,12 +8,12 @@ class ReadSortingError(Exception):
 
 
 class SortReads(object):
-    """ Reads are sorted based the number of mapping strands and the quality of mapping status as asssessed by the
+    """ Reads are sorted based the number of mapping strands and the quality of mapping status as assessed by the
     number of non-bisulfite mismatches observed in the alignments. Reads are only returned if they map exclusively
     to a single bisulfite reference (same conversion pattern and strand). Paired end reads are first evaluated for
     proper paired alignments. If a proper paired alignment isn't observed, discordant and mixed reads are evaluated
     and returned if valid.
-    Keywoard Arguments:
+    Keyword Arguments:
         mismatch_threshold (int): reads with observed mismatches > threshold returned as unmapped
         allow_discordant (bool): if true evaluate mixed and discordant alignments
             """

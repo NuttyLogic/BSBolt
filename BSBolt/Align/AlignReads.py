@@ -11,7 +11,7 @@ class BisulfiteAlignmentAndProcessing:
     pauses until external alignment until complete. If there is an alignment error, error is propagated through the
     class. Following alignment, fastq reads and temporary sam lines, converted to tab format, are iterated through
     together, processed, and written to final sam file. Paired end and single end specific processing happens within
-    class, individual read processing is handled by ProccessSamAlingment class.
+    class, individual read processing is handled by ProcessSamAlignment class.
     Keyword Arguments:
         fastq1 (str): path to fastq file
         fastq2 (str): path to fastq1 mate pair

@@ -7,9 +7,9 @@ from BSBolt.Simulate.SetCyotsineMethylation import SetCytosineMethylation
 
 class SimulateMethylatedReads:
     """Tool to simulated methylation bisulfite sequencing reads. The process works in three distinct steps:
-        1. Given a reference Cytonsine methylation levels are designated by dinucleotide context, ie CG, CT, etc.
+        1. Given a reference Cytosine methylation levels are designated by dinucleotide context, ie CG, CT, etc.
         2. Illumina sequencing Reads are simulated using ART (Huang et al. 2012)
-        3. Illumina reads are converted to bisulfite sequencing reads with uncoverted methylated cytosines
+        3. Illumina reads are converted to bisulfite sequencing reads with unconverted methylated cytosines
         Keyword Arguments:
             reference_file (str): path to fasta reference file, all contigs should be in same fasta file
             art_path (str): path to ART executable
@@ -18,7 +18,7 @@ class SimulateMethylatedReads:
             paired_end (bool): output paired end reads, default = False / single end reads
             read_length (int): read length
             undirectional (bool): simulate both watson / crick PCR strands
-            methylation_reference (str): path to CGmap file to build mehtylation reference
+            methylation_reference (str): path to CGmap file to build methylation reference
             methylation_profile (str): previously generated BSBolt simulation database
             insertion_rate1 (float): read 1 insertion rate
             insertion_rate2 (float): read 2 insertion rate

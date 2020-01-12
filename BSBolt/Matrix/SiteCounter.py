@@ -60,6 +60,8 @@ class CGmapSiteCollector:
                 pbar.update(update_number)
                 update_count = len(completed_samples)
         if pbar:
+            update_number = len(completed_samples) - update_count
+            pbar.update(update_number)
             pbar.close()
 
     def process_sites(self, sites: list):
