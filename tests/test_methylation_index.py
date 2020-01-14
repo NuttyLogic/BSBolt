@@ -4,11 +4,8 @@ import subprocess
 import unittest
 from BSBolt.Index.ProcessCutSites import ProcessCutSites
 from BSBolt.Utils.UtilityFunctions import reverse_complement
+from tests.TestHelpers import bsb_directory
 
-# get current directory
-
-test_directory = os.path.dirname(os.path.realpath(__file__))
-bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
 
 # generate methylation indices for rrbs, wgbs, and wgbs masked
 

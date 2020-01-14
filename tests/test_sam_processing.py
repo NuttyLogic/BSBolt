@@ -1,16 +1,11 @@
 #! /usr/bin/env python3
 
 import copy
-import os
 import pickle
 import unittest
 from BSBolt.Align.ProcessSamReads import ProcessSamAlignment
+from tests.TestHelpers import bsb_directory
 
-
-# get current directory
-
-test_directory = os.path.dirname(os.path.realpath(__file__))
-bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
 
 # tests will only work if an index has already been generated
 with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB/genome_index.pkl', 'rb') as lo:
@@ -43,7 +38,7 @@ def get_test_read(read_flag=None, read_mismatch='XM:i:0', read_group='1',
     return read
 
 
-sam_alignment_processor = ProcessSamAlignment(contig_lens=contig_lens)
+sam_alignment_processor = ProcessSamAlignment()
 
 
 class TestSamReadProcessing(unittest.TestCase):
@@ -64,8 +59,6 @@ class TestSamReadProcessing(unittest.TestCase):
         self.assertEqual(test_read['FLAG'], '115')
         self.assertEqual(test_read['SEQ'], 'TTTTTTTAAAAAAAGGGGGGG')
         self.assertEqual(test_read['QUAL'], 'abcdefghijklmnopqrstu'[::-1])
-        self.assertEqual(test_read['POS'], '423471')
-        self.assertEqual(test_read['PNEXT'], '423461')
 
     def test_sense_flag_watson(self):
         test_read = get_test_read(read_flag='99')
@@ -81,9 +74,6 @@ class TestSamReadProcessing(unittest.TestCase):
         self.assertEqual(test_read['FLAG'], '179')
         self.assertEqual(test_read['SEQ'], 'CCCCCCCTTTTTTTAAAAAAA')
         self.assertEqual(test_read['QUAL'], 'abcdefghijklmnopqrstu')
-        self.assertEqual(test_read['POS'], '423471')
-        self.assertEqual(test_read['PNEXT'], '423461')
-        self.assertEqual(test_read['CIGAR'], '20M1D')
         self.assertEqual(test_read['TLEN'], '-10')
 
     def test_mixed_unmapped_watson(self):
@@ -100,9 +90,6 @@ class TestSamReadProcessing(unittest.TestCase):
         self.assertEqual(test_read['FLAG'], '101')
         self.assertEqual(test_read['SEQ'], 'CCCCCCCTTTTTTTAAAAAAA')
         self.assertEqual(test_read['QUAL'], 'abcdefghijklmnopqrstu')
-        # position should be modified
-        self.assertEqual(test_read['POS'], '423471')
-        self.assertEqual(test_read['PNEXT'], '423461')
         # cigar str should not be modified
         self.assertEqual(test_read['CIGAR'], '1D20M')
 

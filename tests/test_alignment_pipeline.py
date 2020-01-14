@@ -1,15 +1,12 @@
 import gzip
-import os
 import pickle
 import subprocess
 import unittest
-import numpy as np
 
-# get current directory
+from BSBolt.Utils.AlignmentEvaluation import AlignmentEvaluator, get_alignments
+from tests.TestHelpers import bsb_directory, z_test_of_proportion
 
-test_directory = os.path.dirname(os.path.realpath(__file__))
-bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
-bsbolt = 'python3 -m BSBolt'
+
 # generate simulated reads
 bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
                          '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
@@ -45,8 +42,18 @@ bs_call_methylation_args = ['python3', '-m', 'BSBolt', 'CallMethylation', '-I',
 subprocess.run(bs_call_methylation_args)
 print('Methylation Values Called')
 
+# retrieve reference and test alignments
+reference_alignments = get_alignments(f'{bsb_directory}tests/TestSimulations/BSB_pe.sam')
+test_alignments = get_alignments(f'{bsb_directory}tests/BSB_pe_test.sorted.bam')
+
+evaluator = AlignmentEvaluator(duplicated_regions={'chr10': (0, 5000), 'chr15': (0, 5000)},
+                               matching_target_prop=.95)
+
+print('Evaluating Alignment')
+read_stats = evaluator.evaluate_alignment(reference_alignments, test_alignments)
 
 # import methylation calling dict
+print('Evaluating Methylation Calls')
 all_methylation_sites = {}
 
 output_chromosome = ['chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15']
@@ -68,19 +75,7 @@ for line in gzip.open(f'{bsb_directory}tests/BSB_pe_test.CGmap.gz', 'rb'):
                                                                             total_reads=processed_line[7])
 
 
-def z_test_of_proportion(a_yes, a_no, b_yes, b_no):
-    a_total = a_yes + a_no
-    b_total = b_yes + b_no
-    a_prop = a_yes / a_total
-    b_prop = b_yes / b_total
-    p_hat = (a_yes + b_yes) / (a_total + b_total)
-    try:
-        return (a_prop - b_prop) / np.sqrt(p_hat * (1 - p_hat) * (1 / a_total + 1 / b_total))
-    except RuntimeWarning:
-        return 0
-
 # get line comparisons
-
 
 site_comparisons = {}
 for site, cgmap_values in cgmap_sites.items():
@@ -132,6 +127,14 @@ class TestBSBPipeline(unittest.TestCase):
             if test_site['beta_z_value'] >= z_threshold:
                 z_site_count += 1
         self.assertLessEqual(z_site_count, 5)
+
+    def test_read_alignments(self):
+        # asses proportion of reads that mapped to simulated region
+        on_target_alignments = read_stats['on_target_paired'] + read_stats['on_target_single']
+        off_target_alignments = read_stats['off_target_paired'] + read_stats['off_target_single']
+        self.assertGreater(on_target_alignments / read_stats['total_alignments'],  0.95)
+        self.assertLess(off_target_alignments / read_stats['total_alignments'], 0.01)
+        self.assertLess(read_stats['unaligned'] / read_stats['total_alignments'], 0.03)
 
 
 if __name__ == '__main__':

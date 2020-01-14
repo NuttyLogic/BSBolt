@@ -2,9 +2,9 @@ import unittest
 import os
 from BSBolt.Impute.Validation.ImputationAssessment import ImputationAssessment
 from BSBolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
+from tests.TestHelpers import test_directory
 
 
-test_directory = os.path.dirname(os.path.realpath(__file__))
 test_methylation_data = f'{test_directory}/TestData/kNN_test_matrix.txt'
 meth_matrix, meth_site_order, meth_samples = get_bsb_matrix(test_methylation_data)
 imputation_test = ImputationAssessment(methylation_array=meth_matrix,

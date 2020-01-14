@@ -3,14 +3,10 @@ import subprocess
 import unittest
 import pysam
 
-# get current directory
-
-test_directory = os.path.dirname(os.path.realpath(__file__))
-bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
-bsbolt = f'{bsb_directory}BSBolt.py'
+from tests.TestHelpers import bsb_directory
 
 
-bsb_simulate_commands = ['python3', bsbolt, 'Simulate',
+bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
                          '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
                          '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-U', '-PE']
 subprocess.run(bsb_simulate_commands)
@@ -18,13 +14,14 @@ subprocess.run(bsb_simulate_commands)
 print('Reads Simulated')
 
 
-bsb_wgbs_masked_index_commands = ['python3', bsbolt, 'Index', '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
+bsb_wgbs_masked_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G',
+                                  f'{bsb_directory}Tests/TestData/BSB_test.fa',
                                   '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked', '-MR',
                                   f'{bsb_directory}Tests/TestData/test_wgbs_masking.bed']
 
 subprocess.run(bsb_wgbs_masked_index_commands)
 
-bsb_align_commands = ['python3', bsbolt, 'Align',
+bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked', '-F1',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
                       f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',

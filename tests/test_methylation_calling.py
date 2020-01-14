@@ -3,15 +3,10 @@ import pickle
 import queue
 import time
 import unittest
-import numpy as np
+
 from BSBolt.CallMethylation.CallMethylationValues import CallMethylationValues
 from BSBolt.CallMethylation.CallMethylationVector import CallMethylationVector
-
-# set test_directories
-# tests will only run if data has previously been simulated
-
-test_directory = os.path.dirname(os.path.realpath(__file__))
-bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
+from tests.TestHelpers import bsb_directory, z_test_of_proportion
 
 
 bsb_index = os.path.exists(f'{bsb_directory}tests/TestSimulations/BSB_pe.chr11.pkl')
@@ -44,7 +39,6 @@ value_caller.call_methylation()
 print(f'Values Called: {time.time() - value_start: .3f} sec')
 
 all_values = []
-
 
 while True:
     values = value_queue.get()
@@ -119,18 +113,6 @@ for site, vector_values in vector_point_values.items():
         differences.append(difference)
 
 
-def z_test_of_proportion(a_yes, a_no, b_yes, b_no):
-    a_total = a_yes + a_no
-    b_total = b_yes + b_no
-    a_prop = a_yes / a_total
-    b_prop = b_yes / b_total
-    p_hat = (a_yes + b_yes) / (a_total + b_total)
-    try:
-        return (a_prop - b_prop) / np.sqrt(p_hat * (1 - p_hat) * (1 / a_total + 1 / b_total))
-    except RuntimeWarning:
-        return 0
-
-
 site_comparisons = {}
 
 for site, values in vector_point_values.items():
@@ -186,7 +168,3 @@ class TestMethylationCalling(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
