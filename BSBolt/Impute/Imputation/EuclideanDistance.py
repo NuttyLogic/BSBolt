@@ -3,7 +3,7 @@
 import numpy as np
 
 
-def get_euclidean(array=None, global_neighbors=None):
+def get_euclidean(array: np.ndarray = None, global_neighbors: np.ndarray = None):
     """ Pairwise euclidean distance
     ----------------------------------------
     input: numpy array with samples as rows

@@ -14,7 +14,7 @@ class CGmapSiteCollector:
            cg_only (bool): only consider cg context sites
            batch_size (int): chunk size for methylation observations to return
            verbose (bool): tqdm output
-           threads (int): numbe of threads available
+           threads (int): number of threads available
     """
 
     def __init__(self, cgmap_files: List[str] = None,

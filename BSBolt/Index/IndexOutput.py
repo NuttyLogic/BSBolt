@@ -2,6 +2,7 @@ import os
 import subprocess
 import pickle
 import gzip
+from typing import Dict, List, Union
 
 from BSBolt.Utils.UtilityFunctions import reverse_complement
 
@@ -20,10 +21,7 @@ class IndexOutput:
                                                          sequence
     """
 
-    def __init__(self, genome_database=None, bowtie2_path=None, bowtie2_threads=1):
-        assert isinstance(genome_database, str), 'Genome Database Path Invalid, Must be a String'
-        assert isinstance(bowtie2_path, str), 'Bowtie2 Path Invalid, Must be a String'
-        assert isinstance(bowtie2_threads, int), 'Bowtie2 Threads Invalid, Must be Integer'
+    def __init__(self, genome_database: str = None, bowtie2_path: str = None, bowtie2_threads: int = 1):
         # format genome_database path
         self.genome_database = self.generate_genome_directory(genome_database)
         self.bowtie2 = bowtie2_path
@@ -32,7 +30,7 @@ class IndexOutput:
         self.database_output = open(f'{self.genome_database}BSB_ref.fa', 'w')
 
     @staticmethod
-    def generate_genome_directory(genome_database):
+    def generate_genome_directory(genome_database: str) -> str:
         """ Make directory if it doesn't exist, add / to output to ensure proper formatting
         Arguments:
             genome_database (str): output folder
@@ -45,7 +43,7 @@ class IndexOutput:
             genome_database = f'{genome_database}/'
         return genome_database
 
-    def write_contig_sequence(self, contig_id, contig_sequence):
+    def write_contig_sequence(self, contig_id: str, contig_sequence: str):
         """ Writes formatted DNA sequence. Write possible outputs for Watson and Crick strands.
         Arguments:
             contig_id (str): contig label
@@ -76,7 +74,7 @@ class IndexOutput:
         # run external command
         subprocess.run(args=bowtie_command, stdout=bowtie2_index_log)
 
-    def output_contig_sequence(self, contig_id, contig_sequence):
+    def output_contig_sequence(self, contig_id: str, contig_sequence: Union[str, Dict[str, int]]):
         """Outputs serialized version of contig sequence
             Arguments:
                 contig_id (str): contig label
@@ -85,7 +83,7 @@ class IndexOutput:
         with open(f'{self.genome_database}{contig_id}.pkl', 'wb') as contig:
             return pickle.dump(contig_sequence, contig)
 
-    def output_mappable_regions(self, mappable_regions):
+    def output_mappable_regions(self, mappable_regions: List[str]):
         """Outputs mappable regions
         Arguments:
             mappable_regions (list): list of bed formatted strings

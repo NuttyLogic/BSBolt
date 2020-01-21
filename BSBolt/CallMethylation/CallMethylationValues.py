@@ -1,5 +1,6 @@
 from collections import Counter
 import pickle
+from typing import Dict, Tuple, Union
 import pysam
 
 
@@ -48,7 +49,7 @@ class CallMethylationValues:
         self.counting_dict = {}
 
     @property
-    def get_context_tables(self):
+    def get_context_tables(self) -> Dict[str, Dict[str, str]]:
         """
         Returns:
             context_tables
@@ -81,7 +82,7 @@ class CallMethylationValues:
         else:
             self.call_contig(chrom_seq)
 
-    def call_contig(self, chrom_seq):
+    def call_contig(self, chrom_seq: str):
         """Iterates through bam pileup, calling methylation values if the reference nucleotide is a C or G. Pileup reads
         are buffered and accessed as needed.
         """
@@ -129,7 +130,7 @@ class CallMethylationValues:
                     line_count = 0
         self.return_queue.put(contig_chunk, block=True)
 
-    def get_context(self, nucleotide, fivemer):
+    def get_context(self, nucleotide: str, fivemer: str) -> Tuple[str, str]:
         """
         Arguments:
             nucleotide (str): 1 nucleotide
@@ -149,7 +150,7 @@ class CallMethylationValues:
             context = self.context_tables['antisense_context_table'].get(fivemer[0:3], null_context)
         return context, subcontext
 
-    def check_ccgg(self, sequence):
+    def check_ccgg(self, sequence: str) -> bool:
         """checks if sequence is == to CCGG
         """
         if self.remove_ccgg:
@@ -157,7 +158,7 @@ class CallMethylationValues:
         return False
 
     @staticmethod
-    def get_methylation_call(nucleotide, base_counts):
+    def get_methylation_call(nucleotide: str, base_counts: Dict[str, int]) -> Dict[str, Union[int, float, str]]:
         """
         Methylation for a C relative to the sense strand of the reference can only be called using watson reads,
         and G with crick reads
@@ -193,7 +194,7 @@ class CallMethylationValues:
                 'reverse_counts': reverse_counts}
 
     @staticmethod
-    def get_reference_sequence(path):
+    def get_reference_sequence(path: str) -> str:
         """load serialized reference file from path
         """
         with open(path, 'rb') as genome_file:

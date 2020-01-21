@@ -1,4 +1,5 @@
 import random
+from typing import Dict
 import numpy as np
 from BSBolt.Utils.FastaIterator import OpenFasta
 from BSBolt.Utils.CGmapIterator import OpenCGmap
@@ -29,8 +30,8 @@ class SetCytosineMethylation:
         self.ch_distribution (np.array): beat binomial distribution for CH sites
             """
 
-    def __init__(self, reference_file=None, methylation_reference_output=None,
-                 methylation_reference=None, methylation_profile=None):
+    def __init__(self, reference_file: str = None, methylation_reference_output: str = None,
+                 methylation_reference: str = None, methylation_profile: str = None):
         self.reference_file = reference_file
         self.methylation_reference_output = methylation_reference_output
         self.methylation_reference = methylation_reference
@@ -95,7 +96,7 @@ class SetCytosineMethylation:
         return random.random() < proportion_positive
 
     @property
-    def get_reference_contigs(self):
+    def get_reference_contigs(self) -> Dict[str, str]:
         """Retrieve contig sequence from reference fasta rather than index to ensure simulation will work without
         a generated index. """
         # store contig_id and matching sequencing

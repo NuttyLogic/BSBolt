@@ -1,5 +1,6 @@
 import random
 import subprocess
+from typing import Dict, List
 from BSBolt.Utils.FastqIterator import OpenFastq
 from BSBolt.Utils.AlnIterator import OpenAln
 from BSBolt.Simulate.SetCyotsineMethylation import SetCytosineMethylation
@@ -43,11 +44,13 @@ class SimulateMethylatedReads:
             self.ch_distribution (np.vector): binomial distribution to dra CH methylation proportions
             """
 
-    def __init__(self, reference_file=None, art_path=None, output_path=None, methylation_reference_output=None,
-                 paired_end=False, read_length=125, read_depth=20, undirectional=False, methylation_reference=None,
-                 methylation_profile=None, insertion_rate1=0.001, insertion_rate2=0.001, deletion_rate1=0.001,
-                 deletion_rate2=0.001, n_base_cutoff=0, sequencing_system='HS25', pe_fragment_size=400,
-                 fragment_size_deviation=50, read1_quality_profile=None, read2_quality_profile=None):
+    def __init__(self, reference_file: str = None, art_path: str = None, output_path: str = None,
+                 methylation_reference_output: str = None, paired_end: bool = False, read_length: int = 125,
+                 read_depth: int = 20, undirectional: bool = False, methylation_reference: str = None,
+                 methylation_profile: str = None, insertion_rate1: float = 0.001, insertion_rate2: float = 0.001,
+                 deletion_rate1: float = 0.001, deletion_rate2: float = 0.001, n_base_cutoff: int = 0,
+                 sequencing_system: str = 'HS25', pe_fragment_size: int = 400, fragment_size_deviation: int = 50,
+                 read1_quality_profile: str = None, read2_quality_profile: str = None):
         self.simulate_commands = [art_path, '-ss', sequencing_system, '-i', reference_file, '-l', str(read_length),
                                   '-f', str(read_depth), '--out', str(output_path), '-ir', str(insertion_rate1),
                                   '-dr', str(deletion_rate1), '-sam', '-M', '-nf', str(n_base_cutoff)]
@@ -100,7 +103,7 @@ class SimulateMethylatedReads:
             print('ART not correctly initialized, please check path')
             raise OSError
 
-    def simulate_methylated_reads(self, aln_files, fastq_files):
+    def simulate_methylated_reads(self, aln_files: List[str], fastq_files: List[str]):
         simulation_iterators = [OpenAln(aln_file) for aln_file in aln_files]
         # noinspection PyTypeChecker
         simulation_iterators.extend([OpenFastq(fastq) for fastq in fastq_files])
@@ -131,7 +134,7 @@ class SimulateMethylatedReads:
         for output in self.output_objects:
             output.close()
 
-    def set_simulated_methylation(self, aln_profile, fastq_line, methylation_strand):
+    def set_simulated_methylation(self, aln_profile: Dict, fastq_line: List, methylation_strand: str) -> List:
         """Simulated methylated bases are converted based on case. Uppercase bases are converted lower case bases
          are ignored. Methylation of bases is set based on the cytosine dict.
          Keyword Arguments:
@@ -183,14 +186,14 @@ class SimulateMethylatedReads:
                 self.current_contig = contig_id
 
     @staticmethod
-    def nucleotide_check(nucleotide):
+    def nucleotide_check(nucleotide: str) -> bool:
         """Check nucleotide is Cytosine or Guanine"""
         methylation_nucleotides = {'C', 'G'}
         if nucleotide in methylation_nucleotides:
             return True
         return False
 
-    def parse_aln_line(self, aln_line):
+    def parse_aln_line(self, aln_line: List) -> Dict:
         """ Take list of line composing aln file line and returns formatted objects. Also adjust genome position
         based on strand information.
         Keyword Arguments:

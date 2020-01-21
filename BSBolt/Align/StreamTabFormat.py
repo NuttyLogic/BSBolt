@@ -12,7 +12,7 @@ class StreamTab:
            fastq2: fastq2
     """
 
-    def __init__(self, fastq1=None, fastq2=None, unstranded=False, no_conversion=False):
+    def __init__(self, fastq1: str = None, fastq2: str = None, unstranded=False, no_conversion=False):
         assert isinstance(fastq1, str)
         self.fastq1 = fastq1
         if fastq2:
@@ -25,12 +25,12 @@ class StreamTab:
         self.tab_conversion = self.stream_tab
 
     @property
-    def stream_tab(self):
+    def stream_tab(self) -> subprocess.Popen:
         conversion_command: list = self.format_conversion_command
         return subprocess.Popen(conversion_command, stdout=subprocess.PIPE, universal_newlines=True)
 
     @property
-    def get_python_version(self):
+    def get_python_version(self) -> str:
         python_path = 'python3'
         try:
             subprocess.Popen([python_path, '--version'], stdout=subprocess.PIPE)
@@ -39,14 +39,14 @@ class StreamTab:
         return python_path
 
     @property
-    def get_tab_format_path(self):
+    def get_tab_format_path(self) -> str:
         current_path = os.path.realpath(__file__).split('/')
         tab_format_path_list = current_path[0:-2]
         tab_format_path_list.extend(['Utils', 'TabFormatConversion.py'])
         return '/'.join(tab_format_path_list)
 
     @property
-    def format_conversion_command(self):
+    def format_conversion_command(self) -> list:
         conversion_command = [self.python_path, self.tab_format_path, '-fq1', self.fastq1]
         if self.fastq2:
             conversion_command.extend(['-fq2', self.fastq2])

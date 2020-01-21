@@ -1,4 +1,5 @@
 import pickle
+from typing import Any, Dict, List, Set
 import pysam
 from BSBolt.Align.LaunchBowtie2Alignment import Bowtie2Align
 from BSBolt.Align.ProcessSamReads import ProcessSamAlignment
@@ -37,8 +38,9 @@ class BisulfiteAlignmentAndProcessing:
         self.read_processor (ProcessSamAlignment): process mapped reads and orient them to reference strand
     """
 
-    def __init__(self, fastq1=None, fastq2=None, undirectional_library=False, bowtie2_commands=None,
-                 bsb_database=None, bowtie2_path=None, output_path=None, mismatch_threshold=4, command_line_arg=None,
+    def __init__(self, fastq1: str = None, fastq2: str = None, undirectional_library=False,
+                 bowtie2_commands: List[str] = None, bsb_database: str = None, bowtie2_path: str = None,
+                 output_path: str = None, mismatch_threshold=4, command_line_arg: str = None,
                  non_converted_output=False, allow_discordant=False):
         self.bowtie2_mapping = dict(fastq1=fastq1, fastq2=fastq2, undirectional_library=undirectional_library,
                                     bowtie2_commands=bowtie2_commands, bowtie2_path=bowtie2_path,
@@ -61,7 +63,7 @@ class BisulfiteAlignmentAndProcessing:
         self.read_processor = ProcessSamAlignment()
 
     @property
-    def get_output_object(self):
+    def get_output_object(self) -> pysam.AlignmentFile:
         """
         Returns: TextIO instance to output processed sam reads
         """
@@ -95,7 +97,7 @@ class BisulfiteAlignmentAndProcessing:
                 else:
                     read_group.append(sam_read)
 
-    def process_reads(self, read_group):
+    def process_reads(self, read_group: List[Dict[str, Any]]):
         # retrieve sorted reads
         read_status, mapping_references, sorted_reads = self.read_sorter.get_reads(read_group=read_group)
         # processes sorted reads and update number of observed reads by read name
@@ -103,7 +105,7 @@ class BisulfiteAlignmentAndProcessing:
         self.mapping_statistics['total_reads'] += 1
 
     @property
-    def get_contig_lens(self):
+    def get_contig_lens(self) -> Dict[str, int]:
         with open(f'{self.bsb_database}genome_index.pkl', 'rb') as contig_lens:
             return pickle.load(contig_lens)
 
@@ -136,12 +138,13 @@ class BisulfiteAlignmentAndProcessing:
             else:
                 self.mapping_statistics['mixed_reads_1'] += 1
 
-    def process_sam_reads(self, read_status, mapping_references, sorted_reads):
+    def process_sam_reads(self, read_status: bool, mapping_references: Set[str],
+                          sorted_reads: List[Dict[str, Any]]):
         """Launch sam read processing
         Arguments:
             read_status (str): type of reads being passed, (single, paired, mapped, discordant, mixed)
             mapping_references (list or None): list of mapping strands
-            sorted_reads ([dicts]): list of processed sam reads"""
+            sorted_reads (List[Dict[str, Union[str, List, int]]]): list of processed sam reads"""
         self.update_mapping_statistics(read_status, mapping_references, sorted_reads)
         for read in sorted_reads:
             if read_status:

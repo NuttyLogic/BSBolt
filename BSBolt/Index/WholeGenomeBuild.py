@@ -1,3 +1,5 @@
+from typing import Dict, List, Tuple
+
 from BSBolt.Utils.FastaIterator import OpenFasta
 from BSBolt.Index.IndexOutput import IndexOutput
 
@@ -16,18 +18,16 @@ class WholeGenomeIndexBuild:
         self.contig_size_dict (dict): dict of contig lengths
     """
 
-    def __init__(self, reference_file=None, genome_database=None, bowtie2_path=None, bowtie2_threads=1,
-                 mappable_regions=None):
-        assert isinstance(reference_file, str), 'Reference File Path Invalid, Must be a String'
+    def __init__(self, reference_file: str = None, genome_database: str = None,
+                 bowtie2_path: str = None, bowtie2_threads: int = 1,
+                 mappable_regions: str = None):
         self.reference_file = OpenFasta(fasta=reference_file)
-        assert isinstance(self.reference_file, OpenFasta)
         self.index_output = IndexOutput(**dict(genome_database=genome_database,
                                                bowtie2_path=bowtie2_path,
                                                bowtie2_threads=bowtie2_threads))
         self.mappable_regions = None
         if mappable_regions:
             self.mappable_regions = self.get_mappable_regions(mappable_regions)
-        assert isinstance(self.index_output, IndexOutput)
         self.contig_size_dict = {}
 
     def generate_bsb_database(self):
@@ -68,7 +68,7 @@ class WholeGenomeIndexBuild:
         self.index_output.build_bowtie2_index()
 
     @staticmethod
-    def get_mappable_regions(bed_file):
+    def get_mappable_regions(bed_file: str) -> Dict[str, List[Tuple[int, int]]]:
         mappable_regions = {}
         with open(bed_file, 'r') as regions:
             for bed_line in regions:
@@ -83,7 +83,7 @@ class WholeGenomeIndexBuild:
             region_list.sort(key=lambda x: x[0])
         return mappable_regions
 
-    def mask_contig(self, contig_id, contig_str):
+    def mask_contig(self, contig_id: str, contig_str: str) -> str:
         if contig_id in self.mappable_regions:
             contig_mappable_regions = iter(self.mappable_regions[contig_id])
             start, end = next(contig_mappable_regions)

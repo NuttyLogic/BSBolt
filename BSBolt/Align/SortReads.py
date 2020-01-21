@@ -1,3 +1,4 @@
+from typing import Any, Dict, List, Set, Tuple, Union
 from BSBolt.Align.SortDiscordantReads import SortDiscordantReads
 from BSBolt.Align.AlignmentHelpers import convert_alpha_numeric_cigar, get_mapping_length, convert_cigar_tuple
 
@@ -24,7 +25,8 @@ class SortReads(object):
         self.contig_lens = contig_lens
         self.discordant_sorter = SortDiscordantReads()
 
-    def get_reads(self, read_group):
+    def get_reads(self, read_group: List[Dict[str, Any]]) -> Tuple[Union[bool, str], Union[None, Set],
+                                                                   List[Dict[str, Any]]]:
         # return read group mapping strand and copies of reads with original sequence
         mapping_references, read_copies = self.check_mapping_status(read_group=read_group)
         # return single ended mapped or unmapped reads
@@ -61,7 +63,7 @@ class SortReads(object):
         else:
             return 'Single', mapping_references, [read for read in read_group if read['mapping_status']]
 
-    def check_mapping_status(self, read_group):
+    def check_mapping_status(self, read_group: List[Dict[str, Any]]) -> Tuple[Set, List[Dict[str, Any]]]:
         """Evaluate individual read mapping, set mapping status to False if read fails QC. Also return copy of
         1st read and 2nd read if present (used for setting mapping status)."""
         # first read will always be present
@@ -85,7 +87,7 @@ class SortReads(object):
             read_copies.append(dict(read_2))
         return mapping_references, read_copies
 
-    def convert_crick_mapping_space(self, read):
+    def convert_crick_mapping_space(self, read: Dict[str, Any]):
         cigar_tuple = convert_alpha_numeric_cigar(read['CIGAR'])[::-1]
         # convert flag to be relative to negative strand
         mapping_length = get_mapping_length(cigar_tuple)
@@ -94,7 +96,7 @@ class SortReads(object):
         read['CIGAR'] = convert_cigar_tuple(cigar_tuple)
 
     @staticmethod
-    def check_proper_read_pairing(read_group):
+    def check_proper_read_pairing(read_group: List[Dict[str, Any]]) -> Tuple[Set[str], List[Dict[str, Any]]]:
         """
         Return sorted proper reads pair if present. Assume proper Illumina FR orientation.
         Prefer valid read pairs to discordant / mixed read mappings
@@ -119,7 +121,7 @@ class SortReads(object):
                     sorted_reads.extend([read_1, read_2])
         return mapping_references, sorted_reads
 
-    def check_discordant(self, read_group, read_copies):
+    def check_discordant(self, read_group: List[Dict[str, Any]], read_copies: List[Dict[str, Any]]):
         """Return discordant reads, read that don't map with correct inter-mate distance or strand orientation is
         incorrect, but both reads map uniquely. All read should come with a matched pair"""
         return self.discordant_sorter.check_discordant_read_pairing(read_group=read_group, read_copies=read_copies)

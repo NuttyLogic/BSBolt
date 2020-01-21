@@ -125,7 +125,6 @@ def launch_methylation_call(arguments):
                                       genome_database=arguments.DB,
                                       output_prefix=arguments.O,
                                       remove_ccgg=arguments.remove_ccgg,
-                                      remove_sx_reads=arguments.remove_sx,
                                       text_output=arguments.text,
                                       min_read_depth=arguments.min,
                                       threads=arguments.t,

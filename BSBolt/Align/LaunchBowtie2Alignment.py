@@ -1,4 +1,5 @@
 import subprocess
+from typing import Any, Dict, List, Tuple
 from BSBolt.Align.StreamTabFormat import StreamTab
 
 
@@ -25,8 +26,8 @@ class Bowtie2Align:
 
     """
 
-    def __init__(self, fastq1=None, fastq2=None, bowtie2_commands=None,
-                 bowtie2_path=None, bsb_database=None, undirectional_library=False, no_conversion=False):
+    def __init__(self, fastq1: str = None, fastq2: str = None, bowtie2_commands: List[str] = None,
+                 bowtie2_path: str = None, bsb_database: str = None, undirectional_library=False, no_conversion=False):
         if bowtie2_commands:
             assert isinstance(bowtie2_commands, list)
         self.bowtie2_commands = bowtie2_commands
@@ -70,7 +71,7 @@ class Bowtie2Align:
             raise subprocess.CalledProcessError(return_code, 'Pipe error')
 
     @property
-    def format_bowtie2_command(self):
+    def format_bowtie2_command(self) -> List[str]:
         """Add bowtie2 database and specific streaming format"""
         bowtie2_command = [self.bowtie2_path]
         bowtie2_command.extend(self.bowtie2_commands)
@@ -83,7 +84,7 @@ class Bowtie2Align:
         bowtie2_command.extend([input_file_style, '-'])
         return bowtie2_command
 
-    def process_sam_line(self, sam_line):
+    def process_sam_line(self, sam_line: str) -> Dict[str, Any]:
         # yield parsed sam line as dict
         if sam_line:
             processed_sam_line: list = sam_line.replace('\n', '').split('\t')
@@ -98,13 +99,13 @@ class Bowtie2Align:
                         mapping_reference=mapping_reference)
 
     @staticmethod
-    def process_read_name(read_name):
+    def process_read_name(read_name: str) -> Tuple[str, str, str, str]:
         QNAME, meta_data = read_name.split('_BSBolt_')
         read_group, conversion_bases, original_sequence = meta_data.split('_')
         return QNAME, read_group, conversion_bases, original_sequence
 
     @staticmethod
-    def process_mapping_chrom(RNAME, read_group):
+    def process_mapping_chrom(RNAME: str, read_group: str) -> Tuple[str, str]:
         reference_conversion = 'C2T' if read_group == '1' else 'G2A'
         if '_crick_bs' in RNAME:
             return RNAME.replace('_crick_bs', ''), f'C_{reference_conversion}'

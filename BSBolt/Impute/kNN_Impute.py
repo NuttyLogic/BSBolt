@@ -1,6 +1,8 @@
 import gzip
 import io
 import random
+from typing import List, Tuple
+import numpy as np
 from BSBolt.Impute.Imputation.GenomeImputation import GenomeImputation
 from BSBolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
 
@@ -24,9 +26,10 @@ class ImputeMissingValues:
         :param sample_ids:
     """
 
-    def __init__(self, input_matrix_file=None, batch_size=None, imputation_window_size=3000000, k=5,
-                 threads=4, verbose=False, sep='\t', output_path=None, randomize_batch=False,
-                 meth_matrix=None, meth_site_order=None, sample_ids=None):
+    def __init__(self, input_matrix_file: str = None, batch_size: int = None, imputation_window_size: int = 3000000,
+                 k: int = 5, threads: int = 4, verbose: bool = False, sep: str = '\t', output_path: str = None,
+                 randomize_batch: bool = False, meth_matrix: np.ndarray = None, meth_site_order: list = None,
+                 sample_ids: list = None):
         self.input_matrix_file = input_matrix_file
         self.meth_matrix = meth_matrix
         self.meth_site_order = meth_site_order
@@ -61,7 +64,7 @@ class ImputeMissingValues:
             for count, sample in enumerate(batch):
                 self.meth_matrix[:, sample] = batch_impute.genomic_array[:, count]
 
-    def process_batch(self, imputation_order):
+    def process_batch(self, imputation_order: List[int]) -> List[List[int]]:
         batches = []
         if not self.batch_commands[0]:
             self.batch_commands[0] = len(self.sample_ids)
@@ -81,7 +84,7 @@ class ImputeMissingValues:
             end += self.batch_commands[0]
         return batches
 
-    def get_batch_data(self, batch):
+    def get_batch_data(self, batch: List[int]) -> Tuple[np.array, List[str]]:
         batch_array = self.meth_matrix[:, batch]
         sample_labels = [self.sample_ids[1][sample] for sample in batch]
         return batch_array, sample_labels
@@ -90,7 +93,7 @@ class ImputeMissingValues:
         self.meth_matrix, self.meth_site_order, self.sample_ids = get_bsb_matrix(self.input_matrix_file)
 
     @staticmethod
-    def get_output_matrix(output_path):
+    def get_output_matrix(output_path: str):
         if output_path.endswith('.gz'):
             out = io.BufferedWriter(gzip.open(output_path, 'wb'))
         else:
@@ -104,7 +107,7 @@ class ImputeMissingValues:
             self.output_matrix.write(f'{site_label}\t{str_values}\n')
         self.output_matrix.close()
 
-    def launch_genome_imputation(self, meth_array, sample_labels):
+    def launch_genome_imputation(self, meth_array: np.ndarray, sample_labels: List) -> object:
         imputation_kwargs = dict(self.imputation_kwargs)
         imputation_kwargs.update(dict(genomic_array=meth_array,
                                       sample_labels=sample_labels,

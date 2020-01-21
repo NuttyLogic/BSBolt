@@ -80,8 +80,6 @@ call_meth_parser.add_argument('-remove-ccgg', action="store_true", default=False
 call_meth_parser.add_argument('-verbose', action="store_true", default=False, help='Verbose Output, default=False')
 call_meth_parser.add_argument('-text', action="store_true", default=False,
                               help='Output plain text files, default=False')
-call_meth_parser.add_argument('-remove-sx', action="store_false", default=True,
-                              help='deprecated')
 call_meth_parser.add_argument('-ignore-overlap', action="store_true", default=False,
                               help='Only consider higher quality base '
                                    'when paired end reads overlap, '

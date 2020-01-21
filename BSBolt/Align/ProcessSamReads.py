@@ -1,3 +1,4 @@
+from typing import Any, Dict, List, Union
 from BSBolt.Utils.UtilityFunctions import reverse_complement
 
 
@@ -50,7 +51,7 @@ class ProcessSamAlignment:
                                          '89': '89', '345': '345', '165': '165',
                                          '153': '153', '409': '409', '101': '101'}
 
-    def process_read(self, sam_read):
+    def process_read(self, sam_read: Dict[str, Any]):
         sense = sam_read['FLAG'] in self.sense_flags
         mixed_unmapped = sam_read['FLAG'] in self.mixed_unmapped
         if 'C_' in sam_read['mapping_reference']:
@@ -61,14 +62,14 @@ class ProcessSamAlignment:
                                                               "quality, check file formatting "
         sam_read['SAM_TAGS'].append(f'XO:Z:{sam_read["mapping_reference"]}')
 
-    def format_watson_reads(self, sam_read, sense, mixed_unmapped):
+    def format_watson_reads(self, sam_read: Dict[str, Union[str, List, int]], sense: bool, mixed_unmapped: bool):
         """Format Watson reads so all reads are on positive strand, change flags to represent this"""
         if not sense and not mixed_unmapped:
             sam_read['SEQ'] = reverse_complement(sam_read['SEQ'])
             sam_read['QUAL'] = sam_read['QUAL'][::-1]
         sam_read['FLAG'] = self.watson_mapping_conversion[sam_read['FLAG']]
 
-    def format_crick_reads(self, sam_read, sense, mixed_unmapped):
+    def format_crick_reads(self, sam_read: Dict[str, Union[str, List, int]], sense: bool, mixed_unmapped: bool):
         """Format crick reads, some reads reverse complemented others only reversed"""
         # if sequence is mapped to -crick, reverse complement sequence
         if sense and not mixed_unmapped:
