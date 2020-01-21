@@ -2,22 +2,24 @@
 
 import gzip
 import io
+from typing import List, Union
 
 
 class OpenFastq:
     """ Simple class to simplify iterating through fastq files. The script yields a tuple for every four lines
     in a fastq file
     ------------------------------------------------------------------------------------
-    input: path to fastq
-    returns: fastq iteration object"""
+    KeywordArguments:
+        fastq: str = path to fastq file
+    """
 
-    def __init__(self, fastq=None):
+    def __init__(self, fastq: str = None):
         if fastq.endswith(".gz"):
             self.f = io.BufferedReader(gzip.open(fastq, 'rb'))
         else:
             self.f = open(fastq, 'r')
 
-    def __iter__(self):
+    def __iter__(self) -> List[str]:
         with self.f as fastq:
             while True:
                 line1 = fastq.readline()
@@ -30,7 +32,7 @@ class OpenFastq:
                 yield [line1, line2, line3, line4]
 
     @staticmethod
-    def process_line(line):
+    def process_line(line: Union[bytes, str]):
         if isinstance(line, bytes):
             return line.decode('utf-8').replace('\n', '')
         else:

@@ -21,7 +21,7 @@ class ConvertFastq:
         self.unstranded (bool): convert complement of watson / crick strands
     """
 
-    def __init__(self, fastq1=None, fastq2=None, unstranded=False, no_conversion=False):
+    def __init__(self, fastq1: str = None, fastq2: str = None, unstranded: bool = False, no_conversion: bool = False):
         self.fastq1 = fastq1
         self.fastq2 = fastq2
         self.unstranded = unstranded

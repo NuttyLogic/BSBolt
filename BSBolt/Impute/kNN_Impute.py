@@ -84,7 +84,7 @@ class ImputeMissingValues:
             end += self.batch_commands[0]
         return batches
 
-    def get_batch_data(self, batch: List[int]) -> Tuple[np.array, List[str]]:
+    def get_batch_data(self, batch: List[int]) -> Tuple[np.ndarray, List[str]]:
         batch_array = self.meth_matrix[:, batch]
         sample_labels = [self.sample_ids[1][sample] for sample in batch]
         return batch_array, sample_labels

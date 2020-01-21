@@ -101,7 +101,7 @@ class CallMethylationVector:
 
     def call_vector(self, aligned_read: pysam.AlignedRead,
                     positions: set,
-                    reference_nuc: str) -> List[List[float], List[int], List[int]]:
+                    reference_nuc: str) -> List:
         methylation_calls = [[], [], []]
         reference_consumers = {0, 2, 3, 7, 8}
         query_consumers = {0, 1, 4, 7, 8}
@@ -132,7 +132,7 @@ class CallMethylationVector:
 
     def process_methylation_vector(self,
                                    aligned_read: pysam.AlignedRead,
-                                   methylation_calls: List[List[float], List[int], List[int]],
+                                   methylation_calls: List,
                                    strand: str, methylation_vectors: Dict[str, Any]) -> Union[None, Tuple]:
         if aligned_read.is_proper_pair:
             mate_flag = self.mate_flags[aligned_read.flag]
@@ -157,7 +157,7 @@ class CallMethylationVector:
                     np.array(methylation_calls[0]), np.array(methylation_calls[1]), aligned_read.flag, None, strand)
 
     @staticmethod
-    def clean_overlap(methylation_calls: List[List[float], List[int], List[int]]) -> List:
+    def clean_overlap(methylation_calls: List) -> List:
         cleaned_calls = {}
         for meth_call, pos, qual in zip(methylation_calls[0], methylation_calls[1], methylation_calls[2]):
             if pos not in cleaned_calls:

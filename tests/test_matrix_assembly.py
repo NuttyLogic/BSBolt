@@ -65,7 +65,6 @@ cg_only_test_high = AggregateMatrix(file_list=test_cgmap_file, min_site_coverage
                                     site_proportion_threshold=1, verbose=False, cg_only=True, threads=4)
 cg_only_test_high.aggregate_matrix()
 
-
 # test_command line
 test_matrix_output = f'{test_directory}/TestData/test_cgmap_files/matrix_test.txt'
 

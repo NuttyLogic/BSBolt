@@ -24,8 +24,8 @@ imputation_parser = subparsers.add_parser('Impute', help='kNN Imputation Module'
 align_parser.add_argument('-F1', type=str, default=None, help='Path to fastq 1', required=True)
 align_parser.add_argument('-F2', type=str, default=None, help='Path to fastq 2')
 align_parser.add_argument('-NC', action='store_true', default=False, help='Aligned unconverted bisulfite reads')
-align_parser.add_argument('-D', action="store_true", default=False, help='Library directional, in silico modificaiton '
-                                                                         'of sequening bases will only account for '
+align_parser.add_argument('-D', action="store_true", default=False, help='Library directional, in silico modification '
+                                                                         'of sequencing bases will only account for '
                                                                          'bisulfite converted DNA and not the PCR '
                                                                          'products of converted DNA, default=False')
 align_parser.add_argument('-O', type=str, default=None, help='Path to Output Prefix', required=True)
@@ -62,7 +62,7 @@ index_parser.add_argument('-rrbs', action="store_true", default=False, help='Gen
 index_parser.add_argument('-rrbs-cut-format', default='C-CGG',
                           help='Cut format to use for generation of RRBS database, '
                                'default= C-CGG (MSPI), input multiple enzymes as a '
-                               'comma seperate string, C-CGG,C-CGG,...')
+                               'comma separate string, C-CGG,C-CGG,...')
 index_parser.add_argument('-rrbs-lower', type=int, default=40, help='Lower bound fragment size to consider RRBS index'
                                                                     'generation, default = 40')
 index_parser.add_argument('-rrbs-upper', type=int, default=500, help='Upper bound fragment size to consider RRBS index'
@@ -129,7 +129,7 @@ sim_parser.add_argument('-G', type=str, required=True,
                         help='Path for reference genome fasta file, fasta file should contain all contigs')
 sim_parser.add_argument('-O', type=str, required=True, help='Output prefix')
 sim_parser.add_argument('-PE', default=False, action='store_true', help='Simulate Paired End Reads, default Single End')
-sim_parser.add_argument('-RL', type=int, default=125, help='Simulated Read Lenghth')
+sim_parser.add_argument('-RL', type=int, default=125, help='Simulated Read Length')
 sim_parser.add_argument('-RD', type=int, default=20, help='Simulated Read Depth')
 sim_parser.add_argument('-U', default=False, action='store_true',
                         help='Simulate Undirectional Reads, default=Directional')
@@ -140,7 +140,7 @@ sim_parser.add_argument('-IR1', type=float, default=0.001, help='Read 1 insertio
 sim_parser.add_argument('-IR2', type=float, default=0.001, help='Read 2 insertion rate')
 sim_parser.add_argument('-DR1', type=float, default=0.001, help='Read 1 deletion rate')
 sim_parser.add_argument('-DR2', type=float, default=0.001, help='Read 2 deletion rate')
-sim_parser.add_argument('-NF', type=int, default=0, help='Cutoff theshold for a read with gaps, -, or ambiguous bases, '
+sim_parser.add_argument('-NF', type=int, default=0, help='Cutoff threshold for a read with gaps, -, or ambiguous bases, '
                                                          'N. Reads below the threshold will not be output')
 sim_parser.add_argument('-M', type=int, default=400, help='Mean paired end fragment size')
 sim_parser.add_argument('-SM', type=int, default=50, help='Paired end fragment length distribution standard deviation')

@@ -8,7 +8,7 @@ from tests.TestHelpers import bsb_directory
 
 
 # tests will only work if an index has already been generated
-with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB/genome_index.pkl', 'rb') as lo:
+with open(f'{bsb_directory}tests/TestData/BSB_Test_DB/genome_index.pkl', 'rb') as lo:
     contig_lens = pickle.load(lo)
 
 

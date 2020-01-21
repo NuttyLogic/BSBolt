@@ -1,7 +1,9 @@
 #! /user/bin/env python3
 
+from typing import List, Tuple
 
-def chrom_site_split(chrom_site):
+
+def chrom_site_split(chrom_site: str) -> Tuple[str, int]:
     site_split = chrom_site.split(':')
     assert len(site_split) == 2, 'Site must be formatted as chromosome:pos'
     try:
@@ -27,7 +29,7 @@ class GenomeImputationWindows:
             self.rolling_windows (dict): site for rolling windows
         """
 
-    def __init__(self, site_labels=None, imputation_window_size=3000000):
+    def __init__(self, site_labels: List[str] = None, imputation_window_size: int = 3000000):
         self.site_labels = site_labels
         self.imputation_ws = int(imputation_window_size / 3) * 3
         self.imputation_boundary = int(imputation_window_size / 3)

@@ -7,32 +7,32 @@ from tests.TestHelpers import bsb_directory
 
 
 bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
-                         '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
-                         '-O', f'{bsb_directory}Tests/TestSimulations/BSB_pe', '-U', '-PE']
+                         '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
+                         '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-U', '-PE']
 subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
 
 
 bsb_wgbs_masked_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G',
-                                  f'{bsb_directory}Tests/TestData/BSB_test.fa',
-                                  '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked', '-MR',
-                                  f'{bsb_directory}Tests/TestData/test_wgbs_masking.bed']
+                                  f'{bsb_directory}tests/TestData/BSB_test.fa',
+                                  '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked', '-MR',
+                                  f'{bsb_directory}tests/TestData/test_wgbs_masking.bed']
 
 subprocess.run(bsb_wgbs_masked_index_commands)
 
 bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
-                      '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked', '-F1',
-                      f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
-                      f'{bsb_directory}Tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
-                      f'{bsb_directory}Tests/BSB_pe_test_masked', '-S']
+                      '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked', '-F1',
+                      f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
+                      f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
+                      f'{bsb_directory}tests/BSB_pe_test_masked', '-S']
 subprocess.run(bsb_align_commands)
 
 # import alignment regions
 
 target_regions = []
 
-with open(f'{bsb_directory}Tests/TestData/test_wgbs_masking.bed', 'r') as bed:
+with open(f'{bsb_directory}tests/TestData/test_wgbs_masking.bed', 'r') as bed:
     for line in bed:
         chrom, start, end = line.replace('\n', '').split('\t')
         start, end = int(start), int(end)
@@ -67,7 +67,7 @@ def check_overlap(region, start, end):
 
 overlaping_reads = []
 
-with open(f'{bsb_directory}Tests/TestSimulations/BSB_pe.sam', 'r') as sam:
+with open(f'{bsb_directory}tests/TestSimulations/BSB_pe.sam', 'r') as sam:
     sam_iter = iter(sam)
     while True:
         try:
@@ -93,7 +93,7 @@ with open(f'{bsb_directory}Tests/TestSimulations/BSB_pe.sam', 'r') as sam:
 expected_reads = []
 non_target_reads = []
 
-masked_alingment_file = pysam.AlignmentFile(f'{bsb_directory}Tests/BSB_pe_test_masked.sorted.bam', 'rb')
+masked_alingment_file = pysam.AlignmentFile(f'{bsb_directory}tests/BSB_pe_test_masked.sorted.bam', 'rb')
 for count, read in enumerate(masked_alingment_file.fetch()):
     if read.query_name in overlaping_reads:
         if read.query_name not in expected_reads:

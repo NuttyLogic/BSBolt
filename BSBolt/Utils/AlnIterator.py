@@ -2,26 +2,26 @@
 
 import gzip
 import io
+from typing import Tuple, Union
 
 
 class OpenAln:
-    """ Simple class to simplify iterating through .aln files. The script yields a tuple for every thre lines
-    in a fastq file
+    """ Simple class to simplify iterating through .aln files.
     ------------------------------------------------------------------------------------
     input: path to fastq
     returns: fastq iteration object"""
 
-    def __init__(self, fastq=None):
-        if fastq.endswith(".gz"):
-            self.f = io.BufferedReader(gzip.open(fastq, 'rb'))
+    def __init__(self, aln: str = None):
+        if aln.endswith(".gz"):
+            self.f = io.BufferedReader(gzip.open(aln, 'rb'))
         else:
-            self.f = open(fastq, 'r')
+            self.f = open(aln, 'r')
 
-    def __iter__(self):
-        with self.f as fastq:
+    def __iter__(self) -> Tuple[str, str, str]:
+        with self.f as aln:
             aln_start = False
             while True:
-                line1 = fastq.readline()
+                line1 = aln.readline()
                 if not line1:
                     break
                 if not aln_start:
@@ -29,12 +29,12 @@ class OpenAln:
                         aln_start = True
                     continue
                 line1 = self.process_line(line1)
-                line2 = self.process_line(fastq.readline())
-                line3 = self.process_line(fastq.readline())
-                yield (line1, line2, line3)
+                line2 = self.process_line(aln.readline())
+                line3 = self.process_line(aln.readline())
+                yield line1, line2, line3
 
     @staticmethod
-    def process_line(line):
+    def process_line(line: Union[str, bytes]) -> str:
         if isinstance(line, bytes):
             return line.decode('utf-8').replace('\n', '')
         else:

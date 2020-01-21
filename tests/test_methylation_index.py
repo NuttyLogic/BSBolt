@@ -9,21 +9,21 @@ from tests.TestHelpers import bsb_directory
 
 # generate methylation indices for rrbs, wgbs, and wgbs masked
 
-bsb_wgbs_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
-                           '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs']
+bsb_wgbs_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
+                           '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs']
 
 subprocess.run(bsb_wgbs_index_commands)
 
-bsb_wgbs_masked_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
-                                  '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked', '-MR',
-                                  f'{bsb_directory}Tests/TestData/test_wgbs_masking.bed']
+bsb_wgbs_masked_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
+                                  '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked', '-MR',
+                                  f'{bsb_directory}tests/TestData/test_wgbs_masking.bed']
 
 subprocess.run(bsb_wgbs_masked_index_commands)
 
 
-bsb_rrbs_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}Tests/TestData/BSB_test.fa',
-                           '-DB', f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs', '-rrbs', '-MR',
-                           f'{bsb_directory}Tests/TestData/test_wgbs_masking.bed', '-rrbs-cut-format', 'CAG-G']
+bsb_rrbs_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
+                           '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_rrbs', '-rrbs', '-MR',
+                           f'{bsb_directory}tests/TestData/test_wgbs_masking.bed', '-rrbs-cut-format', 'CAG-G']
 
 subprocess.run(bsb_rrbs_index_commands)
 
@@ -31,7 +31,7 @@ subprocess.run(bsb_rrbs_index_commands)
 
 mappable_test_regions = []
 
-with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa', 'r') as bsb_ref:
+with open(f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa', 'r') as bsb_ref:
     chrome: str = None
     start: int = None
     end: int = None
@@ -65,7 +65,7 @@ for region in mappable_test_regions:
 
 mappable_bed = []
 
-with open(f'{bsb_directory}Tests/TestData/test_wgbs_masking.bed', 'r') as bed:
+with open(f'{bsb_directory}tests/TestData/test_wgbs_masking.bed', 'r') as bed:
     for line in bed:
         line_split = line.replace('\n', '').split('\t')
         mappable_bed.append(f'{line_split[0]}:{line_split[1]}-{line_split[2]}')
@@ -76,7 +76,7 @@ mappable_bed.sort()
 # get mappable rrbs regions:
 mappable_rrbs_regions = []
 
-with gzip.open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs/mappable_regions.txt.gz') as mappable_rrbs:
+with gzip.open(f'{bsb_directory}tests/TestData/BSB_Test_DB_rrbs/mappable_regions.txt.gz') as mappable_rrbs:
     for line in mappable_rrbs:
         line = line.decode('UTF-8')
         chrom, start, end, seq = line.split('\t')
@@ -85,7 +85,7 @@ with gzip.open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs/mappable_regions
 
 reference_sequences = {}
 # retrieve contig sequences
-with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs/BSB_ref.fa', 'r') as bsb_ref:
+with open(f'{bsb_directory}tests/TestData/BSB_Test_DB_rrbs/BSB_ref.fa', 'r') as bsb_ref:
     chrome: str = None
     for line in bsb_ref:
         if '>' in line:
@@ -95,7 +95,7 @@ with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_rrbs/BSB_ref.fa', 'r') as 
 
 reference_sequences_restricted_mapping = {}
 # retrieve contig sequences
-with open(f'{bsb_directory}Tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa', 'r') as bsb_ref:
+with open(f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa', 'r') as bsb_ref:
     chrome: str = None
     for line in bsb_ref:
         if '>' in line:

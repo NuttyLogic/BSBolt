@@ -1,6 +1,7 @@
 #! /user/bin/env python3
 
 import multiprocessing as mp
+from typing import List
 import numpy as np
 from tqdm import tqdm
 from BSBolt.Impute.Imputation.GenomeImputationWindows import GenomeImputationWindows
@@ -41,8 +42,9 @@ class GenomeImputation:
         self.genomic_array_t (np.array): reference to transposed version of self.genomic_array
            """
 
-    def __init__(self, row_labels=None, sample_labels=None, genomic_array=None, imputation_window_size=3000000, k=5,
-                 threads=4, verbose=False):
+    def __init__(self, row_labels: List[str] = None, sample_labels: List[str] = None,
+                 genomic_array: np.ndarray = None, imputation_window_size: int = 3000000, k: int = 5,
+                 threads: int = 4, verbose: bool = False):
         self.row_labels = row_labels
         self.sample_labels = sample_labels
         self.genomic_array = genomic_array
@@ -50,8 +52,7 @@ class GenomeImputation:
         # check that matrix is properly oriented for imputation
         if genomic_array.shape[0] < genomic_array.shape[1]:
             raise RuntimeWarning(f'Number of Genomic Locations {genomic_array.shape[0]} < Number of Samples '
-                                 f'{genomic_array.shape[1]}, Transpose Matrix if Rows Represent Samples instead '
-                                 f'and not Genomic Locations')
+                                 f'{genomic_array.shape[1]}, Transpose Matrix if Rows Represent Samples')
         self.imputation_window_size = imputation_window_size
         self.k = k
         self.threads = threads
@@ -72,8 +73,7 @@ class GenomeImputation:
 
     def get_global_neighbors(self):
         """Calculate global neighbors for sites without local information"""
-        print('Calculating Global Pairwise Distance')
-        self.global_neighbors = get_euclidean(self.genomic_array_t)
+        self.global_neighbors: List[List[float]] = get_euclidean(self.genomic_array_t)
 
     def get_imputation_windows(self):
         """Retrieve imputation windows based on input row labels"""

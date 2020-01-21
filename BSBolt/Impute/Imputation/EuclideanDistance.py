@@ -1,9 +1,10 @@
 #! /usr/bin/env python3
 
+from typing import List
 import numpy as np
 
 
-def get_euclidean(array: np.ndarray = None, global_neighbors: np.ndarray = None):
+def get_euclidean(array: np.ndarray = None, global_neighbors: np.ndarray = None) -> List[List[float]]:
     """ Pairwise euclidean distance
     ----------------------------------------
     input: numpy array with samples as rows
