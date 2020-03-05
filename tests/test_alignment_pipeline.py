@@ -3,15 +3,15 @@ import pickle
 import subprocess
 import unittest
 
-from BSBolt.Utils.AlignmentEvaluation import AlignmentEvaluator, get_alignments
+from BSBolt.Utils.AlignmentEvaluation import AlignmentEvaluator
 from tests.TestHelpers import bsb_directory, z_test_of_proportion
 
 
 # generate simulated reads
 bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
                          '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
-                         '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-PE', '-IR1', '0.01',
-                         '-IR2', '0.01', '-DR1', '0.01', '-DR2', '0.01', '-U']
+                         '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-PE', '-U',
+                         '-IR1', '0.01', '-IR2', '0.01', '-DR1', '0.01', '-DR2', '0.01']
 subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
@@ -25,10 +25,10 @@ print('BSBolt Index Built')
 
 
 bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
-                      '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
+                      '-G', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
-                      f'{bsb_directory}tests/BSB_pe_test', '-S', '-BT2-k', '10', '-BT2-p', '10', '-discord']
+                      f'{bsb_directory}tests/BSB_pe_test', '-t', '10', '-UN', '-Sort']
 
 subprocess.run(bsb_align_commands)
 
@@ -43,8 +43,8 @@ subprocess.run(bs_call_methylation_args)
 print('Methylation Values Called')
 
 # retrieve reference and test alignments
-reference_alignments = get_alignments(f'{bsb_directory}tests/TestSimulations/BSB_pe.sam')
-test_alignments = get_alignments(f'{bsb_directory}tests/BSB_pe_test.sorted.bam')
+reference_alignments = f'{bsb_directory}tests/TestSimulations/BSB_pe.sam'
+test_alignments = f'{bsb_directory}tests/BSB_pe_test.sorted.bam'
 
 evaluator = AlignmentEvaluator(duplicated_regions={'chr10': (0, 5000), 'chr15': (0, 5000)},
                                matching_target_prop=.95)
@@ -90,7 +90,10 @@ for site, cgmap_values in cgmap_sites.items():
     cgmap_unmeth = int(cgmap_sites[site]['total_reads']) - int(cgmap_sites[site]['methylated_reads'])
     ref_meth = int(reference_values[3])
     ref_unmeth = int(reference_values[4])
-    z = abs(z_test_of_proportion(a_yes=cgmap_meth, a_no=cgmap_unmeth, b_yes=ref_meth, b_no=ref_unmeth))
+    try:
+        z = abs(z_test_of_proportion(a_yes=cgmap_meth, a_no=cgmap_unmeth, b_yes=ref_meth, b_no=ref_unmeth))
+    except ZeroDivisionError:
+        z = 0
     site_comparison['beta_z_value'] = z
     site_comparisons[site] = site_comparison
 
@@ -128,13 +131,17 @@ class TestBSBPipeline(unittest.TestCase):
                 z_site_count += 1
         self.assertLessEqual(z_site_count, 5)
 
-    def test_read_alignments(self):
+    def test_on_target_read_alignments(self):
         # asses proportion of reads that mapped to simulated region
-        on_target_alignments = read_stats['on_target_paired'] + read_stats['on_target_single']
-        off_target_alignments = read_stats['off_target_paired'] + read_stats['off_target_single']
-        self.assertGreater(on_target_alignments / read_stats['total_alignments'],  0.95)
-        self.assertLess(off_target_alignments / read_stats['total_alignments'], 0.01)
-        self.assertLess(read_stats['unaligned'] / read_stats['total_alignments'], 0.03)
+        on_target_alignments = read_stats['On_Prim_PropPair_NoDup'] + read_stats['On_Prim_Discord_NoDup']
+        self.assertGreater(on_target_alignments / read_stats['ObservedAlignments'],  0.97)
+
+    def test_off_target_reaad_alignments(self):
+        off_target_alignments = read_stats['Off_Prim_PropPair_NoDup'] + read_stats['Off_Prim_Discord_NoDup']
+        self.assertLess(off_target_alignments / read_stats['ObservedAlignments'], 0.005)
+
+    def test_unmapped_read_alignments(self):
+        self.assertLess(read_stats['UnalignedAlignments'] / read_stats['ObservedAlignments'], 0.001)
 
 
 if __name__ == '__main__':

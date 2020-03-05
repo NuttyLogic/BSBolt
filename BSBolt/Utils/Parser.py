@@ -23,30 +23,81 @@ imputation_parser = subparsers.add_parser('Impute', help='kNN Imputation Module'
 
 align_parser.add_argument('-F1', type=str, default=None, help='Path to fastq 1', required=True)
 align_parser.add_argument('-F2', type=str, default=None, help='Path to fastq 2')
-align_parser.add_argument('-NC', action='store_true', default=False, help='Aligned unconverted bisulfite reads')
-align_parser.add_argument('-D', action="store_true", default=False, help='Library directional, in silico modification '
-                                                                         'of sequencing bases will only account for '
-                                                                         'bisulfite converted DNA and not the PCR '
-                                                                         'products of converted DNA, default=False')
+align_parser.add_argument('-UN', action="store_true", default=False,
+                          help='Library Undirectional, Consider PCR products of bisulfite converted DNA',
+                          required=False)
 align_parser.add_argument('-O', type=str, default=None, help='Path to Output Prefix', required=True)
-align_parser.add_argument('-DB', type=str, default=None, help='Path to BSBolt Database', required=True)
-align_parser.add_argument('-M', type=int, default=4, help='Read mismatch threshold, reads where the total number of '
-                                                          'observed mismatches greater than the threshold will be '
-                                                          'discarded')
-align_parser.add_argument('-S', action="store_true", default=False, help='Position sort output .bam, default=False')
-align_parser.add_argument('-BT2-local', action="store_true", default=False,
-                          help='Bowtie2; local alignment, default end-to-end')
-align_parser.add_argument('-BT2-D', type=int, default=40, help='Bowtie2; number of consecutive seed extension attempts '
-                                                               'that can fail before Bowtie2 move on')
-align_parser.add_argument('-BT2-k', type=int, default=5, help='Bowtie2; alignment search limit')
-align_parser.add_argument('-BT2-p', type=int, default=2, help='Bowtie2; Number of threads for Bowtie2 to use')
-align_parser.add_argument('-BT2-L', type=int, default=20, help='Bowtie2; Length of subseeds during alignment')
-align_parser.add_argument('-BT2-score-min', type=str, default='L,-0.6,-0.6', help='Bowtie2; scoring function')
-align_parser.add_argument('-BT2-I', type=int, default=0, help='Bowtie2; minimum fragment length '
-                                                              'for a valid paired-end alignment')
-align_parser.add_argument('-BT2-X', type=int, default=500, help='Bowtie2; maximum fragment length '
-                                                                'for a valid paired-end alignment')
-align_parser.add_argument('-discordant', action='store_true', help='Report discordant and mixed reads, default=False')
+align_parser.add_argument('-G', type=str, default=None, help='Path to BSBolt Database', required=True)
+align_parser.add_argument('-t', type=int, default=1, help='Number of bwa threads [1]', required=False)
+align_parser.add_argument('-k', type=int, default=19, help='Minimum seed length [19]', required=False)
+align_parser.add_argument('-w', type=int, default=100, help='Band width for banded alignment [100]', required=False)
+align_parser.add_argument('-d', type=int, default=100, help='off-diagonal X-dropoff [100]', required=False)
+align_parser.add_argument('-r', type=float, default=1.5,
+                          help='look for internal seeds inside a seed longer than {-k} * FLOAT [1.5]', required=False)
+align_parser.add_argument('-y', type=int, default=20,
+                          help='seed occurrence for the 3rd round seeding [20]', required=False)
+align_parser.add_argument('-c', type=int, default=500,
+                          help='skip seeds with more than INT occurrences [500]', required=False)
+align_parser.add_argument('-D', type=float, default=0.50,
+                          help='drop chains shorter than FLOAT fraction of the longest overlapping chain [0.50]',
+                          required=False)
+align_parser.add_argument('-W', type=int, default=0, help='discard a chain if seeded bases shorter than INT [0]',
+                          required=False)
+align_parser.add_argument('-m', type=int, default=50,
+                          help='perform at most INT rounds of mate rescues for each read [50]',
+                          required=False)
+align_parser.add_argument('-S', action='store_true', default=False, help='skip mate rescue', required=False)
+align_parser.add_argument('-P', action='store_true', default=False,
+                          help='skip pairing; mate rescue performed unless -S also in use', required=False)
+align_parser.add_argument('-A', type=int, default=1,
+                          help='score for a sequence match, which scales options -TdBOELU unless overridden [1]',
+                          required=False)
+align_parser.add_argument('-B', type=int, default=4,
+                          help='penalty for a mismatch [4]',
+                          required=False)
+align_parser.add_argument('-INDEL', type=lambda x: x.strip(), default='6,6',
+                          help='gap open penalties for deletions and insertions [6,6]',
+                          required=False)
+align_parser.add_argument('-E', type=lambda x: x.strip(), default='1,1',
+                          help='gap extension penalty; a gap of size k cost \'{-O} + {-E}*k\' [1,1]',
+                          required=False)
+align_parser.add_argument('-L', type=lambda x: x.strip(), default='30,30',
+                          help='penalty for 5\'- and 3\'-end clipping [30,30]',
+                          required=False)
+align_parser.add_argument('-U', type=int, default='17',
+                          help='penalty for an unpaired read pair [17]',
+                          required=False)
+align_parser.add_argument('-p', action='store_true', default=False,
+                          help='smart pairing (ignoring in2.fq)',
+                          required=False)
+align_parser.add_argument('-R', type=str, default=None,
+                          help='read group header line such as \'@RG\tID:foo\tSM:bar\' [null]',
+                          required=False)
+align_parser.add_argument('-H', type=str, default=None,
+                          help='insert STR to header if it starts with @; or insert lines in FILE [null]',
+                          required=False)
+align_parser.add_argument('-j', action='store_true', default=False,
+                          help='treat ALT contigs as part of the primary assembly (i.e. ignore <idxbase>.alt file)',
+                          required=False)
+align_parser.add_argument('-T', type=int, default=80,
+                          help='minimum score to output [80], set based on read length',
+                          required=False)
+align_parser.add_argument('-XA', type=lambda x: x.strip(), default='100,200',
+                          help='if there are <INT hits with score >80 percent of the max score, '
+                               'output all in XA [5,200]',
+                          required=False)
+align_parser.add_argument('-M', action='store_true', default=False,
+                          help='mark shorter split hits as secondary',
+                          required=False)
+align_parser.add_argument('-I', type=lambda x: x.strip(), default=None,
+                          help='specify the mean, standard deviation (10 percent of the mean if absent), max '
+                               '(4 sigma from the mean if absent) and min of the insert size distribution.  '
+                               'FR orientation only. [inferred], Float,Float,Int,Int',
+                          required=False)
+align_parser.add_argument('-Sort', action='store_true', default=False,
+                          help='Sort output bam',
+                          required=False)
+
 
 # Add Index Parser Commands
 

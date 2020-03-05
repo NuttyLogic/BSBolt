@@ -7,20 +7,19 @@ from BSBolt.Index.IndexOutput import IndexOutput
 
 
 class RRBSGenomeIndexBuild:
-    """Class to format reference sequence inputs for processing by bowtie2. In silico digests reference sequence and
+    """Class to format reference sequence inputs for processing by bwa. In silico digests reference sequence and
     return mappable regions that are within the fragment boundary. Fragments are relative to the restriction cut site
     if provided, or the complete restriction sequence is considered as part of the mappable fragment.
         Keyword Arguments:
             reference_file (str): path to reference file in fasta format
             genome_database (str): directory to output processed datafiles
-            bowtie2_path (str): path to bowtie2 executable, default = bowtie2 if in path
-            bowtie2_threads (int): threads for bowtie2 to use
+            bwa_path (str): path to bwa-mem executable, default = bwa-mem if in path
             lower_bound (int): smallest mappable fragment size
             upper_bound (int): largest mappable fragment size
             cut_format (str): Comma separated list of restriction sites, - represent cut break
         Attributes:
             self.reference_file (OpenFasta): Instance of OpenFasta to parse input reference file
-            self.index_output (IndexOutput): Instance of IndexOutput class to handle file output and external bowtie2
+            self.index_output (IndexOutput): Instance of IndexOutput class to handle file output and external bwa
                 commands
             self.lower_bound (int): == lower_bound kwarg
             self.higher_bound (int): == high_bound kwarg
@@ -29,12 +28,11 @@ class RRBSGenomeIndexBuild:
             self.contig_size_dict (dict): list of contig sizes for downstream use
         """
 
-    def __init__(self, reference_file: str = None, genome_database: str = None, bowtie2_path: str = 'bowtie2',
-                 bowtie2_threads: int = 1, lower_bound: int = 30, upper_bound: int = 500, cut_format: str = 'C-CGG'):
+    def __init__(self, reference_file: str = None, genome_database: str = None, bwa_path: str = 'bwa-mem',
+                 lower_bound: int = 30, upper_bound: int = 500, cut_format: str = 'C-CGG'):
         self.reference_file = OpenFasta(fasta=reference_file)
         self.index_output = IndexOutput(**dict(genome_database=genome_database,
-                                               bowtie2_path=bowtie2_path,
-                                               bowtie2_threads=bowtie2_threads))
+                                               bwa_path=bwa_path))
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.cut_sites = ProcessCutSites(cut_format=cut_format)
@@ -62,7 +60,7 @@ class RRBSGenomeIndexBuild:
         self.process_contig_region(contig_id, contig_sequence)
         self.index_output.database_output.close()
         # launch build commands
-        self.index_output.build_bowtie2_index()
+        self.index_output.build_index()
         # output mappable regions in bed format
         self.index_output.output_mappable_regions(self.mappable_regions)
         # output contig size index

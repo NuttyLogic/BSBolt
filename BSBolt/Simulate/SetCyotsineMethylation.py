@@ -31,54 +31,60 @@ class SetCytosineMethylation:
             """
 
     def __init__(self, reference_file: str = None, methylation_reference_output: str = None,
-                 methylation_reference: str = None, methylation_profile: str = None):
+                 methylation_reference: str = None, methylation_profile: str = None,
+                 collect_ch_sites: bool = True):
         self.reference_file = reference_file
         self.methylation_reference_output = methylation_reference_output
         self.methylation_reference = methylation_reference
         self.reference_dict = self.get_reference_contigs
-        self.reference_contig_size = {contig: len(sequence) for contig, sequence in self.reference_dict.items()}
         self.methylation_profile = methylation_profile
         self.simulation_out = None
+        self.collect_ch_sites = collect_ch_sites
         self.cpg_distribution = np.random.beta(.5, .5, size=5000)
         self.ch_distribution = np.random.beta(.01, .05, size=5000)
 
     def set_simulated_methylation(self):
         if self.methylation_reference:
             self.simulation_out = SimulationOutput(simulation_output=self.methylation_reference_output,
-                                                   reference_contigs=list(self.reference_contig_size.keys()),
+                                                   reference_contigs=list(self.reference_dict.keys()),
                                                    bsb_methylation_reference=self.methylation_reference)
             self.simulation_out.generate_simulation_directory()
         elif self.methylation_profile:
             self.simulation_out = SimulationOutput(simulation_output=self.methylation_reference_output,
-                                                   reference_contigs=list(self.reference_contig_size.keys()))
+                                                   reference_contigs=list(self.reference_dict.keys()))
             self.simulation_out.generate_simulation_directory()
-            self.simulation_out.output_contig_key()
             self.get_methylation_profile_from_cgmap()
         else:
             self.simulation_out = SimulationOutput(simulation_output=self.methylation_reference_output,
-                                                   reference_contigs=list(self.reference_contig_size.keys()))
+                                                   reference_contigs=list(self.reference_dict.keys()))
             self.simulation_out.generate_simulation_directory()
-            self.simulation_out.output_contig_key()
             self.set_random_cytosine_methylation()
-        return self.reference_contig_size, self.simulation_out
+        return self.reference_dict, self.simulation_out
 
     def get_methylation_profile_from_cgmap(self):
         current_chromosome = None
-        cytosine_dict = {'Watson': {}, 'Crick': {}}
+        meth_keys = {}
+        cytosine_values = {}
+        cytosine_positions = {}
         for line in OpenCGmap(self.methylation_profile):
             chrom, nucleotide, pos, context, methlevel = line[0], line[1], int(line[2]) - 1, line[4], float(line[7])
-            if not current_chromosome:
-                current_chromosome = chrom
-            if current_chromosome != chrom:
-                self.simulation_out.output_contig_methylation_reference(cytosine_dict, chrom)
-                cytosine_dict = {'Watson': {}, 'Crick': {}}
-            # nucleotide, methylation_level, ccontext, methylated_reads, unmethylated_reads
-            meth_profile = [nucleotide, methlevel, context, 0, 0]
-            if nucleotide == 'G':
-                cytosine_dict['Crick'][f'{chrom}:{pos}'] = meth_profile
-            elif nucleotide == 'C':
-                cytosine_dict['Watson'][f'{chrom}:{pos}'] = meth_profile
-        self.simulation_out.output_contig_methylation_reference(cytosine_dict, current_chromosome)
+            context = 1 if context == 'CG' else 0
+            if not self.collect_ch_sites and not context:
+                continue
+            nucleotide = 1 if nucleotide == 'G' else 0
+            # nucleotide, methylation_level, context, methylated_reads, unmethylated_reads
+            meth_profile = np.assarray([nucleotide, methlevel, context, 0, 0, 1])
+            profile_id = f'{chrom}:{pos}'
+            if chrom not in meth_keys:
+                meth_keys[chrom] = {profile_id: 0}
+                cytosine_values[chrom] = [meth_profile]
+                cytosine_positions[chrom] = 1
+            else:
+                meth_keys[chrom][profile_id] = cytosine_positions[chrom]
+                cytosine_values[chrom].append(meth_profile)
+                cytosine_positions[chrom] += 1
+        for contig, meth_key in meth_keys.items():
+            self.simulation_out.output_contig_methylation_reference(meth_key, np.array(cytosine_values[contig]), contig)
 
     @property
     def pick_cpg_methylation(self):
@@ -105,7 +111,7 @@ class SetCytosineMethylation:
         contig_sequence = []
         for contig_label, line in OpenFasta(self.reference_file):
             if contig_label:
-                # join sequence and add to dict if new contig encounted
+                # join sequence and add to dict if new contig encountered
                 if contig_id:
                     contig_dict[contig_id] = ''.join(contig_sequence)
                     contig_sequence = []
@@ -117,40 +123,48 @@ class SetCytosineMethylation:
         return contig_dict
 
     def set_random_cytosine_methylation(self):
-        """Iterate through reference sequence, upon encountering a Cyotsine (Watson) or Guanine (Crick):
+        """Iterate through reference sequence, upon encountering a Cytosine (Watson) or Guanine (Crick):
             1. get nucleotide context
             2. pull random methylation value from appropriate distribution and store value
         """
         # iterate through reference sequence
         for contig, sequence in self.reference_dict.items():
-            cytosine_dict = {'Watson': {}, 'Crick': {}}
+            cytosine_key = {}
+            position_count = 0
+            cytosine_values = []
             for index, nucleotide in enumerate(sequence):
                 # retrieve nucleotide context
                 context = sequence[index - 1: index + 2]
                 # context won't exist at ends of reference sequence
                 if context:
                     # set watson methylation
+                    methylation_profile = []
                     if nucleotide == 'C':
-                        c_context = context[1:]
-                        methylation_profile: list = self.get_methylation_level(c_context, nucleotide)
-                        cytosine_dict['Watson'][f'{contig}:{index}'] = methylation_profile
+                        context = 1 if context[1:] == 'CG' else 0
+                        methylation_profile: list = self.get_methylation_level(context, 0)
                     # set crick methylation
                     elif nucleotide == 'G':
-                        g_context = context[0:2]
-                        methylation_profile: list = self.get_methylation_level(g_context, nucleotide)
-                        cytosine_dict['Crick'][f'{contig}:{index}'] = methylation_profile
-            self.simulation_out.output_contig_methylation_reference(cytosine_dict, contig)
+                        context = 1 if context[0:2] == 'CG' else 0
+                        methylation_profile: list = self.get_methylation_level(context, 1)
+                    if methylation_profile:
+                        # if no CH information don't add info
+                        if not self.collect_ch_sites and not methylation_profile[2]:
+                            continue
+                        cytosine_key[f'{contig}:{index}'] = position_count
+                        cytosine_values.append(np.array(methylation_profile))
+                        position_count += 1
+            self.simulation_out.output_contig_methylation_reference(cytosine_key, np.array(cytosine_values), contig)
 
-    def get_methylation_level(self, context, nucleotide):
+    def get_methylation_level(self, context, nucleotide) -> list:
         """Retrieve methylation level from distribution based on nucleotide context
         Arguments:
-            context (str): 2BP nucleotide context
-            nucleotide (str): reference nucleotide
+            context (int): 2BP nucleotide context
+            nucleotide (int): reference nucleotide
         Return:
-            methylation_profile (dict): context, methylation level, unpopulated methylation read information
+            methylation_profile (np.ndarray): context, methylation level, unpopulated methylation read information
             """
-        if context == 'CG':
+        if context:
             methylation_level = self.pick_cpg_methylation
         else:
             methylation_level = self.pick_ch_methylation
-        return [nucleotide, methylation_level, context, 0, 0]
+        return [nucleotide, methylation_level, context, 0, 0, 0]

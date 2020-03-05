@@ -15,7 +15,7 @@ class MethylationCallingError(Exception):
 def call_contig_methylation(completed_contigs, call_methylation_kwargs):
     """ Wrapper to initialize methylation calling
     Arguments:
-        completed_contigs (multiprocessing.mangager.list): List of contigs with completed methylation calls
+        completed_contigs (multiprocessing.manager.list): List of contigs with completed methylation calls
         call_methylation_kwargs (dict): dict of argument for CallMethylation class
     """
     contig_methylation_call = CallMethylationValues(**call_methylation_kwargs)
@@ -39,7 +39,7 @@ class ProcessContigs:
         min_base_quality (int): minimum base quality for base to be considered
     Attributes:
         self.input_file (str): path to input bam/sam file
-        self.input_bam (pysam.Samfile): pysam object to retrieve pileup information from .bam file
+        self.input_bam (pysam.AlignmentFile): pysam object to retrieve pileup information from .bam file
         self.text_output (bool): plain text output
         self.output_prefix (str): output prefix
         self.threads (int): , if one thread watcher and processing on same thread else separated

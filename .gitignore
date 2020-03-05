@@ -119,18 +119,9 @@ venv.bak/
 scratch*
 
 # compiled binaries
-BSBolt/External/ART/art_illumina
-BSBolt/External/BT2/bowtie2-align-l
-BSBolt/External/BT2/bowtie2-align-s
-BSBolt/External/BT2/bowtie2-build-l
-BSBolt/External/BT2/bowtie2-build-s
-BSBolt/External/BT2/bowtie2-inspect-l
-BSBolt/External/BT2/bowtie2-inspect-s
-BSBolt/External/BT2/.tmp
-BSBolt/External/BT2/bowtie2-align-l.dSYM
-BSBolt/External/BT2/bowtie2-align-s.dSYM
-BSBolt/External/BT2/bowtie2-build-l.dSYM
-BSBolt/External/BT2/bowtie2-build-s.dSYM
-BSBolt/External/BT2/bowtie2-inspect-l.dSYM
-BSBolt/External/BT2/bowtie2-inspect-s.dSYM
-BSBolt/External/ART/art_illumina_src/*.o
+BSBolt/External/WGSIM/wgsim
+/BSBolt/External/WGSIM/wgsim.dSYM/Contents/Info.plist
+/BSBolt/External/WGSIM/wgsim.dSYM/Contents/Resources/DWARF/wgsim
+BSBolt/External/BWA/bwa-mem2
+BSBolt/External/BWA/libwa.a
+BSBolt/External/BWA/src/*.o

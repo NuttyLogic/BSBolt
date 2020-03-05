@@ -67,11 +67,11 @@ def check_python_version():
 def get_external_paths():
     utility_directory = os.path.dirname(os.path.realpath(__file__))
     external_directory = '/'.join(utility_directory.split('/')[:-1]) + '/External/'
-    bt2 = f'{external_directory}BT2/bowtie2'
-    art = f'{external_directory}ART/art_illumina'
-    if not os.path.exists(bt2) or not os.path.exists(art):
+    bwa = f'{external_directory}BWA/bwa-mem2'
+    wgsim = f'{external_directory}WGSIM/wgsim'
+    if not os.path.exists(bwa) or not os.path.exists(wgsim):
         print(f'Must compile external dependencies\n python3 setup.py build')
-    return bt2, art
+    return bwa, wgsim
 
 
 def propagate_error(error):

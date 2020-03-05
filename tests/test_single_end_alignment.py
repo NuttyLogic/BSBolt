@@ -7,7 +7,7 @@ from tests.TestHelpers import bsb_directory
 bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_1.fastq', '-O',
-                      f'{bsb_directory}tests/BSB_pe_test', '-S', '-OU', '-BT2-k', '10', '-BT2-p', '10']
+                      f'{bsb_directory}tests/BSB_pe_test', '-Sort', '-t', '10']
 subprocess.run(bsb_align_commands)
 
 

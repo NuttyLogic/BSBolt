@@ -5,7 +5,7 @@ from BSBolt.Utils.UtilityFunctions import reverse_complement, get_external_paths
 from tests.TestHelpers import test_directory
 
 
-bt2_path, art_path = get_external_paths()
+bwa_path, wgsim_path = get_external_paths()
 # hold read simulation data to test functions
 
 aln_pe_1_lines = [['>chr10	chr10-67760/1-1	67549	-',
@@ -96,13 +96,14 @@ simulation_files = f'{test_directory}/TestSimulations/wgbs_pe'
 test_genome = f'{test_directory}/TestData/BSB_test.fa'
 
 test_simulation_files = SimulateMethylatedReads(reference_file=test_genome,
-                                                art_path=art_path,
+                                                wgsim_path=wgsim_path,
                                                 paired_end=True,
                                                 output_path=simulation_files,
                                                 methylation_reference_output=f'{simulation_files}/wgbs_pe_ref/test',
                                                 undirectional=False)
 test_simulation_files.run_simulation()
 
+"""
 # combine aln lines
 all_aln_lines = []
 for aln1, aln2 in zip(aln_pe_1_lines, aln_pe_2_lines):
@@ -168,3 +169,5 @@ class TestReadSimulation(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+"""

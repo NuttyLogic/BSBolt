@@ -5,26 +5,23 @@ from BSBolt.Index.IndexOutput import IndexOutput
 
 
 class WholeGenomeIndexBuild:
-    """Class to build whole genome bisulfite bowtie2 index.
+    """Class to build whole genome bisulfite bwa index.
     Keyword Arguments
         reference_file (str): path to reference file in fasta format
         genome_database (str): directory to output processed datafiles
-        bowtie2_path (str): path to bowtie2 executable, default = bowtie2 if in path
-        bowtie2_threads (int): threads for bowtie2 to use
+        bwa_path (str): path to bwa executable, default = bwa-mem if in path
     Attributes
         self.reference_file (OpenFasts): Instance of OpenFasta to parse input reference file
-        self.index_output (IndexOutput): Instance of IndexOutput class to handle file output and external bowtie2
+        self.index_output (IndexOutput): Instance of IndexOutput class to handle file output and external bwa
             commands
         self.contig_size_dict (dict): dict of contig lengths
     """
 
     def __init__(self, reference_file: str = None, genome_database: str = None,
-                 bowtie2_path: str = None, bowtie2_threads: int = 1,
-                 mappable_regions: str = None):
+                 bwa_path: str = None, mappable_regions: str = None):
         self.reference_file = OpenFasta(fasta=reference_file)
         self.index_output = IndexOutput(**dict(genome_database=genome_database,
-                                               bowtie2_path=bowtie2_path,
-                                               bowtie2_threads=bowtie2_threads))
+                                               bwa_path=bwa_path))
         self.mappable_regions = None
         if mappable_regions:
             self.mappable_regions = self.get_mappable_regions(mappable_regions)
@@ -65,7 +62,7 @@ class WholeGenomeIndexBuild:
         self.contig_size_dict[contig_id] = len(contig_str)
         self.index_output.output_contig_sequence('genome_index', self.contig_size_dict)
         # launch external commands
-        self.index_output.build_bowtie2_index()
+        self.index_output.build_index()
 
     @staticmethod
     def get_mappable_regions(bed_file: str) -> Dict[str, List[Tuple[int, int]]]:

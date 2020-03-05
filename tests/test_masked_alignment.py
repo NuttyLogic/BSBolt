@@ -25,7 +25,7 @@ bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
-                      f'{bsb_directory}tests/BSB_pe_test_masked', '-S']
+                      f'{bsb_directory}tests/BSB_pe_test_masked', '-Sort']
 subprocess.run(bsb_align_commands)
 
 # import alignment regions

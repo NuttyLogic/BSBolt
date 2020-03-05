@@ -4,6 +4,7 @@ from typing import Dict, List
 from BSBolt.Utils.FastqIterator import OpenFastq
 from BSBolt.Utils.AlnIterator import OpenAln
 from BSBolt.Simulate.SetCyotsineMethylation import SetCytosineMethylation
+from BSBolt.Simulate.StreamSim import StreamSim
 
 
 class SimulateMethylatedReads:
@@ -13,7 +14,7 @@ class SimulateMethylatedReads:
         3. Illumina reads are converted to bisulfite sequencing reads with unconverted methylated cytosines
         Keyword Arguments:
             reference_file (str): path to fasta reference file, all contigs should be in same fasta file
-            art_path (str): path to ART executable
+            wgsim_path (str): path to ART executable
             output_path (str): output prefix for processed files
             methylation_reference_output (str): output path for methylation reference, (useful if using built reference)
             paired_end (bool): output paired end reads, default = False / single end reads
@@ -44,24 +45,22 @@ class SimulateMethylatedReads:
             self.ch_distribution (np.vector): binomial distribution to dra CH methylation proportions
             """
 
-    def __init__(self, reference_file: str = None, art_path: str = None, output_path: str = None,
+    def __init__(self, reference_file: str = None, wgsim_path: str = None, output_path: str = None,
+                 sequencing_error: float = 0.020, mutation_rate: float = 0.0010, mutation_indel_fraction: float = 0.15,
+                 indel_extension_probability: float = 0.15, random_seed: int = -1,
                  methylation_reference_output: str = None, paired_end: bool = False, read_length: int = 125,
                  read_depth: int = 20, undirectional: bool = False, methylation_reference: str = None,
-                 methylation_profile: str = None, insertion_rate1: float = 0.001, insertion_rate2: float = 0.001,
-                 deletion_rate1: float = 0.001, deletion_rate2: float = 0.001, n_base_cutoff: int = 0,
-                 sequencing_system: str = 'HS25', pe_fragment_size: int = 400, fragment_size_deviation: int = 50,
-                 read1_quality_profile: str = None, read2_quality_profile: str = None):
-        self.simulate_commands = [art_path, '-ss', sequencing_system, '-i', reference_file, '-l', str(read_length),
-                                  '-f', str(read_depth), '--out', str(output_path), '-ir', str(insertion_rate1),
-                                  '-dr', str(deletion_rate1), '-sam', '-M', '-nf', str(n_base_cutoff)]
-        if read1_quality_profile:
-            self.simulate_commands.extend(['-1', read1_quality_profile])
-        if paired_end:
-            paired_end_commands = ['-ir2', str(insertion_rate2), '-dr2', str(deletion_rate2),
-                                   '-p', '-m', str(pe_fragment_size), '-s', str(fragment_size_deviation)]
-            if read2_quality_profile:
-                paired_end_commands.extend(['-2', read2_quality_profile])
-            self.simulate_commands.extend(paired_end_commands)
+                 methylation_profile: str = None, ambiguous_base_cutoff: float = 0.05, haplotype_mode: bool = False,
+                 pe_fragment_size: int = 400, fragment_size_deviation: int = 50,
+                 genome_length: int = None):
+        self.simulate_commands = [wgsim_path, '-1', str(read_length), '-2', str(read_length),
+                                  '-e', str(sequencing_error), '-d', str(pe_fragment_size),
+                                  '-s', str(fragment_size_deviation),
+                                  '-r', str(mutation_rate), '-R', str(mutation_indel_fraction),
+                                  '-X', str(indel_extension_probability), '-S', str(random_seed),
+                                  '-A', str(ambiguous_base_cutoff)]
+        if haplotype_mode:
+            self.simulate_commands.append('-h')
         if not methylation_reference_output:
             methylation_reference_output = output_path
         self.cytosine_dict_profile_kwargs = dict(reference_file=reference_file,
@@ -72,6 +71,7 @@ class SimulateMethylatedReads:
         self.output_path = output_path
         self.paired_end = paired_end
         self.undirectional = undirectional
+        self.read_coverage = (read_length, read_depth)
         self.reference_contig_size = None
         self.current_contig = None
         self.cytosine_dict = None
@@ -82,17 +82,15 @@ class SimulateMethylatedReads:
         print('Setting Cytosine Methylation')
         cytosine_profile = SetCytosineMethylation(**self.cytosine_dict_profile_kwargs)
         self.reference_contig_size, self.simulation_out = cytosine_profile.set_simulated_methylation()
-        print('Simulating Illumina Reads')
-        self.simulate_illumina_reads()
-        if self.paired_end:
-            aln_files = [f'{self.output_path}1.aln', f'{self.output_path}2.aln']
-            fastq_files = [f'{self.output_path}1.fq', f'{self.output_path}2.fq']
-        else:
-            aln_files = [f'{self.output_path}.aln']
-            fastq_files = [f'{self.output_path}.fq']
-        print('Simulating Methylated Illumina Reads')
+        genome_length = sum([len(seq) for seq in self.reference_contig_size.values()])
+        coverage_length = self.read_coverage[0] * 2 if self.paired_end else self.read_coverage[0]
+        read_number = (genome_length / coverage_length) * self.read_coverage[1]
+        print('Simulating Methylated Reads')
+        self.simulate_commands.extend(['-N', str(int(read_number)),
+                                       self.cytosine_dict_profile_kwargs['reference_file']])
+        read_stream = StreamSim(paired_end=self.paired_end)
+        read_stream.stream_sim_reads(self.simulate_commands)
         self.output_objects = self.get_output_objects
-        self.simulate_methylated_reads(aln_files=aln_files, fastq_files=fastq_files)
         print('Finished Simulation')
 
     def simulate_illumina_reads(self):
