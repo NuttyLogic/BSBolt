@@ -24,8 +24,6 @@
    SOFTWARE.
 */
 
-/* This program is separated from maq's read simulator with Colin
- * Hercus' modification to allow longer indels. */
 
 #include <stdlib.h>
 #include <math.h>
@@ -37,10 +35,11 @@
 #include <ctype.h>
 #include <string.h>
 #include <zlib.h>
+#include <random>
 #include "kseq.h"
 KSEQ_INIT(gzFile, gzread)
 
-#define PACKAGE_VERSION "0.3.1-r13"
+#define PACKAGE_VERSION "0.0.1"
 
 const uint8_t nst_nt4_table[256] = {
 	4, 4, 4, 4,  4, 4, 4, 4,  4, 4, 4, 4,  4, 4, 4, 4, 
@@ -61,28 +60,6 @@ const uint8_t nst_nt4_table[256] = {
 	4, 4, 4, 4,  4, 4, 4, 4,  4, 4, 4, 4,  4, 4, 4, 4
 };
 
-/* Simple normal random number generator, copied from genran.c */
-
-double ran_normal()
-{ 
-	static int iset = 0; 
-	static double gset; 
-	double fac, rsq, v1, v2; 
-	if (iset == 0) {
-		do { 
-			v1 = 2.0 * drand48() - 1.0;
-			v2 = 2.0 * drand48() - 1.0; 
-			rsq = v1 * v1 + v2 * v2;
-		} while (rsq >= 1.0 || rsq == 0.0);
-		fac = sqrt(-2.0 * log(rsq) / rsq); 
-		gset = v1 * fac; 
-		iset = 1;
-		return v2 * fac;
-	} else {
-		iset = 0;
-		return gset;
-	}
-}
 
 /* wgsim */
 
@@ -167,16 +144,16 @@ void wgsim_print_mutref(const char *name, const kseq_t *ks, mutseq_t *hap1, muts
 		if ((c[1] & mutmsk) != NOCHANGE || (c[2] & mutmsk) != NOCHANGE) {
 			if (c[1] == c[2]) { // hom
 				if ((c[1]&mutmsk) == SUBSTITUTE) { // substitution
-					printf("%s\t%d\t%c\t%c\t-\n", name, i+1, "ACGTN"[c[0]], "ACGTN"[c[1]&0xf]);
+					printf("%s\t%d\t%c\t%c\t-\n", name, i, "ACGTN"[c[0]], "ACGTN"[c[1]&0xf]);
 				} else if ((c[1]&mutmsk) == DELETE) { // del
 					if (i >= j) {
-						printf("%s\t%d\t", name, i+1);
+						printf("%s\t%d\t", name, i);
 						for (j = i; j < ks->seq.l && hap1->s[j] == hap2->s[j] && (hap1->s[j]&mutmsk) == DELETE; ++j)
 							putchar("ACGTN"[nst_nt4_table[(int)ks->seq.s[j]]]);
 						printf("\t-\t-\n");
 					}
 				} else if (((c[1] & mutmsk) >> 12) <= 4) { // ins
-					printf("%s\t%d\t-\t", name, i+1);
+					printf("%s\t%d\t-\t", name, i);
                     int n = (c[1]&mutmsk) >> 12, ins = c[1] >> 4;
                     while (n > 0) {
                         putchar("ACGTN"[ins & 0x3]);
@@ -187,23 +164,23 @@ void wgsim_print_mutref(const char *name, const kseq_t *ks, mutseq_t *hap1, muts
 				} // else: deleted base in a long deletion
 			} else { // het
 				if ((c[1]&mutmsk) == SUBSTITUTE || (c[2]&mutmsk) == SUBSTITUTE) { // substitution
-					printf("%s\t%d\t%c\t%c\t+\n", name, i+1, "ACGTN"[c[0]], "XACMGRSVTWYHKDBN"[1<<(c[1]&0x3)|1<<(c[2]&0x3)]);
+					printf("%s\t%d\t%c\t%c\t+\n", name, i, "ACGTN"[c[0]], "XACMGRSVTWYHKDBN"[1<<(c[1]&0x3)|1<<(c[2]&0x3)]);
 				} else if ((c[1]&mutmsk) == DELETE) {
 					if (i >= j) {
-						printf("%s\t%d\t", name, i+1);
+						printf("%s\t%d\t", name, i);
 						for (j = i; j < ks->seq.l && hap1->s[j] != hap2->s[j] && (hap1->s[j]&mutmsk) == DELETE; ++j)
 							putchar("ACGTN"[nst_nt4_table[(int)ks->seq.s[j]]]);
 						printf("\t-\t-\n");
 					}
 				} else if ((c[2]&mutmsk) == DELETE) {
 					if (i >= j) {
-						printf("%s\t%d\t", name, i+1);
+						printf("%s\t%d\t", name, i);
 						for (j = i; j < ks->seq.l && hap1->s[j] != hap2->s[j] && (hap2->s[j]&mutmsk) == DELETE; ++j)
 							putchar("ACGTN"[nst_nt4_table[(int)ks->seq.s[j]]]);
 						printf("\t-\t-\n");
 					}
 				} else if (((c[1] & mutmsk) >> 12) <= 4 && ((c[1] & mutmsk) >> 12) > 0) { // ins1
-					printf("%s\t%d\t-\t", name, i+1);
+					printf("%s\t%d\t-\t", name, i);
                     int n = (c[1]&mutmsk) >> 12, ins = c[1] >> 4;
                     while (n > 0) {
                         putchar("ACGTN"[ins & 0x3]);
@@ -212,7 +189,7 @@ void wgsim_print_mutref(const char *name, const kseq_t *ks, mutseq_t *hap1, muts
                     }
                     printf("\t+\n");
 				} else if (((c[2] & mutmsk) >> 12) <= 4 || ((c[2] & mutmsk) >> 12) > 0) { // ins2
-					printf("%s\t%d\t-\t", name, i+1);
+					printf("%s\t%d\t-\t", name, i);
                     int n = (c[2]&mutmsk) >> 12, ins = c[2] >> 4;
                     while (n > 0) {
                         putchar("ACGTN"[ins & 0x3]);
@@ -226,13 +203,14 @@ void wgsim_print_mutref(const char *name, const kseq_t *ks, mutseq_t *hap1, muts
 	}
 }
 
-void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, int size_l, int size_r)
+void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, int size_l, int size_r, int mean_insert)
 {
 	kseq_t *ks;
     mutseq_t rseq[2];
 	gzFile fp_fa;
 	uint64_t tot_len, ii;
 	int i, l, n_ref;
+	int min_insert, max_insert, insert_size;
 	char *qstr;
 	int size[2], Q, max_size;
 	uint8_t *tmp_seq[2];
@@ -244,6 +222,8 @@ void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, i
 	tmp_seq[1] = (uint8_t*)calloc(l+2, 1);
 	size[0] = size_l; size[1] = size_r;
 	max_size = size_l > size_r? size_l : size_r;
+	min_insert = 10;
+	max_insert = dist - 2 * size_l;
 
 	Q = (ERR_RATE == 0.0)? 'I' : (int)(-10.0 * log(ERR_RATE) / log(10.0) + 0.499) + 33;
 
@@ -262,7 +242,18 @@ void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, i
 	fp_fa = gzopen(fn, "r");
 	ks = kseq_init(fp_fa);
 	while ((l = kseq_read(ks)) >= 0) {
+		// initialize random number generator to generate read positions 
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		// pull from truncated distribution to ensure read doesn't pass boundary 
+		std::uniform_int_distribution<int> dis(0, ks->seq.l - dist - 100);
+
 		uint64_t n_pairs = (uint64_t)((long double)l / tot_len * N + 0.5);
+
+		// initialise random normal for insert size simulation 
+		std::random_device rn;  //Will be used to obtain a seed for the random number engine
+    	std::mt19937 gen_rn(rn()); //Standard mersenne_twister_engine seeded with rd()
+    	std::normal_distribution<float> dis_rn(0.0, 1.0);
 		if (l < dist + 3 * std_dev) {
 			fprintf(stderr, "[%s] skip sequence '%s' as it is shorter than %d!\n", __func__, ks->name.s, dist + 3 * std_dev);
 			continue;
@@ -276,57 +267,65 @@ void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, i
 
 		for (ii = 0; ii != n_pairs; ++ii) { // the core loop
 			double ran;
-			int d, pos, s[2], is_flip = 0;
+			int d, pos, pos2, s[2];
 			int n_sub[2], n_indel[2], n_err[2], ext_coor[2], j, k;
 			//FILE *fpo[2];
 
-			do { // avoid boundary failure
-				ran = ran_normal();
-				ran = ran * std_dev + dist;
-				d = (int)(ran + 0.5);
-				d = d > max_size? d : max_size;
-				pos = (int)((l - d + 1) * drand48());
-			} while (pos < 0 || pos >= ks->seq.l || pos + d - 1 >= ks->seq.l);
+			pos = dis(gen);
+			int insert_dev = (int)std_dev * dis_rn(gen_rn);
+			insert_size = mean_insert + insert_dev;
+			if (insert_size < min_insert) insert_size = min_insert;
+			else if (insert_size > max_insert) insert_size = max_insert;			
 
 			// flip or not
-			if (drand48() < 0.5) {
-				//fpo[0] = fpout1; fpo[1] = fpout2;
-				s[0] = size[0]; s[1] = size[1];
-			} else {
-				//fpo[1] = fpout1; fpo[0] = fpout2;
-				s[1] = size[0]; s[0] = size[1];
-				is_flip = 1;
-			}
+			s[0] = size[0]; s[1] = size[1];
 
 			// generate the read sequences
-			target = rseq[drand48()<0.5?0:1].s; // haplotype from which the reads are generated
+			target = rseq[0].s; // haplotype from which the reads are generated
 			n_sub[0] = n_sub[1] = n_indel[0] = n_indel[1] = n_err[0] = n_err[1] = 0;
+			int start[2] = {pos, pos + insert_size + size_l};
+			int end[2] = {start[0], start[1]};
+			std::string cigar[2];
+			
 
 #define __gen_read(x, start, iter) do {									\
 				for (i = (start), k = 0, ext_coor[x] = -10; i >= 0 && i < ks->seq.l && k < s[x]; iter) {	\
 					int c = target[i], mut_type = c & mutmsk;			\
 					if (ext_coor[x] < 0) {								\
 						if (mut_type != NOCHANGE && mut_type != SUBSTITUTE) continue; \
-						ext_coor[x] = i;								\
+						ext_coor[x] = i;                                \
 					}													\
-					if (mut_type == DELETE) ++n_indel[x];				\
+					if (mut_type == DELETE){                            \
+						++n_indel[x];                                   \
+						cigar[x] += 'D';                                \
+						++end[x];	                                    \
+					}			                                        \
 					else if (mut_type == NOCHANGE || mut_type == SUBSTITUTE) { \
 						tmp_seq[x][k++] = c & 0xf;						\
-						if (mut_type == SUBSTITUTE) ++n_sub[x];			\
+						if (mut_type == SUBSTITUTE) {                   \
+							++n_sub[x];	                                \
+							cigar[x] += 'X';                            \
+							++end[x];	                                \
+						} else {                                        \
+							cigar[x] += 'M';		                    \
+							++end[x];}                                  \
 					} else {											\
 						int n, ins;										\
-						++n_indel[x];									\
-						tmp_seq[x][k++] = c & 0xf;						\
-						for (n = mut_type>>12, ins = c>>4; n > 0 && k < s[x]; --n, ins >>= 2) \
+						++n_indel[x];	                                \
+						cigar[x] += 'M';								\
+						tmp_seq[x][k++] = c & 0xf;	                    \
+						for (n = mut_type>>12, ins = c>>4; n > 0 && k < s[x]; --n, ins >>= 2){ \
+							cigar[x] += 'I';					        \
 							tmp_seq[x][k++] = ins & 0x3;				\
+						}                                               \
 					}													\
 				}														\
 				if (k != s[x]) ext_coor[x] = -10;						\
 			} while (0)
 
 			__gen_read(0, pos, ++i);
-			__gen_read(1, pos + d - 1, --i);
-			for (k = 0; k < s[1]; ++k) tmp_seq[1][k] = tmp_seq[1][k] < 4? 3 - tmp_seq[1][k] : 4; // complement
+			__gen_read(1, pos + insert_size + size_l, ++i);
+			//for (k = 0; k < s[1]; ++k) tmp_seq[1][k] = tmp_seq[1][k] < 4? 3 - tmp_seq[1][k] : 4; // complement
 			if (ext_coor[0] < 0 || ext_coor[1] < 0) { // fail to generate the read(s)
 				--ii;
 				continue;
@@ -358,12 +357,13 @@ void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, i
 			for (j = 0; j < 2; ++j) {
 				for (i = 0; i < s[j]; ++i) qstr[i] = Q;
 				qstr[i] = 0;
-				fprintf(stdout, "@%s:%u:%u:%d:%d:%d:%d:%d:%d:%d:%llx:%d\n", ks->name.s, ext_coor[0]+1, ext_coor[1]+1,
-						n_err[0], n_sub[0], n_indel[0], n_err[1], n_sub[1], n_indel[1], is_flip,
-						(long long)ii, j==0? is_flip+1 : 2-is_flip);
+				fprintf(stdout, "@%s:%d:%d:%d:%d:%d:%d:%d:%d:%d:%llx:%s:%d\n", ks->name.s, start[j], end[j],
+						n_err[0], n_sub[0], n_indel[0], n_err[1], n_sub[1], n_indel[1], end[1] - start[0],
+						(long long)ii, cigar[j].c_str(), j + 1);
 				for (i = 0; i < s[j]; ++i)
 					fputc("ACGTN"[(int)tmp_seq[j][i]], stdout);
 				fprintf(stdout, "\n+\n%s\n", qstr);
+
 			}
 		}
 		free(rseq[0].s); free(rseq[1].s);
@@ -377,10 +377,10 @@ void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, i
 static int simu_usage()
 {
 	fprintf(stderr, "\n");
-	fprintf(stderr, "Program: wgsim (short read simulator)\n");
+	fprintf(stderr, "Forked wgsim (Heng Li) (short read simulator) for simulation of bisuflite treated reads\n");
 	fprintf(stderr, "Version: %s\n", PACKAGE_VERSION);
-	fprintf(stderr, "Contact: Heng Li <lh3@sanger.ac.uk>\n\n");
-	fprintf(stderr, "Usage:   wgsim [options] <in.ref.fa> <out.read1.fq> <out.read2.fq>\n\n");
+	fprintf(stderr, "Contact: Colin Farrell <colinpfarrell@gmail.com>\n\n");
+	fprintf(stderr, "Usage:   wgsim [options] <in.ref.fa> \n\n");
 	fprintf(stderr, "Options: -e FLOAT      base error rate [%.3f]\n", ERR_RATE);
 	fprintf(stderr, "         -d INT        outer distance between the two ends [500]\n");
 	fprintf(stderr, "         -s INT        standard deviation [50]\n");
@@ -400,11 +400,12 @@ static int simu_usage()
 int main(int argc, char *argv[])
 {
 	int64_t N;
-	int dist, std_dev, c, size_l, size_r, is_hap = 0;
+	int dist, std_dev, c, size_l, size_r, is_hap, mean_insert = 0;
 	//FILE *fpout1, *fpout2;
 	int seed = -1;
 
 	N = 1000000; dist = 500; std_dev = 50;
+	mean_insert = (dist - size_l * 2) / 2; 
 	size_l = size_r = 70;
 	while ((c = getopt(argc, argv, "e:d:s:N:1:2:r:R:hX:S:A:")) >= 0) {
 		switch (c) {
@@ -420,6 +421,7 @@ int main(int argc, char *argv[])
 		case 'A': MAX_N_RATIO = atof(optarg); break;
 		case 'S': seed = atoi(optarg); break;
 		case 'h': is_hap = 1; break;
+		case 'I': mean_insert = atoi(optarg); break;
 		}
 	}
 	if (argc - optind < 1) return simu_usage();
@@ -432,7 +434,7 @@ int main(int argc, char *argv[])
 	if (seed <= 0) seed = time(0)&0x7fffffff;
 	fprintf(stderr, "[wgsim] seed = %d\n", seed);
 	srand48(seed);
-	wgsim_core(argv[optind], is_hap, N, dist, std_dev, size_l, size_r);
+	wgsim_core(argv[optind], is_hap, N, dist, std_dev, size_l, size_r, mean_insert);
 
 	//fclose(fpout1); fclose(fpout2);
 	return 0;

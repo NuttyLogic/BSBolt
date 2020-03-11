@@ -5,18 +5,20 @@ from BSBolt.Utils.UtilityFunctions import retrieve_iupac
 
 class StreamSim:
 
-    def __init__(self, paired_end=False):
+    def __init__(self, paired_end=False, sim_command=None):
         self.paired_end = paired_end
+        self.sim_command = sim_command
         self.contig_variants = {}
+        self.variant_contig = None
 
-    def stream_sim_reads(self, sim_command):
-        sim = subprocess.Popen(sim_command,
+    def __iter__(self):
+        sim = subprocess.Popen(self.sim_command,
                                stdout=subprocess.PIPE,
                                universal_newlines=True)
         variant_output = False
         sim_output = iter(sim.stdout.readline, '')
-        print(sim_command)
-        print('here')
+        read_pair = {1: None, 2: None}
+        paired_count = 0
         while True:
             formatted_line = next(sim_output).strip()
             if not formatted_line:
@@ -26,25 +28,37 @@ class StreamSim:
             elif variant_output:
                 variant_output = self.collect_variant_info(formatted_line)
                 if not variant_output:
-                    yield False, self.contig_variants
+                    yield self.variant_contig, self.contig_variants
                     self.contig_variants = {}
             else:
                 read_info = self.process_read_name(formatted_line)
                 seq = next(sim_output).strip()
                 comment = next(sim_output).strip()
-                qual = next(sim_output).strip()
+                qual = self.modify_qual(next(sim_output).strip())
                 read_info.update(dict(comment=comment, seq=seq, qual=qual))
-                if not self.paired_end and read_info['pair'] == 2:
-                    continue
-                yield True, read_info
+                read_pair[read_info['pair']] = read_info
+                paired_count += 1
+                if paired_count == 2:
+                    assert read_pair[1]['read_id'] == read_pair[2]['read_id']
+                    yield False, read_pair
+                    read_pair = {1: None, 2: None}
+                    paired_count = 0
+
+    @staticmethod
+    def modify_qual(quality: str) -> str:
+        # modify start position to ensure proper qual handling downstream
+        quality_split = list(quality)
+        qual_start = int(ord(quality_split[0]) - 33)
+        quality_split[0] = chr(qual_start + 32)
+        return ''.join(quality_split)
 
     def collect_variant_info(self, formatted_line):
         if formatted_line == 'Contig Variant End':
             return False
         variant_info = self.process_variant_line(formatted_line)
-        variant_label = f'{variant_info[0]}:{variant_info[1]}'
-        assert variant_label not in self.contig_variants
-        self.contig_variants[variant_label] = variant_info
+        assert variant_info['pos'] not in self.contig_variants
+        self.contig_variants[variant_info['pos']] = variant_info
+        self.variant_contig = variant_info['chrom']
         return True
 
     @staticmethod
@@ -59,29 +73,14 @@ class StreamSim:
             indel = -1
         else:
             iupac = retrieve_iupac(alt)
-        return chrom, pos, reference, alt, heterozygous, indel, iupac
+        return dict(chrom=chrom, pos=pos, reference=reference, alt=alt, heterozygous=heterozygous,
+                    indel=indel, iupac=iupac)
 
     @staticmethod
     def process_read_name(formatted_line: str) -> Dict[str, Union[str, int]]:
         read_info = formatted_line.split(':')
-        chrom, start, end, err_1, subs_1, indel_1, err_2, subs_2, indel_2, strand, read_id, pair = read_info
-        return dict(chrom=chrom, start=int(start), end=int(end),
+        chrom, start, end, err_1, subs_1, indel_1, err_2, subs_2, indel_2, insert_size, read_id, cigar, pair = read_info
+        return dict(chrom=chrom.replace('@', ''), start=int(start), end=int(end),
                     err_1=int(err_1), subs_1=int(subs_1), indel_1=int(indel_1),
                     err_2=int(err_2), subs_2=int(subs_2), indel_2=int(indel_2),
-                    strand=int(strand), read_id=read_id, pair=int(pair))
-
-
-'''
-1)  contig name (chromsome name)
-                2)  start end 1 (one-based)
-                3)  end end 2 (one-based)
-                4)  number of errors end 1
-                5)  number of substitutions end 1
-                6)  number of indels end 1
-                5)  number of errors end 2
-                6)  number of substitutions end 2
-                7)  number of indels end 2
-                8) strand 
-                9) id
-                10) pair
-                '''
+                    insert_size=insert_size, read_id=read_id, cigar=cigar, pair=int(pair))

@@ -1,8 +1,6 @@
 import random
-import subprocess
-from typing import Dict, List
-from BSBolt.Utils.FastqIterator import OpenFastq
-from BSBolt.Utils.AlnIterator import OpenAln
+from typing import Dict, List, Union
+import numpy as np
 from BSBolt.Simulate.SetCyotsineMethylation import SetCytosineMethylation
 from BSBolt.Simulate.StreamSim import StreamSim
 
@@ -45,133 +43,81 @@ class SimulateMethylatedReads:
             self.ch_distribution (np.vector): binomial distribution to dra CH methylation proportions
             """
 
-    def __init__(self, reference_file: str = None, wgsim_path: str = None, output_path: str = None,
+    def __init__(self, reference_file: str = None, wgsim_path: str = None, sim_output: str = None,
                  sequencing_error: float = 0.020, mutation_rate: float = 0.0010, mutation_indel_fraction: float = 0.15,
                  indel_extension_probability: float = 0.15, random_seed: int = -1,
                  methylation_reference_output: str = None, paired_end: bool = False, read_length: int = 125,
                  read_depth: int = 20, undirectional: bool = False, methylation_reference: str = None,
                  methylation_profile: str = None, ambiguous_base_cutoff: float = 0.05, haplotype_mode: bool = False,
                  pe_fragment_size: int = 400, fragment_size_deviation: int = 50,
-                 genome_length: int = None):
-        self.simulate_commands = [wgsim_path, '-1', str(read_length), '-2', str(read_length),
-                                  '-e', str(sequencing_error), '-d', str(pe_fragment_size),
-                                  '-s', str(fragment_size_deviation),
-                                  '-r', str(mutation_rate), '-R', str(mutation_indel_fraction),
-                                  '-X', str(indel_extension_probability), '-S', str(random_seed),
-                                  '-A', str(ambiguous_base_cutoff)]
+                 collect_ch_sites: bool = True):
+        self.sim_command = [wgsim_path, '-1', str(read_length), '-2', str(read_length),
+                            '-e', str(sequencing_error), '-d', str(pe_fragment_size),
+                            '-s', str(fragment_size_deviation),
+                            '-r', str(mutation_rate), '-R', str(mutation_indel_fraction),
+                            '-X', str(indel_extension_probability), '-S', str(random_seed),
+                            '-A', str(ambiguous_base_cutoff)]
         if haplotype_mode:
-            self.simulate_commands.append('-h')
-        if not methylation_reference_output:
-            methylation_reference_output = output_path
-        self.cytosine_dict_profile_kwargs = dict(reference_file=reference_file,
-                                                 methylation_reference_output=methylation_reference_output,
-                                                 methylation_reference=methylation_reference,
-                                                 methylation_profile=methylation_profile)
+            self.sim_command.append('-h')
+        self.sim_db = SetCytosineMethylation(reference_file=reference_file,
+                                             sim_dir=sim_output,
+                                             methylation_reference=methylation_reference,
+                                             cgmap=methylation_profile,
+                                             collect_ch_sites=collect_ch_sites)
         self.simulation_out = None
-        self.output_path = output_path
+        self.output_path = sim_output
         self.paired_end = paired_end
         self.undirectional = undirectional
         self.read_coverage = (read_length, read_depth)
-        self.reference_contig_size = None
+        self.reference = None
         self.current_contig = None
-        self.cytosine_dict = None
+        self.contig_key = None
+        self.contig_values = None
+        self.variant_data = {}
         self.output_objects = None
 
     def run_simulation(self):
         """Commands to execute read simulation"""
         print('Setting Cytosine Methylation')
-        cytosine_profile = SetCytosineMethylation(**self.cytosine_dict_profile_kwargs)
-        self.reference_contig_size, self.simulation_out = cytosine_profile.set_simulated_methylation()
-        genome_length = sum([len(seq) for seq in self.reference_contig_size.values()])
+        genome_length = sum([len(seq) for seq in self.reference.values()])
         coverage_length = self.read_coverage[0] * 2 if self.paired_end else self.read_coverage[0]
         read_number = (genome_length / coverage_length) * self.read_coverage[1]
         print('Simulating Methylated Reads')
-        self.simulate_commands.extend(['-N', str(int(read_number)),
-                                       self.cytosine_dict_profile_kwargs['reference_file']])
-        read_stream = StreamSim(paired_end=self.paired_end)
-        read_stream.stream_sim_reads(self.simulate_commands)
-        self.output_objects = self.get_output_objects
+        self.sim_command.extend(['-N', str(int(read_number)), self.sim_db.reference_file])
+
+        self.simulate_methylated_reads()
         print('Finished Simulation')
 
-    def simulate_illumina_reads(self):
-        """Launch external ART command to simulate illumina reads. Insertion and deletion rate set to zero
-        to simplify read simulation """
-        art = subprocess.run(args=self.simulate_commands)
-        if art.returncode:
-            print('ART not correctly initialized, please check path')
-            raise OSError
-
-    def simulate_methylated_reads(self, aln_files: List[str], fastq_files: List[str]):
-        simulation_iterators = [OpenAln(aln_file) for aln_file in aln_files]
-        # noinspection PyTypeChecker
-        simulation_iterators.extend([OpenFastq(fastq) for fastq in fastq_files])
-        for line in zip(*simulation_iterators):
-            aln1_profile = self.parse_aln_line(line[0])
-            methylation_strand = 'Watson'
-            # if undirectional strand assigned regardless of strand else Watson if reference simulation strand positive
-            if self.undirectional:
-                if self.random_roll(proportion_positive=0.5):
-                    methylation_strand = 'Crick'
+    def simulate_methylated_reads(self):
+        for variant_contig, sim_data in StreamSim(paired_end=self.paired_end, sim_command=self.sim_command):
+            if variant_contig:
+                self.sim_db.sim_db.output_contig(self.contig_key, self.contig_values, self.current_contig)
+                self.contig_key, self.contig_values = self.get_methylation_reference(variant_contig, sim_data)
+                self.current_contig = variant_contig
+                self.variant_data = sim_data
             else:
-                if aln1_profile['reference_strand'] == '-':
-                    methylation_strand = 'Crick'
-            methylated_reads = []
-            if self.paired_end:
-                aln2_profile = self.parse_aln_line(line[1])
-                methylated_reads.append(self.set_simulated_methylation(aln1_profile, line[2], methylation_strand))
-                methylated_reads.append(self.set_simulated_methylation(aln2_profile, line[3], methylation_strand))
-            else:
-                methylated_reads.append(self.set_simulated_methylation(aln1_profile, line[1], methylation_strand))
-            processed_reads = self.convert_simulated_reads(methylated_reads,
-                                                           methylation_strand,
-                                                           aln1_profile['reference_strand'])
-            for output, read in zip(self.output_objects, processed_reads):
-                self.write_fastq(output, read)
-        self.get_contig_methylation_reference('stop')
-        # close fastq output objects
-        for output in self.output_objects:
-            output.close()
+                if sim_data['chrom'] != self.current_contig:
+                    self.sim_db.sim_db.output_contig(self.contig_key, self.contig_values, self.current_contig)
+                    self.current_contig = sim_data['chrom']
+                    self.contig_key, self.contig_values = self.get_methylation_reference(self.current_contig)
+                self.process_read_group(sim_data)
 
-    def set_simulated_methylation(self, aln_profile: Dict, fastq_line: List, methylation_strand: str) -> List:
-        """Simulated methylated bases are converted based on case. Uppercase bases are converted lower case bases
-         are ignored. Methylation of bases is set based on the cytosine dict.
-         Keyword Arguments:
-             aln_profile (dict): processed aln file line
-             fastq_line (list): list of strings, 4 per fastq line
-             methylation_strand (str): strand to use for setting methylation values.
-        Return:
-            fatst_line (list): fastq line with altered read sequence, (methylated bases set to lower case)
-        """
-        genome_position = aln_profile['read_index']
-        self.get_contig_methylation_reference(aln_profile['read_contig'])
-        strand_cytosine: dict = self.cytosine_dict[methylation_strand]
-        fastq_read = []
-        for reference_nuc, read_nuc in zip(aln_profile['reference_sequence'], aln_profile['read_sequence']):
-            # if reference nuc indicates insertion in read skip base and go to next nuc without changing genome_position
-            if reference_nuc == '-':
-                fastq_read.append(read_nuc)
-                continue
-            # proceed with processing if both nucleotides either a C or a G
-            elif self.nucleotide_check(reference_nuc) and self.nucleotide_check(read_nuc):
-                location_meth_info: dict = strand_cytosine.get(f'{aln_profile["read_contig"]}:{genome_position}', False)
-                if location_meth_info:
-                    if self.random_roll(proportion_positive=location_meth_info[1]):
-                        fastq_read.append(read_nuc.lower())
-                        location_meth_info[3] += 1
-                    else:
-                        fastq_read.append(read_nuc)
-                        location_meth_info[4] += 1
-                else:
-                    fastq_read.append(read_nuc)
-            elif read_nuc != '-':
-                fastq_read.append(read_nuc)
-            genome_position += 1
-        if aln_profile['reference_strand'] == '-':
-            fastq_read = ''.join(fastq_read[::-1])
+    def process_read_group(self, sim_data):
+        undirectional = False
+        if self.undirectional:
+            undirectional = self.random_roll(0.5)
+        subsitution_pattern = 1 if self.random_roll(0.5) else 0
+
+    def set_read_methylation(self, read, sub_nuc='C'):
+        ref_seq = iter(self.reference[read['chrom']][read['start']: read['end'] + 1])
+        ref_base = next(ref_seq)
+
+    def get_methylation_reference(self, contig: str, variant_data: Union[bool, Dict] = False):
+        if variant_data:
+            contig_key, contig_values = self.sim_db.get_contig_methylation(contig)
+            return self.sim_db.set_variant_methylation(variant_data, contig_key, contig_values)
         else:
-            fastq_read = ''.join(fastq_read)
-        fastq_line[1] = fastq_read
-        return fastq_line
+            return self.sim_db.get_contig_methylation(contig)
 
     def get_contig_methylation_reference(self, contig_id):
         if not self.current_contig:
@@ -191,27 +137,6 @@ class SimulateMethylatedReads:
             return True
         return False
 
-    def parse_aln_line(self, aln_line: List) -> Dict:
-        """ Take list of line composing aln file line and returns formatted objects. Also adjust genome position
-        based on strand information.
-        Keyword Arguments:
-            aln_line (list): list of strings in aln file format
-        Returns:
-            (dict) formatted aln line"""
-        aln_head = aln_line[0].split('\t')
-        read_index = int(aln_head[2])
-        read_contig = aln_head[0].replace('>', '')
-        reference_strand = aln_head[3]
-        reference_sequence = aln_line[1]
-        read_sequence = aln_line[2]
-        if reference_strand == '-':
-            reference_sequence_len = len(reference_sequence.replace('-', ''))
-            read_sequence = read_sequence[::-1]
-            reference_sequence = reference_sequence[::-1]
-            read_index = self.reference_contig_size[read_contig] - read_index - reference_sequence_len
-        return dict(read_index=read_index, read_contig=read_contig, reference_strand=reference_strand,
-                    reference_sequence=reference_sequence, read_sequence=read_sequence)
-
     @staticmethod
     def write_fastq(output_object, fastq_line):
         for line in fastq_line:
@@ -219,9 +144,9 @@ class SimulateMethylatedReads:
 
     @property
     def get_output_objects(self):
-        output_list = [open(f'{self.output_path}_meth_1.fastq', 'w')]
+        output_list = [open(f'{self.output_path}_1.fastq', 'w')]
         if self.paired_end:
-            output_list.append(open(f'{self.output_path}_meth_2.fastq', 'w'))
+            output_list.append(open(f'{self.output_path}_2.fastq', 'w'))
         return output_list
 
     @staticmethod

@@ -98,8 +98,7 @@ test_genome = f'{test_directory}/TestData/BSB_test.fa'
 test_simulation_files = SimulateMethylatedReads(reference_file=test_genome,
                                                 wgsim_path=wgsim_path,
                                                 paired_end=True,
-                                                output_path=simulation_files,
-                                                methylation_reference_output=f'{simulation_files}/wgbs_pe_ref/test',
+                                                sim_output=simulation_files,
                                                 undirectional=False)
 test_simulation_files.run_simulation()
 
