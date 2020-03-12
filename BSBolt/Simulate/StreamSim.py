@@ -20,29 +20,31 @@ class StreamSim:
         read_pair = {1: None, 2: None}
         paired_count = 0
         while True:
-            formatted_line = next(sim_output).strip()
-            if not formatted_line:
+            try:
+                formatted_line = next(sim_output).strip()
+            except StopIteration:
                 break
-            if formatted_line == 'Contig Variant Start':
-                variant_output = True
-            elif variant_output:
-                variant_output = self.collect_variant_info(formatted_line)
-                if not variant_output:
-                    yield self.variant_contig, self.contig_variants
-                    self.contig_variants = {}
             else:
-                read_info = self.process_read_name(formatted_line)
-                seq = next(sim_output).strip()
-                comment = next(sim_output).strip()
-                qual = self.modify_qual(next(sim_output).strip())
-                read_info.update(dict(comment=comment, seq=seq, qual=qual))
-                read_pair[read_info['pair']] = read_info
-                paired_count += 1
-                if paired_count == 2:
-                    assert read_pair[1]['read_id'] == read_pair[2]['read_id']
-                    yield False, read_pair
-                    read_pair = {1: None, 2: None}
-                    paired_count = 0
+                if formatted_line == 'Contig Variant Start':
+                    variant_output = True
+                elif variant_output:
+                    variant_output = self.collect_variant_info(formatted_line)
+                    if not variant_output:
+                        yield self.variant_contig, self.contig_variants
+                        self.contig_variants = {}
+                else:
+                    read_info = self.process_read_name(formatted_line)
+                    seq = next(sim_output).strip()
+                    comment = next(sim_output).strip()
+                    qual = self.modify_qual(next(sim_output).strip())
+                    read_info.update(dict(comment=comment, seq=seq, qual=qual))
+                    read_pair[read_info['pair']] = read_info
+                    paired_count += 1
+                    if paired_count == 2:
+                        assert read_pair[1]['read_id'] == read_pair[2]['read_id']
+                        yield False, read_pair
+                        read_pair = {1: None, 2: None}
+                        paired_count = 0
 
     @staticmethod
     def modify_qual(quality: str) -> str:

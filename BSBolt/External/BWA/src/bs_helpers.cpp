@@ -1,4 +1,5 @@
 #include <string>
+#include <cstring>
 #include "bs_helpers.h"
 
 using namespace std;

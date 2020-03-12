@@ -407,7 +407,7 @@ int main(int argc, char *argv[])
 	N = 1000000; dist = 500; std_dev = 50;
 	mean_insert = (dist - size_l * 2) / 2; 
 	size_l = size_r = 70;
-	while ((c = getopt(argc, argv, "e:d:s:N:1:2:r:R:hX:S:A:")) >= 0) {
+	while ((c = getopt(argc, argv, "e:d:s:N:1:2:r:R:hX:S:A:I:")) >= 0) {
 		switch (c) {
 		case 'd': dist = atoi(optarg); break;
 		case 's': std_dev = atoi(optarg); break;

@@ -1,6 +1,5 @@
 import pickle
 import os
-import numpy as np
 
 
 class SimulationOutput:
@@ -14,19 +13,24 @@ class SimulationOutput:
             if not os.path.isdir(simulation_directory):
                 os.makedirs(simulation_directory, exist_ok=False)
 
-    def output_contig(self, contig_key, contig_values, contig_id):
+    def output_contig(self, contig_profile, contig_id, values=False):
         if contig_id:
-            with open(f'{self.sim_dir}.{contig_id}.pkl', 'wb') as contig_out:
-                pickle.dump(contig_key, contig_out)
-            np.save(f'{self.sim_dir}.{contig_id}.values.npy', contig_values)
+            contig_label = contig_id
+            if values:
+                contig_label = f'{contig_id}_values'
+            with open(f'{self.sim_dir}.{contig_label}.pkl', 'wb') as contig_out:
+                pickle.dump(contig_profile, contig_out)
 
-    def load_contig(self, contig_id):
+    def load_contig(self, contig_id, values=False):
+        contig_label = contig_id
+        if values:
+            contig_label = f'{contig_id}_values'
         try:
-            with open(f'{self.sim_dir}.{contig_id}.pkl', 'rb') as contig_out:
-                contig_key = pickle.load(contig_out)
-            contig_values = np.load(f'{self.sim_dir}.{contig_id}.values.npy')
+            with open(f'{self.sim_dir}.{contig_label}.pkl', 'rb') as contig_out:
+                contig_profile = pickle.load(contig_out)
         except FileNotFoundError:
-            print(f'{contig_id} Methylation Reference not found\n')
-            return None, None
+            print(f'{contig_id}: Simulating methylation\n')
+            return None
         else:
-            return contig_key, contig_values
+            return contig_profile
+

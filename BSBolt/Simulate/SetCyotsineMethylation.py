@@ -95,66 +95,56 @@ class SetCytosineMethylation:
         """Sample from CH distribution"""
         return random.choice(self.ch_distribution)
 
-    def get_reference(self, reference_file: str) -> Dict[str, str]:
+    @staticmethod
+    def get_reference(reference_file: str) -> Dict[str, str]:
         """Retrieve contig sequence from reference fasta rather than index to ensure simulation will work without
         a generated index. """
         # store contig_id and matching sequencing
-        contig_dict = {}
+        reference = {}
         contig_id = None
         contig_sequence = []
         for contig_label, line in OpenFasta(reference_file):
             if contig_label:
                 # join sequence and add to dict if new contig encountered
                 if contig_id:
-                    contig_dict[contig_id] = ''.join(contig_sequence)
+                    reference[contig_id] = ''.join(contig_sequence)
                     contig_sequence = []
                 contig_id = line.replace('>', '').split()[0]
             else:
                 contig_sequence.append(line.upper())
         # join contig and add to dict after iteration finishes
-        contig_dict[contig_id] = ''.join(contig_sequence)
-        return contig_dict
+        reference[contig_id] = ''.join(contig_sequence)
+        return reference
 
     def get_contig_methylation(self, contig):
-        contig_values, contig_key = self.sim_db.load_contig(contig)
-        if contig_values:
-            return contig_values, contig_key
+        contig_profile = self.sim_db.load_contig(contig)
+        if contig_profile:
+            return contig_profile
         else:
             return self.set_random_cytosine_methylation(contig)
 
-    def set_variant_methylation(self, sim_data, contig_key, contig_values, current_contig):
+    def set_variant_methylation(self, sim_data, contig_profile, current_contig):
         """Variants are always random, so set random methylation"""
-        variant_key: Dict[str, int] = {}
-        variant_values: List[np.ndarray] = []
-        variant_count = contig_values.shape[1]
         ref_seq = self.reference[current_contig]
-        for variant_pos, variant_info in sim_data.items():
+        for pos, variant_info in sim_data.items():
             if variant_info['indel'] == -1:
                 continue
             elif variant_info['indel'] == 1:
-                insert_context = f'{ref_seq[variant_pos]}{variant_info["alt"]}{ref_seq[variant_pos + 1]}'
+                insert_context = f'{ref_seq[pos]}{variant_info["alt"]}{ref_seq[pos + 1]}'
                 for insert_pos, nucleotide in enumerate(variant_info['alt']):
                     local_context = insert_context[insert_pos: insert_pos + 3]
                     meth_profile = self.get_random_methylation_profile(nucleotide, local_context)
                     if meth_profile:
-                        variant_key[f'{variant_pos}_+_{insert_pos + 1}'] = variant_count
-                        variant_values.append(meth_profile)
-                        variant_count += 1
+                        contig_profile[f'{pos}_+_{insert_pos + 1}'] = meth_profile
             else:
                 for nucleotide in variant_info['iupac']:
                     if nucleotide == variant_info['reference']:
                         continue
                     else:
-                        context = f'{ref_seq[variant_pos - 1]}{nucleotide}{ref_seq[variant_pos + 1]}'
+                        context = f'{ref_seq[pos - 1]}{nucleotide}{ref_seq[pos + 1]}'
                         meth_profile = self.get_random_methylation_profile(nucleotide, context)
                         if meth_profile:
-                            variant_key[f'{variant_pos}_{variant_info["reference"]}_{nucleotide}'] = variant_count
-                            variant_values.append(meth_profile)
-                            variant_count += 1
-        contig_key.update(variant_key)
-        contig_values = np.concatenate((contig_values, np.array(variant_values)), axis=0)
-        self.sim_db.output_contig(contig_key, contig_values, current_contig)
-        return contig_key, contig_values
+                            contig_profile[f'{pos}_{variant_info["reference"]}_{nucleotide}'] = meth_profile
 
     def set_random_cytosine_methylation(self, contig):
         """Iterate through reference sequence, upon encountering a Cytosine (Watson) or Guanine (Crick):
@@ -163,12 +153,10 @@ class SetCytosineMethylation:
         """
         # iterate through reference sequence
         sequence = self.reference[contig]
-        cytosine_key = {}
-        position_count = 0
-        cytosine_values = []
-        for index, nucleotide in enumerate(sequence):
+        cytosine_profile = {}
+        for pos, nucleotide in enumerate(sequence):
             # retrieve nucleotide context
-            context = sequence[index - 1: index + 2]
+            context = sequence[pos - 1: pos + 2]
             # context won't exist at ends of reference sequence
             if context:
                 # set watson methylation
@@ -177,10 +165,8 @@ class SetCytosineMethylation:
                     # if no CH information don't add info
                     if not self.collect_ch_sites and not methylation_profile[2]:
                         continue
-                    cytosine_key[f'{contig}:{index}'] = position_count
-                    cytosine_values.append(np.array(methylation_profile))
-                    position_count += 1
-        return cytosine_key, np.array(cytosine_values)
+                    cytosine_profile[f'{pos}'] = tuple(methylation_profile)
+        return cytosine_profile
 
     def get_random_methylation_profile(self, nucleotide, context):
         if nucleotide == 'C':
@@ -192,7 +178,7 @@ class SetCytosineMethylation:
             return self.get_methylation_level(n_context, 1)
         return None
 
-    def get_methylation_level(self, context, nucleotide) -> list:
+    def get_methylation_level(self, context, nucleotide) -> tuple:
         """Retrieve methylation level from distribution based on nucleotide context
         Arguments:
             context (int): 2BP nucleotide context
@@ -204,4 +190,4 @@ class SetCytosineMethylation:
             methylation_level = self.pick_cpg_methylation
         else:
             methylation_level = self.pick_ch_methylation
-        return [nucleotide, methylation_level, context, 0, 0, 0]
+        return nucleotide, methylation_level, context
