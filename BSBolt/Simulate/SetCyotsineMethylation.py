@@ -31,7 +31,7 @@ class SetCytosineMethylation:
             """
 
     def __init__(self, reference_file: str = None, sim_dir: str = None, methylation_reference: str = None,
-                 cgmap: str = None, collect_ch_sites: bool = True):
+                 cgmap: str = None, collect_ch_sites: bool = True, overwrite_db: bool = False):
         self.reference = self.get_reference(reference_file)
         self.reference_file = reference_file
         self.sim_dir = sim_dir
@@ -39,6 +39,7 @@ class SetCytosineMethylation:
         self.initialize_methylation_reference(methylation_reference, cgmap)
         self.methylation_reference = methylation_reference
         self.collect_ch_sites = collect_ch_sites
+        self.overwrite_db = overwrite_db
         self.cpg_distribution = np.random.beta(.5, .5, size=5000)
         self.ch_distribution = np.random.beta(.01, .05, size=5000)
 
@@ -117,7 +118,10 @@ class SetCytosineMethylation:
         return reference
 
     def get_contig_methylation(self, contig):
-        contig_profile = self.sim_db.load_contig(contig)
+        if self.overwrite_db:
+            contig_profile = None
+        else:
+            contig_profile = self.sim_db.load_contig(contig)
         if contig_profile:
             return contig_profile
         else:

@@ -36,7 +36,7 @@ CXX=c++
 CXXFLAGS=	-g -O3 -fpermissive $(ARCH_FLAGS) #-Wall ##-xSSE2
 
 wgsim: wgsim
-	$(CXX) $(CXXFLAGS) wgsim.cpp -o $(EXE) $(LIBS)
+	$(CXX) $(CXXFLAGS) src/wgsim.cpp -o $(EXE) $(LIBS)
 
 
 clean:

@@ -1,6 +1,7 @@
 from distutils.version import LooseVersion
 import os
 import sys
+import pysam
 
 
 def reverse_complement(sequence):
@@ -76,3 +77,11 @@ def get_external_paths():
 
 def propagate_error(error):
     raise error
+
+
+def sort_bam(bam_output=None, bam_input=None):
+    pysam.sort('-o', bam_output, bam_input)
+
+
+def index_bam(bam_input=None):
+    pysam.index(bam_input)

@@ -1,7 +1,5 @@
 import datetime
-import subprocess
 import time
-import pysam
 from BSBolt.Align.AlignReads import BisulfiteAlignmentAndProcessing
 from BSBolt.CallMethylation.ProcessContigs import ProcessContigs
 from BSBolt.Impute.kNN_Impute import ImputeMissingValues
@@ -9,9 +7,9 @@ from BSBolt.Index.RRBSGenomeBuild import RRBSGenomeIndexBuild
 from BSBolt.Index.WholeGenomeBuild import WholeGenomeIndexBuild
 from BSBolt.Matrix.MatrixAggregator import AggregateMatrix
 from BSBolt.Simulate.SimulateMethylatedReads import SimulateMethylatedReads
-from BSBolt.Utils.UtilityFunctions import get_external_paths
+from BSBolt.Utils.UtilityFunctions import index_bam, get_external_paths, sort_bam
 
-bwa_path, art_path = get_external_paths()
+bwa_path, wgsim_path = get_external_paths()
 
 
 def launch_index(arguments):
@@ -96,10 +94,14 @@ def launch_alignment(arguments):
     if bsb_command_dict['F2'] != 'None':
         bwa_cmd.append(bsb_command_dict['F2'])
     align_bisulfite(bwa_cmd, arguments.O)
-    if arguments.Sort:
-        pysam.sort('-o', f'{arguments.O}.sorted.bam', f'{arguments.O}.bam')
-        subprocess.run(['rm', f'{arguments.O}.bam'])
-        pysam.index(f'{arguments.O}.sorted.bam')
+
+
+def launch_sort_bam(arguments):
+    sort_bam(bam_output=arguments.O, bam_input=arguments.I)
+
+
+def launch_index_bam(arguments):
+    index_bam(bam_input=arguments.I)
 
 
 def launch_methylation_call(arguments):
@@ -148,17 +150,22 @@ def launch_matrix_aggregation(arguments):
 
 
 def launch_simulation(arguments):
-    read_simulation = SimulateMethylatedReads(reference_file=arguments.G, art_path=art_path,
-                                              output_path=arguments.O, paired_end=arguments.PE,
-                                              read_length=arguments.RL, read_depth=arguments.RD,
-                                              undirectional=arguments.U, methylation_reference_output=arguments.RO,
-                                              methylation_reference=arguments.BR, methylation_profile=arguments.RC,
-                                              insertion_rate1=arguments.IR1, insertion_rate2=arguments.IR2,
-                                              deletion_rate1=arguments.DR1, deletion_rate2=arguments.DR2,
-                                              n_base_cutoff=arguments.NF, sequencing_system=arguments.SS,
-                                              pe_fragment_size=arguments.M, fragment_size_deviation=arguments.SM,
-                                              read1_quality_profile=arguments.Q1,
-                                              read2_quality_profile=arguments.Q2)
+    read_simulation = SimulateMethylatedReads(reference_file=arguments.G, wgsim_path=wgsim_path,
+                                              sim_output=arguments.O,
+                                              sequencing_error=arguments.SE, mutation_rate=arguments.MR,
+                                              mutation_indel_fraction=arguments.MI,
+                                              indel_extension_probability=arguments.ME, random_seed=arguments.RS,
+                                              paired_end=arguments.PE, read_length=arguments.RL,
+                                              read_depth=arguments.RD, undirectional=arguments.U,
+                                              methylation_reference=arguments.BR,
+                                              cgmap=arguments.CG, ambiguous_base_cutoff=arguments.NF,
+                                              haplotype_mode=arguments.HA,
+                                              pe_fragment_size=arguments.FM, insert_deviation=arguments.SM,
+                                              mean_insert_size=arguments.IM,
+                                              collect_ch_sites=arguments.CH, collect_sim_stats=arguments.NS,
+                                              verbose=arguments.verbose,
+                                              overwrite_db=arguments.overwrite)
+
     read_simulation.run_simulation()
 
 
@@ -179,4 +186,6 @@ bsb_launch = {'Index': launch_index,
               'CallMethylation': launch_methylation_call,
               'AggregateMatrix': launch_matrix_aggregation,
               'Simulate': launch_simulation,
-              'Impute': launch_imputation}
+              'Impute': launch_imputation,
+              'Sort': sort_bam,
+              'BamIndex': index_bam}

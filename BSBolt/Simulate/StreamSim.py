@@ -29,7 +29,7 @@ class StreamSim:
                     variant_output = True
                 elif variant_output:
                     variant_output = self.collect_variant_info(formatted_line)
-                    if not variant_output:
+                    if not variant_output and self.contig_variants:
                         yield self.variant_contig, self.contig_variants
                         self.contig_variants = {}
                 else:

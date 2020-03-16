@@ -18,7 +18,8 @@ call_meth_parser = subparsers.add_parser('CallMethylation', help='Methylation Ca
 matrix_parser = subparsers.add_parser('AggregateMatrix', help='CGmap Matrix Aggregation Module')
 sim_parser = subparsers.add_parser('Simulate', help='BSBolt Illumina Read Simulation Module')
 imputation_parser = subparsers.add_parser('Impute', help='kNN Imputation Module')
-
+sort_parser = subparsers.add_parser('Sort', help='BAM Sort')
+bam_index = subparsers.add_parser("BamIndex", help='BAM Index')
 # Add Alignment Parser Commands
 
 align_parser.add_argument('-F1', type=str, default=None, help='Path to fastq 1', required=True)
@@ -93,9 +94,6 @@ align_parser.add_argument('-I', type=lambda x: x.strip(), default=None,
                           help='specify the mean, standard deviation (10 percent of the mean if absent), max '
                                '(4 sigma from the mean if absent) and min of the insert size distribution.  '
                                'FR orientation only. [inferred], Float,Float,Int,Int',
-                          required=False)
-align_parser.add_argument('-Sort', action='store_true', default=False,
-                          help='Sort output bam',
                           required=False)
 
 
@@ -185,12 +183,26 @@ sim_parser.add_argument('-RD', type=int, default=20, help='Simulated Read Depth'
 sim_parser.add_argument('-U', default=False, action='store_true',
                         help='Simulate Undirectional Reads, default=Directional')
 sim_parser.add_argument('-CG', default=None, help='Path to CGmap file to generate simulation reference profile')
-sim_parser.add_argument('-MU', type=float, default=0.005, help='Mutation rate')
+sim_parser.add_argument('-BR', default=None, help='Path to previously generated BSBolt methylation reference')
+sim_parser.add_argument('-MR', type=float, default=0.005, help='Mutation rate')
+sim_parser.add_argument('-MI', type=float, default=0.20, help='Mutation indel fraction')
+sim_parser.add_argument('-ME', type=float, default=0.20, help='Mutation indel extension probability')
+sim_parser.add_argument('-RS', type=int, default=-1, help='Random seed for variant generation')
+sim_parser.add_argument('-HA', default=False, action='store_true', help='Haplotype mode, homozygous variants only')
+sim_parser.add_argument('-CH', default=True, action='store_false', help='Skip simulation of CH methylation, '
+                                                                        'all CH sites unmethylated')
+sim_parser.add_argument('-NS', default=True, action='store_false', help='By default observed methylation counts are '
+                                                                        'saved, disable this behavior')
 sim_parser.add_argument('-SE', type=float, default=0.001, help='Sequencing Error')
 sim_parser.add_argument('-NF', type=float, default=0.05, help='Cutoff threshold for a read with gaps, -, or ambiguous '
                                                               'bases, N. Reads below the threshold will not be output')
-sim_parser.add_argument('-M', type=int, default=400, help='Mean paired end fragment size')
-sim_parser.add_argument('-SM', type=int, default=50, help='Paired end fragment length distribution standard deviation')
+sim_parser.add_argument('-FM', type=int, default=400, help='Max fragment size')
+sim_parser.add_argument('-IM', type=int, default=50, help='Insert length mean')
+sim_parser.add_argument('-SM', type=int, default=50, help='Insert length standard deviation')
+sim_parser.add_argument('-verbose', action='store_true', default=False, help='Verbose read simulation')
+sim_parser.add_argument('-overwrite', action='store_true', default=False, help='Overwrite previously generated '
+                                                                               'simulation database')
+
 
 # Add Imputation Parser Args
 
@@ -204,3 +216,12 @@ imputation_parser.add_argument('-t', type=int, default=1, help='Number of thread
 imputation_parser.add_argument('-verbose', action='store_true', default=False, help='Verbose output')
 imputation_parser.add_argument('-O', type=str, default='', help='Output path for imputed matrix')
 imputation_parser.add_argument('-R', action='store_true', default=False, help='Randomize batches')
+
+# Add Sort Parser Args
+
+sort_parser.add_argument('-O', type=str, required=True, help='Sorted bam output')
+sort_parser.add_argument('-I', type=str, required=True, help='Input bam')
+
+# add bam indexing args
+
+bam_index.add_argument('-I', type=str, required=True, help='BAM input path')
