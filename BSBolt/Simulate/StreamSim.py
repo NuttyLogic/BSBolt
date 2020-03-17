@@ -81,8 +81,7 @@ class StreamSim:
     @staticmethod
     def process_read_name(formatted_line: str) -> Dict[str, Union[str, int]]:
         read_info = formatted_line.split(':')
-        chrom, start, end, err_1, subs_1, indel_1, err_2, subs_2, indel_2, insert_size, read_id, cigar, pair = read_info
+        chrom, start, end, insert_size, read_id, cigar, pair, c_base_info, g_base_info = read_info
         return dict(chrom=chrom.replace('@', ''), start=int(start), end=int(end),
-                    err_1=int(err_1), subs_1=int(subs_1), indel_1=int(indel_1),
-                    err_2=int(err_2), subs_2=int(subs_2), indel_2=int(indel_2),
-                    insert_size=insert_size, read_id=read_id, cigar=cigar, pair=int(pair))
+                    insert_size=insert_size, read_id=read_id, cigar=cigar, pair=int(pair),
+                    c_base_info=c_base_info, g_base_info=g_base_info)
