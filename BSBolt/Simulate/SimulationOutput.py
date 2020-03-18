@@ -13,11 +13,13 @@ class SimulationOutput:
             if not os.path.isdir(simulation_directory):
                 os.makedirs(simulation_directory, exist_ok=False)
 
-    def output_contig(self, contig_profile, contig_id, values=False):
+    def output_contig(self, contig_profile, contig_id, values=False, variant=False):
         if contig_id:
             contig_label = contig_id
             if values:
                 contig_label = f'{contig_id}_values'
+            elif variant:
+                contig_label = f'{contig_id}_variants'
             with open(f'{self.sim_dir}.{contig_label}.pkl', 'wb') as contig_out:
                 pickle.dump(contig_profile, contig_out)
 

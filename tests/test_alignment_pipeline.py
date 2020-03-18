@@ -11,7 +11,7 @@ from tests.TestHelpers import bsb_directory, z_test_of_proportion
 bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
                          '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                          '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-PE', '-U',
-                         '-IR1', '0.01', '-IR2', '0.01', '-DR1', '0.01', '-DR2', '0.01']
+                         '-MR', '0.01', '-verbose', '-overwrite']
 subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
@@ -28,9 +28,12 @@ bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       '-G', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
-                      f'{bsb_directory}tests/BSB_pe_test', '-t', '10', '-UN', '-Sort']
+                      f'{bsb_directory}tests/BSB_pe_test', '-t', '10', '-UN']
 
 subprocess.run(bsb_align_commands)
+
+subprocess.run(['python3', '-m', 'BSBolt', 'Sort', '-I', f'{bsb_directory}tests/BSB_pe_test.bam',
+                '-O', f'{bsb_directory}tests/BSB_pe_test.sorted.bam'])
 
 print('Calling Methylation')
 

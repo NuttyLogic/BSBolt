@@ -17,10 +17,10 @@ test_sim = SimulateMethylatedReads(reference_file=test_genome,
                                    paired_end=True,
                                    sim_output=sim_out,
                                    undirectional=False,
-                                   collect_sim_stats=False,
+                                   collect_sim_stats=True,
                                    overwrite_db=True,
-                                   mutation_rate=0.0,
-                                   sequencing_error=0.0,
+                                   mutation_rate=0.01,
+                                   sequencing_error=0.01,
                                    read_length=100,
                                    read_depth=20)
 
@@ -28,8 +28,8 @@ test_sim.simulate_methylated_reads()
 
 # import reads
 
-for read in OpenFastq(f'{sim_out}_1.fq'):
-    pass #print(read)
+#for read in OpenFastq(f'{sim_out}_1.fq'):
+#    print(read)
 
 
 

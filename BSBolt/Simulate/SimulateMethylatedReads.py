@@ -1,5 +1,4 @@
 import random
-import re
 from typing import Dict, Union
 from tqdm import tqdm
 from BSBolt.Simulate.SetCyotsineMethylation import SetCytosineMethylation
@@ -86,6 +85,8 @@ class SimulateMethylatedReads:
 
     def output_reference(self):
         self.sim_db.sim_db.output_contig(self.contig_profile, self.current_contig)
+        if self.variant_data:
+            self.sim_db.sim_db.output_contig(self.variant_data, self.current_contig, variant=True)
         if self.collect_sim_stats:
             self.sim_db.sim_db.output_contig(self.contig_values, self.current_contig, values=True)
             self.contig_values = {}
@@ -128,7 +129,11 @@ class SimulateMethylatedReads:
         """Set methylation according to sim value, variants can be methylation but not sequencing errors"""
         ref_seq, seq, cigar = self.reference[read['chrom']][read['start']: read['end']], read['seq'], read['cigar']
         # start iterators
-        assert len(seq) == len(cigar)
+        try:
+            assert len(seq) == len(cigar)
+        except AssertionError as e:
+            print(read)
+            raise e
         start, end = read['start'], read['end']
         methyl_read, methyl_cigar = list(seq), list(cigar)
         methyl_base_info = read['c_base_info'] if sub_base == 'C' else read['g_base_info']
@@ -137,13 +142,10 @@ class SimulateMethylatedReads:
                 break
             seq_pos, offset = site.split('_')
             seq_pos, offset = int(seq_pos), int(offset)
-            try:
-                cigar_base = cigar[seq_pos]
-            except IndexError as e:
-                print(read)
-                raise e
+            cigar_base = cigar[seq_pos]
             ref_pos = start + seq_pos + offset
-            ref_base, seq_base = ref_seq[seq_pos + offset], seq[seq_pos]
+            seq_base = seq[seq_pos]
+            ref_base = ref_seq[seq_pos + offset]
             if cigar_base == 'M':
                 # check for sequencing error, if error don't evaluate methylation status
                 meth_base, meth_base_cigar = self.handle_match(seq_base, ref_base, ref_pos)
@@ -162,7 +164,7 @@ class SimulateMethylatedReads:
 
     def set_variant_methylation(self, meth_pos, seq_base, variant_type='X'):
         cigar_type = 'Z' if variant_type == 'X' else 'R'
-        methyl_status, context = self.set_base_methylation(meth_pos, seq_base)
+        methyl_status, context = self.set_base_methylation(meth_pos)
         if methyl_status:
             return seq_base.lower(), cigar_type
         else:
@@ -172,13 +174,13 @@ class SimulateMethylatedReads:
         if seq_base != ref_base:
             return seq_base, 'E'
         else:
-            methyl_status, context = self.set_base_methylation(pos, seq_base)
+            methyl_status, context = self.set_base_methylation(pos)
             if methyl_status:
                 return seq_base.lower(), 'C' if context else 'Y'
             else:
                 return seq_base, 'c' if context else 'y'
 
-    def set_base_methylation(self, methyl_position, base):
+    def set_base_methylation(self, methyl_position):
         # nucleotide, methylation_level, context, 0, 0, 0
         try:
             methyl_info = self.contig_profile[str(methyl_position)]

@@ -29,12 +29,16 @@ test_read = {1: {'chrom': 'chr10', 'start': 0, 'end': 100,
                  'pair': 1,
                  'read_id': '1',
                  'comment': '+',
+                 'c_base_info': ','.join([f'{2 + 10 * x}_0,{4 + 10 * x}_0' for x in range(10)]),
+                 'g_base_info': ','.join([f'{3 + 10 * x}_0' for x in range(10)]),
                  'seq': 'ATCGCATTAA' * 10,
                  'qual': '1' + '2' * 99},
              2: {'chrom': 'chr10', 'start': 100, 'end': 200, 'read_id': '1',
                  'cigar': 'M' * 100,
                  'pair': 2,
                  'comment': '+',
+                 'c_base_info': ','.join([f'{2 + 10 * x}_0,{4 + 10 * x}_0' for x in range(10)]),
+                 'g_base_info': ','.join([f'{3 + 10 * x}_0' for x in range(10)]),
                  'seq': 'ATCGCATTAA' * 10,
                  'qual': '1' + '2' * 99}
              }
@@ -89,6 +93,9 @@ test_read_group_x[1]['seq'] = ''.join(seq)
 cigar = list(test_read_group_x[1]['cigar'])
 cigar[5] = 'X'
 test_read_group_x[1]['cigar'] = ''.join(cigar)
+c_info = test_read_group_x[1]['c_base_info'].split(',')
+c_info = c_info[0:2] + ['5_0'] + c_info[2:]
+test_read_group_x[1]['c_base_info'] = ','.join(c_info)
 x_expected_cigar = list(expected_watson_cigar[0:100])
 x_expected_cigar[5] = 'Z'
 x_expected_cigar = ''.join(x_expected_cigar)
@@ -101,13 +108,12 @@ test_read_group_d = copy.deepcopy(test_read)
 seq = list(test_read_group_d[1]['seq'])
 test_read_group_d[1]['seq'] = ''.join(seq[:10] + seq[12:])
 cigar = list(test_read_group_d[1]['cigar'])
-cigar[10] = 'D'
-cigar[11] = 'D'
-test_read_group_d[1]['cigar'] = ''.join(cigar)
+test_read_group_d[1]['cigar'] = ''.join(cigar[:10] + cigar[12:])
+c_info = test_read_group_d[1]['c_base_info'].split(',')
+c_info = c_info[0:2] + [f'{10 * (x + 1)}_2,{2 + 10 * (x +1)}_2' for x in range(9)]
+test_read_group_d[1]['c_base_info'] = ','.join(c_info)
 d_expected_cigar = list(copy.deepcopy(expected_watson_cigar[0:100]))
-d_expected_cigar[10] = 'D'
-d_expected_cigar[11] = 'D'
-d_expected_cigar = ''.join(d_expected_cigar)
+d_expected_cigar = ''.join(d_expected_cigar[:10] + d_expected_cigar[12:100])
 d_expected_seq = list(expected_watson_sequence)
 d_expected_seq = ''.join(d_expected_seq[0:10] + d_expected_seq[12:100])
 
@@ -115,9 +121,12 @@ d_expected_seq = ''.join(d_expected_seq[0:10] + d_expected_seq[12:100])
 test_read_group_i = copy.deepcopy(test_read)
 seq = list(test_read_group_i[1]['seq'])
 test_read_group_i[1]['seq'] = ''.join(seq[:10] + ['CG'] + seq[10:])
+c_info = test_read_group_i[1]['c_base_info'].split(',')
+c_info = c_info[0:2] + ['10_0'] + [f'{4 + 10 * (x + 1)}_-2,{6 + 10 * (x +1)}_-2' for x in range(9)]
+test_read_group_i[1]['c_base_info'] = ','.join(c_info)
 cigar = list(test_read_group_i[1]['cigar'])
-test_read_group_i[1]['cigar'] = ''.join(cigar[:10] + ['II'] + cigar[10:])
-i_expected_cigar = list(expected_watson_cigar[0:10] + ['RI'] + expected_watson_cigar[10:100])
+test_read_group_i[1]['cigar'] = ''.join(cigar[:10] + ['12'] + cigar[10:])
+i_expected_cigar = list(expected_watson_cigar[0:10] + ['R2'] + expected_watson_cigar[10:100])
 i_expected_cigar = ''.join(i_expected_cigar)
 i_expected_seq = list(expected_watson_sequence)
 i_expected_seq = ''.join(i_expected_seq[0:10] + ['CG'] + i_expected_seq[10:100])
