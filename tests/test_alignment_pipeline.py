@@ -12,7 +12,7 @@ bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
                          '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                          '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-PE', '-U',
                          '-MR', '0.01', '-verbose', '-overwrite']
-subprocess.run(bsb_simulate_commands)
+#subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
 # map simulated reads
@@ -20,14 +20,14 @@ print('Reads Simulated')
 print('Building Methylation Index')
 bsb_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB']
-subprocess.run(bsb_index_commands)
+#subprocess.run(bsb_index_commands)
 print('BSBolt Index Built')
 
 
 bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       '-G', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
-                      f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
-                      f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
+                      f'{bsb_directory}tests/TestSimulations/BSB_pe_1.fastq', '-F2',
+                      f'{bsb_directory}tests/TestSimulations/BSB_pe_2.fastq', '-O',
                       f'{bsb_directory}tests/BSB_pe_test', '-t', '10', '-UN']
 
 subprocess.run(bsb_align_commands)
@@ -46,14 +46,13 @@ subprocess.run(bs_call_methylation_args)
 print('Methylation Values Called')
 
 # retrieve reference and test alignments
-reference_alignments = f'{bsb_directory}tests/TestSimulations/BSB_pe.sam'
 test_alignments = f'{bsb_directory}tests/BSB_pe_test.sorted.bam'
 
 evaluator = AlignmentEvaluator(duplicated_regions={'chr10': (0, 5000), 'chr15': (0, 5000)},
                                matching_target_prop=.95)
 
 print('Evaluating Alignment')
-read_stats = evaluator.evaluate_alignment(reference_alignments, test_alignments)
+read_stats = evaluator.evaluate_alignment(test_alignments)
 
 # import methylation calling dict
 print('Evaluating Methylation Calls')

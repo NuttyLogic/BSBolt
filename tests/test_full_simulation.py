@@ -26,19 +26,11 @@ test_sim = SimulateMethylatedReads(reference_file=test_genome,
 
 test_sim.simulate_methylated_reads()
 
-# import reads
-
-#for read in OpenFastq(f'{sim_out}_1.fq'):
-#    print(read)
-
-
 
 class TestSimulation(unittest.TestCase):
 
     def setUp(self):
         pass
-
-
 
 
 if __name__ == '__main__':
