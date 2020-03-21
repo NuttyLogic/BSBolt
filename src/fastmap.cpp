@@ -364,6 +364,7 @@ ktp_data_t *kt_pipeline(void *shared, int step, void *data, mem_opt_t *opt, work
 		    //free(ret->seqs[i].seq); free(ret->seqs[i].qual);
 			//free(ret->seqs[i].sam); free(ret->seqs[i].oseq);
 		}
+		bs_sort.processEnd();
 		fprintf(stderr, "BSStat TotalReads: %d\n", bs_sort.reads_observed);
 		fprintf(stderr, "BSStat TotalAlignments: %d\n", bs_sort.alignments_observed);
 		fprintf(stderr, "BSStat W_C2T: %d\n", bs_sort.wc2t);
