@@ -16,15 +16,16 @@ test_sim = SimulateMethylatedReads(reference_file=test_genome,
                                    wgsim_path=wgsim_path,
                                    paired_end=True,
                                    sim_output=sim_out,
-                                   undirectional=False,
+                                   undirectional=True,
                                    collect_sim_stats=True,
                                    overwrite_db=True,
-                                   mutation_rate=0.01,
+                                   mutation_rate=0.1,
                                    sequencing_error=0.01,
                                    read_length=100,
-                                   read_depth=20)
+                                   read_depth=20,
+                                   mutation_indel_fraction=0.7)
 
-test_sim.simulate_methylated_reads()
+test_sim.run_simulation()
 
 
 class TestSimulation(unittest.TestCase):

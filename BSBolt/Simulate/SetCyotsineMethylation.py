@@ -131,6 +131,9 @@ class SetCytosineMethylation:
         """Variants are always random, so set random methylation"""
         ref_seq = self.reference[current_contig]
         for pos, variant_info in sim_data.items():
+            # don't set methylation for last base
+            if pos + 2 > len(ref_seq):
+                continue
             if variant_info['indel'] == -1:
                 continue
             elif variant_info['indel'] == 1:

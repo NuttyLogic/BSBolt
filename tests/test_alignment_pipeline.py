@@ -11,7 +11,7 @@ from tests.TestHelpers import bsb_directory, z_test_of_proportion
 bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
                          '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                          '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-PE', '-U',
-                         '-MR', '0.01', '-verbose', '-overwrite']
+                         '-MR', '0.01', '-verbose', '-overwrite', '-RD', '20']
 #subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
@@ -26,14 +26,14 @@ print('BSBolt Index Built')
 
 bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       '-G', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
-                      f'{bsb_directory}tests/TestSimulations/BSB_pe_1.fastq', '-F2',
-                      f'{bsb_directory}tests/TestSimulations/BSB_pe_2.fastq', '-O',
+                      f'{bsb_directory}tests/TestSimulations/BSB_pe_1.fq', '-F2',
+                      f'{bsb_directory}tests/TestSimulations/BSB_pe_2.fq', '-O',
                       f'{bsb_directory}tests/BSB_pe_test', '-t', '10', '-UN']
 
-subprocess.run(bsb_align_commands)
+#subprocess.run(bsb_align_commands)
 
-subprocess.run(['python3', '-m', 'BSBolt', 'Sort', '-I', f'{bsb_directory}tests/BSB_pe_test.bam',
-                '-O', f'{bsb_directory}tests/BSB_pe_test.sorted.bam'])
+#subprocess.run(['python3', '-m', 'BSBolt', 'Sort', '-I', f'{bsb_directory}tests/BSB_pe_test.bam',
+#                '-O', f'{bsb_directory}tests/BSB_pe_test.sorted.bam'])
 
 print('Calling Methylation')
 
@@ -42,17 +42,19 @@ bs_call_methylation_args = ['python3', '-m', 'BSBolt', 'CallMethylation', '-I',
                             '-O', f'{bsb_directory}tests/BSB_pe_test',
                             '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB',
                             '-t', '6', '-verbose', '-min-qual', '10']
-subprocess.run(bs_call_methylation_args)
+#subprocess.run(bs_call_methylation_args)
 print('Methylation Values Called')
 
 # retrieve reference and test alignments
 test_alignments = f'{bsb_directory}tests/BSB_pe_test.sorted.bam'
+test_fastqs = [f'{bsb_directory}tests/TestSimulations/BSB_pe_1.fq',
+               f'{bsb_directory}tests/TestSimulations/BSB_pe_2.fq']
 
 evaluator = AlignmentEvaluator(duplicated_regions={'chr10': (0, 5000), 'chr15': (0, 5000)},
                                matching_target_prop=.95)
 
 print('Evaluating Alignment')
-read_stats = evaluator.evaluate_alignment(test_alignments)
+read_stats = evaluator.evaluate_alignment(test_alignments, test_fastqs)
 
 # import methylation calling dict
 print('Evaluating Methylation Calls')

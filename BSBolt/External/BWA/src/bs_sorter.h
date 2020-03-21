@@ -22,6 +22,7 @@ class samSorter
     samSorter(bseq1_t *first_read, ktp_aux_t *aux);
     ~samSorter();
     void processRead(bseq1_t *read);
+    void processEnd();
     void bankRead(bseq1_t *read);
     void outputReads(int read_group, bool output_unmapped=false);
     int pickReadGroup();

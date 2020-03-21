@@ -115,25 +115,23 @@ class SimulateMethylatedReads:
         conversion = 'C2T' if sim_data[1]['sub_base'] == sub_base else 'G2A'
         sim_data[reverse_read]['seq'] = reverse_complement(sim_data[reverse_read]['seq'])
         sim_data[reverse_read]['qual'] = sim_data[reverse_read]['qual'][::-1]
-        read_label = f'@{sim_data[1]["read_id"]}:{sim_data[1]["chrom"]}:{sim_data[1]["start"]}:' \
-                     f'{sim_data[1]["end"]}:{sim_data[1]["cigar"]}:{ref_strand}{conversion}/1\n'
-        read = f'{read_label}{sim_data[1]["seq"]}\n{sim_data[1]["comment"]}\n{sim_data[1]["qual"]}\n'
+        read_label = f'@{sim_data[1]["read_id"]}/1'
+        read_comment = f'+{sim_data[1]["chrom"]}:{sim_data[1]["start"]}:' \
+                       f'{sim_data[1]["end"]}:{sim_data[1]["cigar"]}:{ref_strand}{conversion}'
+        read = f'{read_label}\n{sim_data[1]["seq"]}\n{read_comment}\n{sim_data[1]["qual"]}\n'
         self.output_objects[0].write(read)
         if self.paired_end:
-            read_label = f'@{sim_data[2]["read_id"]}:{sim_data[1]["chrom"]}:{sim_data[2]["start"]}:' \
-                         f'{sim_data[2]["end"]}:{sim_data[2]["cigar"]}:{ref_strand}{conversion}/2\n'
-            read = f'{read_label}{sim_data[2]["seq"]}\n{sim_data[2]["comment"]}\n{sim_data[2]["qual"]}\n'
+            read_label = f'@{sim_data[2]["read_id"]}/2'
+            read_comment = f'+{sim_data[1]["chrom"]}:{sim_data[2]["start"]}:' \
+                           f'{sim_data[2]["end"]}:{sim_data[2]["cigar"]}:{ref_strand}{conversion}'
+            read = f'{read_label}\n{sim_data[2]["seq"]}\n{read_comment}\n{sim_data[2]["qual"]}\n'
             self.output_objects[1].write(read)
 
     def set_read_methylation(self, read, sub_base='C'):
         """Set methylation according to sim value, variants can be methylation but not sequencing errors"""
         ref_seq, seq, cigar = self.reference[read['chrom']][read['start']: read['end']], read['seq'], read['cigar']
         # start iterators
-        try:
-            assert len(seq) == len(cigar)
-        except AssertionError as e:
-            print(read)
-            raise e
+        assert len(seq) == len(cigar)
         start, end = read['start'], read['end']
         methyl_read, methyl_cigar = list(seq), list(cigar)
         methyl_base_info = read['c_base_info'] if sub_base == 'C' else read['g_base_info']

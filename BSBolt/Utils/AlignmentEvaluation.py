@@ -3,6 +3,7 @@ from typing import Dict, List, NamedTuple, Tuple
 import numpy as np
 import pysam
 from tqdm import tqdm
+from BSBolt.Utils.FastqIterator import OpenFastq
 
 
 def open_alignment_file(alignment_file_path: str = None):
@@ -14,12 +15,21 @@ def open_alignment_file(alignment_file_path: str = None):
         yield aligned_segment
 
 
-def get_reference_alignments(alignment_file_path):
-    alignments = {}
-    for alignment in open_alignment_file(alignment_file_path):
-        alignment_id = f'{alignment.query_name.split("/")[0]}_1' if alignment.is_read1 else f'{alignment.query_name.split("/")[0]}_2'
-        alignments[alignment_id] = alignment.to_string()
-    return alignments
+def parse_alignment_comment(read_comment):
+    chrom, start, end, cigar, ref_strand = read_comment.replace('+', '').strip().split(':')
+    return dict(chrom=chrom, start=int(start),
+                end=int(end), cigar=cigar, ref_strand=ref_strand)
+
+
+def get_read_reference_info(fastq_files: List[str] = None):
+    reference_info = {}
+    fastq_iterators = (OpenFastq(file) for file in fastq_files)
+    for fastq in fastq_iterators:
+        for line in fastq:
+            read_name = line[0].replace('@', '').strip()
+            read_info = parse_alignment_comment(line[2].strip())
+            reference_info[read_name] = read_info
+    return reference_info
 
 
 class AlignmentEvaluator:
@@ -30,21 +40,28 @@ class AlignmentEvaluator:
         self.matching_target_prop = matching_target_prop
         self.verbose = verbose
 
-    def evaluate_alignment(self, alignment_file: str) -> Dict[str, int]:
+    def evaluate_alignment(self, alignment_file: str, fastq_files: List[str] = None) -> Dict[str, int]:
         alignment_evaluations = defaultdict(int)
         reads_observed = set()
+        reference_info = get_read_reference_info(fastq_files=fastq_files)
         for alignment in tqdm(open_alignment_file(alignment_file), disable=True if not self.verbose else False):
+            # read shouldn't have read pair info but added for safety and tools that don't remove
             read_name = alignment.qname.split('/')[0]
+            if alignment.is_read1:
+                read_name = f'{read_name}/1'
+            else:
+                read_name = f'{read_name}/2'
             reads_observed.add(read_name)
             alignment_evaluations['ObservedAlignments'] += 1
-            alignment_info = self.parse_alignment_name(read_name)
+            alignment_info = reference_info[read_name]
+            print(alignment_info)
             if not alignment.is_unmapped:
                 dup_region = False
                 if alignment_info['chrom'] in self.duplicated_regions:
                     duplicate_range = self.duplicated_regions[alignment_info['chrom']]
                     if duplicate_range[0] <= alignment_info['start'] <= duplicate_range[1]:
                         dup_region = True
-                chrom_match, matching_prop = self.assess_alignment(alignment)
+                chrom_match, matching_prop = self.assess_alignment(alignment, alignment_info)
                 on_target = 'On' if chrom_match and matching_prop >= self.matching_target_prop else 'Off'
                 secondary = 'Sec' if alignment.is_secondary else 'Prim'
                 pair = 'PropPair' if alignment.is_proper_pair else 'Discord'
@@ -54,16 +71,12 @@ class AlignmentEvaluator:
                 alignment_evaluations['UnalignedAlignments'] += 1
         return alignment_evaluations
 
-    @staticmethod
-    def parse_alignment_name(read_name):
-        read_id, chrom, start, end, cigar, ref_strand = read_name.replace('@', '').strip().split(':')
-        return dict(read_id=read_id, chrom=chrom, start=int(start), end=int(end), cigar=cigar, ref_strand=ref_strand)
 
     @staticmethod
     def assess_alignment(alignment: pysam.AlignedSegment, alignment_info: Dict):
         chrom_match = alignment.reference_name == alignment_info['chrom']
         # assess reference bases that match between the two reads
-        matching_pos = alignment.get_reference_positions(full_length=False)
-        base_range = np.where(alignment_info['start'] <= matching_pos <= alignment_info['end'])
-        matching_prop = sum(base_range) / (alignment_info['cigar'])
+        matching_pos = np.array(alignment.get_reference_positions(full_length=False))
+        base_range = (matching_pos >= alignment_info['start']) & (matching_pos <= alignment_info['end'])
+        matching_prop = sum(base_range) / len(alignment_info['cigar'])
         return chrom_match, matching_prop

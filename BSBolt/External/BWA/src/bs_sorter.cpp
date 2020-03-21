@@ -28,12 +28,14 @@ samSorter::samSorter(bseq1_t *first_read, ktp_aux_t *aux){
 }
 
 samSorter::~samSorter(){
+    free(samSorter::current_read_name);
+}
+
+void samSorter::processEnd(){
     int read_group = samSorter::pickReadGroup();
     if (read_group == 2) samSorter::outputReads(0, true);
     else if (read_group == 1) samSorter::outputReads(1);
     else samSorter::outputReads(0);
-    free(samSorter::current_read_name);
-    samSorter::resetBuffer();
 }
 
 void samSorter::processRead(bseq1_t *read){
@@ -161,29 +163,3 @@ void samSorter::freeRead(bseq1_t *read){
 	free(read->sam); free(read->oseq);
 }
 
-/*
-int main(){
-    bseq1_t *test;
-    test = (bseq1_t*)calloc(1, sizeof(bseq1_t));
-    test->name = strdup("name");
-	test->comment = strdup("++++");
-	test->seq = strdup("atcg");
-    test->oseq = strdup("atcg");
-	test->qual = strdup("atcg");
-    test->sam = strdup("my read");
-	test->l_seq = 4;
-	test->first = true;
-	test->read_group = 0;
-	test->subsitution_pattern = 0;
-	test->conversion = 1;
-	test->bs_conflict = false;
-	test->crick = false;
-	test->mapped = true;
-	test->paired = false;
-	test->alignment_score = 0;
-    ktp_aux_t *test_aux; 
-    samSorter test_sort = samSorter(test, test_aux);
-    std::cout << test_sort.group_1_score << std::endl;
-    return 0;
-}
-*/

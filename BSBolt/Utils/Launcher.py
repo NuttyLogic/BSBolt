@@ -187,5 +187,5 @@ bsb_launch = {'Index': launch_index,
               'AggregateMatrix': launch_matrix_aggregation,
               'Simulate': launch_simulation,
               'Impute': launch_imputation,
-              'Sort': sort_bam,
-              'BamIndex': index_bam}
+              'Sort': launch_sort_bam,
+              'BamIndex': launch_index_bam}
