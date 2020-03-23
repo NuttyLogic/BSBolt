@@ -115,13 +115,13 @@ class SimulateMethylatedReads:
         conversion = 'C2T' if sim_data[1]['sub_base'] == sub_base else 'G2A'
         sim_data[reverse_read]['seq'] = reverse_complement(sim_data[reverse_read]['seq'])
         sim_data[reverse_read]['qual'] = sim_data[reverse_read]['qual'][::-1]
-        read_label = f'@{sim_data[1]["read_id"]}/1'
+        read_label = f'@{sim_data[1]["read_id"]}_{sim_data[1]["chrom"]}/1'
         read_comment = f'+{sim_data[1]["chrom"]}:{sim_data[1]["start"]}:' \
                        f'{sim_data[1]["end"]}:{sim_data[1]["cigar"]}:{ref_strand}{conversion}'
         read = f'{read_label}\n{sim_data[1]["seq"]}\n{read_comment}\n{sim_data[1]["qual"]}\n'
         self.output_objects[0].write(read)
         if self.paired_end:
-            read_label = f'@{sim_data[2]["read_id"]}/2'
+            read_label = f'@{sim_data[2]["read_id"]}_{sim_data[2]["chrom"]}/2'
             read_comment = f'+{sim_data[1]["chrom"]}:{sim_data[2]["start"]}:' \
                            f'{sim_data[2]["end"]}:{sim_data[2]["cigar"]}:{ref_strand}{conversion}'
             read = f'{read_label}\n{sim_data[2]["seq"]}\n{read_comment}\n{sim_data[2]["qual"]}\n'
@@ -186,12 +186,12 @@ class SimulateMethylatedReads:
             return False, 0
         methyl_status = self.random_roll(methyl_info[1])
         if self.collect_sim_stats:
-            if f'{methyl_position}' not in self.contig_values:
-                self.contig_values[f'{methyl_position}'] = [0, 0]
+            if f'{self.current_contig}:{methyl_position}' not in self.contig_values:
+                self.contig_values[f'{self.current_contig}:{methyl_position}'] = [0, 0]
             if methyl_status:
-                self.contig_values[f'{methyl_position}'][0] += 1
+                self.contig_values[f'{self.current_contig}:{methyl_position}'][0] += 1
             else:
-                self.contig_values[f'{methyl_position}'][1] += 1
+                self.contig_values[f'{self.current_contig}:{methyl_position}'][1] += 1
         return methyl_status, methyl_info[2]
 
     def get_methylation_reference(self, contig: str, variant_data: Union[bool, Dict] = False):

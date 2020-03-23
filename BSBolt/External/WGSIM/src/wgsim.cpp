@@ -260,6 +260,7 @@ void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, i
 			continue;
 		}
 
+
 		// generate mutations and print them out
 		fprintf(stdout, "Contig Variant Start\n");
 		wgsim_mut_diref(ks, is_hap, rseq, rseq+1);

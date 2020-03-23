@@ -54,7 +54,6 @@ class AlignmentEvaluator:
             reads_observed.add(read_name)
             alignment_evaluations['ObservedAlignments'] += 1
             alignment_info = reference_info[read_name]
-            print(alignment_info)
             if not alignment.is_unmapped:
                 dup_region = False
                 if alignment_info['chrom'] in self.duplicated_regions:
@@ -70,7 +69,6 @@ class AlignmentEvaluator:
             else:
                 alignment_evaluations['UnalignedAlignments'] += 1
         return alignment_evaluations
-
 
     @staticmethod
     def assess_alignment(alignment: pysam.AlignedSegment, alignment_info: Dict):
