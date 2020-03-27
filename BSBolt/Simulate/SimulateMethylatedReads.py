@@ -102,28 +102,29 @@ class SimulateMethylatedReads:
         if self.paired_end:
             sim_data[2]['seq'] = sim_data[2]['seq'].replace(sub_pattern[0], sub_pattern[1]).upper()
         # switch subpattern randomly for output if undirectional
+        ref_strand = 'W' if sub_pattern[0] == 'C' else 'C'
         if self.undirectional:
             sub_pattern = ('C', 'T') if self.random_roll(0.5) else ('G', 'A')
-        self.output_sim_reads(sim_data, sub_pattern[0])
+        self.output_sim_reads(sim_data, sub_pattern[0], ref_strand)
 
-    def output_sim_reads(self, sim_data, sub_base):
+    def output_sim_reads(self, sim_data, sub_base, ref_strand):
         # format reads
         reverse_read = 2
         if sub_base == 'G':
             reverse_read = 1
-        ref_strand = 'W' if sim_data[1]['sub_base'] == 'C' else 'C'
-        conversion = 'C2T' if sim_data[1]['sub_base'] == sub_base else 'G2A'
+        conversion_1, conversion_2 = ('C2T', 'G2A') if sim_data[1]['sub_base'] == sub_base else ('G2A', 'C2T')
         sim_data[reverse_read]['seq'] = reverse_complement(sim_data[reverse_read]['seq'])
         sim_data[reverse_read]['qual'] = sim_data[reverse_read]['qual'][::-1]
+        sim_data[reverse_read]['cigar'] = sim_data[reverse_read]['cigar'][::-1]
         read_label = f'@{sim_data[1]["read_id"]}_{sim_data[1]["chrom"]}/1'
         read_comment = f'+{sim_data[1]["chrom"]}:{sim_data[1]["start"]}:' \
-                       f'{sim_data[1]["end"]}:{sim_data[1]["cigar"]}:{ref_strand}{conversion}'
+                       f'{sim_data[1]["end"]}:{sim_data[1]["cigar"]}:{ref_strand}{conversion_1}'
         read = f'{read_label}\n{sim_data[1]["seq"]}\n{read_comment}\n{sim_data[1]["qual"]}\n'
         self.output_objects[0].write(read)
         if self.paired_end:
             read_label = f'@{sim_data[2]["read_id"]}_{sim_data[2]["chrom"]}/2'
             read_comment = f'+{sim_data[1]["chrom"]}:{sim_data[2]["start"]}:' \
-                           f'{sim_data[2]["end"]}:{sim_data[2]["cigar"]}:{ref_strand}{conversion}'
+                           f'{sim_data[2]["end"]}:{sim_data[2]["cigar"]}:{ref_strand}{conversion_2}'
             read = f'{read_label}\n{sim_data[2]["seq"]}\n{read_comment}\n{sim_data[2]["qual"]}\n'
             self.output_objects[1].write(read)
 

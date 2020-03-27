@@ -45,8 +45,9 @@ all mapped reads at a position by default.
   -max                Max read depth to call methylation
   -min                Minimum read depth required to report methylation site
   -t                  Number of threads to use when calling methylation values
-  -min-qual           Minimum base quality for a base to considered
-                      formethylation calling, default=0
+  -BQ                 Minimum base quality for a base to considered formethylation calling, default=0
+  -MQ                 Minimum alignment quality for an alignment to be considered for methylation
+                      calling, default=20
   -CG                 Only output CpG sites in CGmap file
   -ATCG               Output ATCGmap file
   -IO                 Ignore orphans during methylation call

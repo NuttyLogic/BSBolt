@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List, NamedTuple, Tuple
+from typing import Dict, List, Tuple
 import numpy as np
 import pysam
 from tqdm import tqdm

@@ -1515,26 +1515,26 @@ void mem_aln2sam(const mem_opt_t *opt, const bntseq_t *bns, kstring_t *str,
 		}
 	}
 	if (bs_conflict) {
-		p->flag |= 0; 
-		p->rid = -1;
-		p->is_rev = false;
-		p->pos = 0;
+		p->score = 0;
+		p->mapq = 0;
 		}
-	else p->flag |= p->rid < 0? 0x4 : 0; // is mapped
+	p->flag |= p->rid < 0? 0x4 : 0; // is mapped
 	//p->flag |= p->rid < 0? 0x4 : 0; // is mapped
 	if (bs_mate_conflict) {
-		m->rid = -1;
-		m->is_rev = false;
-		m->pos = 0;
+		m->mapq = 0;
+		m->score = 0;
 		}
-	else p->flag |= m && m->rid < 0? 0x8 : 0; // is mate mapped
+	p->flag |= m && m->rid < 0? 0x8 : 0; // is mate mapped
 	//p->flag |= m && m->rid < 0? 0x8 : 0;
 	if (p->rid < 0 && m && m->rid >= 0) // copy mate to alignment
-		p->rid = m->rid, p->pos = m->pos, p->is_rev = m->is_rev, p->n_cigar = 0;
+		//p->rid = m->rid, p->pos = m->pos, p->is_rev = m->is_rev, p->n_cigar = 0;
+        p->rid = m->rid, p->pos = m->pos, p->n_cigar = 0;
 	if (m && m->rid < 0 && p->rid >= 0) // copy alignment to mate
-		m->rid = p->rid, m->pos = p->pos, m->is_rev = p->is_rev, m->n_cigar = 0;
+		//m->rid = p->rid, m->pos = p->pos, m->is_rev = p->is_rev, m->n_cigar = 0;
+		m->rid = p->rid, m->pos = p->pos, m->n_cigar = 0;
 	p->flag |= p->is_rev? 0x10 : 0; // is on the reverse strand
 	p->flag |= m && m->is_rev? 0x20 : 0; // is mate on the reverse strand
+
 
 	// print up to CIGAR
 	l_name = strlen(s->name);
@@ -1613,7 +1613,7 @@ void mem_aln2sam(const mem_opt_t *opt, const bntseq_t *bns, kstring_t *str,
 	// generate BS conversion tag
 
 	if (p->rid >=0){
-		kputsn("\tXO:Z:", 6, str);
+		kputsn("\tYS:Z:", 6, str);
 		if (is_crick){
 			if (s->subsitution_pattern){
 				kputsn("C_G2A", 5, str);
@@ -1632,9 +1632,9 @@ void mem_aln2sam(const mem_opt_t *opt, const bntseq_t *bns, kstring_t *str,
 				s->mapped = 4;
 			}
 		}
-	} else if (bs_conflict){
-		kputsn("\tXO:Z:", 6, str);
-		kputsn("WC", 2, str);
+	}
+	if (bs_conflict){
+		kputsn("\tYC:i:1", 7, str);
 	}
 	if (!(p->flag & 0x100)) { // not multi-hit
 		for (i = 0; i < n; ++i)
@@ -1684,7 +1684,7 @@ void mem_aln2sam(const mem_opt_t *opt, const bntseq_t *bns, kstring_t *str,
 	}
 	// add bs meta data
 	// distinctive character to split output
-	s->alignment_score = p->score;
+	s->alignment_score += p->score;
 	s->bs_conflict = bs_conflict;
 	s->crick = is_crick;
 	if (m) s->paired = true;

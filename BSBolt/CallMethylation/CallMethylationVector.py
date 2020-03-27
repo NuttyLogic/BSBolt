@@ -12,7 +12,7 @@ class CallMethylationVector:
     """
 
     def __init__(self, input_file: str = None, genome_database: str = None,
-                 contig: str = None, min_base_quality: int = 0, return_queue=None,
+                 contig: str = None, min_base_quality: int = 0, min_mapping_quality: int = 0, return_queue=None,
                  cg_only: bool = False, start=None, end=None, filter_duplicates=True):
         self.input_file = str(input_file)
         self.input_bam = pysam.AlignmentFile(self.input_file, 'rb',
@@ -26,6 +26,7 @@ class CallMethylationVector:
         self.filter_duplicates = filter_duplicates
         self.end = end
         self.min_base_quality = min_base_quality
+        self.min_mapping_quality = min_mapping_quality
         self.chunk_size = 10000
         self.cg_only = cg_only
         self.return_queue = return_queue
@@ -67,6 +68,8 @@ class CallMethylationVector:
             if aligned_read.is_unmapped:
                 continue
             if aligned_read.is_duplicate and self.filter_duplicates:
+                continue
+            if aligned_read.mapping_quality < self.min_mapping_quality:
                 continue
             # get sequence around pileup site
             reference_start = aligned_read.reference_start

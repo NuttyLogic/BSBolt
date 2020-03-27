@@ -28,7 +28,7 @@ align_parser.add_argument('-UN', action="store_true", default=False,
                           help='Library Undirectional, Consider PCR products of bisulfite converted DNA',
                           required=False)
 align_parser.add_argument('-O', type=str, default=None, help='Path to Output Prefix', required=True)
-align_parser.add_argument('-G', type=str, default=None, help='Path to BSBolt Database', required=True)
+align_parser.add_argument('-DB', type=str, default=None, help='Path to BSBolt Database', required=True)
 align_parser.add_argument('-t', type=int, default=1, help='Number of bwa threads [1]', required=False)
 align_parser.add_argument('-k', type=int, default=19, help='Minimum seed length [19]', required=False)
 align_parser.add_argument('-w', type=int, default=100, help='Band width for banded alignment [100]', required=False)
@@ -105,7 +105,6 @@ index_parser.add_argument('-DB', type=str, required=True,
                           help='Path to index directory, will create directory if folder does not exist')
 index_parser.add_argument('-MR', type=str, default=None, help='Path to bed file of mappable regions. Index will be '
                                                               'built using using masked contig sequence')
-index_parser.add_argument('-BT2-p', type=int, default=2, help='Bowtie2; Number of threads')
 index_parser.add_argument('-rrbs', action="store_true", default=False, help='Generate a Reduced Representative'
                                                                             ' Bisulfite Sequencing (RRBS) index')
 index_parser.add_argument('-rrbs-cut-format', default='C-CGG',
@@ -138,8 +137,10 @@ call_meth_parser.add_argument('-min', type=int, default=10,
                               help='Minimum read depth required to report methylation site')
 call_meth_parser.add_argument('-t', type=int, default=1,
                               help='Number of threads to use when calling methylation values')
-call_meth_parser.add_argument('-min-qual', type=int, default=0, help='Minimum base quality for a base to considered for'
-                                                                     'methylation calling, default=0')
+call_meth_parser.add_argument('-BQ', type=int, default=0, help='Minimum base quality for a base to considered for'
+                                                               'methylation calling, default=0')
+call_meth_parser.add_argument('-MQ', type=int, default=20, help='Minimum alignment quality for an alignment to be '
+                                                                'considered for methylation calling, default=20')
 call_meth_parser.add_argument('-CG', action="store_true", default=False, help='Only output CpG sites in CGmap file')
 call_meth_parser.add_argument('-ATCG', action="store_true", default=False, help='Output ATCGmap file')
 call_meth_parser.add_argument('-IO', action="store_true", default=False, help='Ignore orphans during methylation call')
@@ -194,8 +195,9 @@ sim_parser.add_argument('-CH', default=True, action='store_false', help='Skip si
 sim_parser.add_argument('-NS', default=True, action='store_false', help='By default observed methylation counts are '
                                                                         'saved, disable this behavior')
 sim_parser.add_argument('-SE', type=float, default=0.001, help='Sequencing Error')
-sim_parser.add_argument('-NF', type=float, default=0.05, help='Cutoff threshold for a read with gaps, -, or ambiguous '
-                                                              'bases, N. Reads below the threshold will not be output')
+sim_parser.add_argument('-NF', type=float, default=0.05, help='Cutoff threshold for amibiguous bases, simulated reads '
+                                                              'with a proportion of ambiguous bases above this '
+                                                              'threshold will not be output')
 sim_parser.add_argument('-FM', type=int, default=400, help='Max fragment size')
 sim_parser.add_argument('-IM', type=int, default=50, help='Insert length mean')
 sim_parser.add_argument('-SM', type=int, default=50, help='Insert length standard deviation')

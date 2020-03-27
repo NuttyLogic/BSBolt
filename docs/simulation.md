@@ -1,50 +1,79 @@
 ## Bisulfite Sequencing Simulation
 
-Simulating bisuflite reads is performed by assigning each cytosine and guanine (anti-sense cytosine) in the input reference file a 
-methylation value. The methylation value is assigned using an input methylation reference file (.CGmap or BSBolt Reference Directory) or 
-sampling from a binomial distribution for CpG and CH sites. After a methylation value is assigned for cytosine and 
-guanine individual reads simulated using ART are modified accordingly. The methylation value represent the probability a base with be methylated. 
+Simulation of bisuflite sequencing reads occurs in a series of distinct steps. 
+
+1. Genetic variants are randomly set for each passed contig, unless the mutation rate is set to zero.
+    - Heterozygous variants are enable by default, only homozygous variants will be simulated in haplotype mode *-HA*
+2. Methylation values are set for modifiable bases (C & G), either randomly or using a provided methylation reference.
+    - Random methylation values are set randomly a distinct binomial distribution for CpG and CH sites. *Note*, correlation 
+    structure between neighboring CpG sites is not considered when simulating random methylation values.
+    - If a reference methylation file is provided as either as a CGmap file or a previously generated BSBolt reference, the 
+    methylation value is set by the reference. Simulated methylation of genetic variants is still randomly set.  
+3. Reads are randomly generated across the passed contigs by sampling from a uniform distribution to get the read start position. 
+4. Sequencing errors are introduced as represented by the base quality in the resulting fastq file.
+    - Sequencing errors are not considered modifiable bases during read simulation.
+5. Methylation status of modifiable bases is set according to the set methylation value, with the probability of the 
+   base being methylation equal to the methylation value.
+6. Reads are output as fastq files with individual read meta-data in the fastq comment line.   
+
+**Simulated Bisulfite Read Meta-data**
+
+Contained in each fastq comment is colon separated meta-data (contig, read start position, read end position, 
+methyl "cigar", and the reference strand / conversion pattern). The methyl "cigar" contains base level information about 
+modifiable bases for read reference strand (Watson or Crick).
+        
+**Methyl Cigar Format**
+
+The methyl cigar is base matched, so unlike a traditional cigar string deletions are not represented. Insertions are 
+represented numerically, with an integer indicating an inserted base and the position of the base within the insertion. 
+Sequencing error is simulated after setting methylation, so the methyl cigar is representative of the sequence before 
+error simulation.
+
+| Operation | Description    | Consumes Query | Consumes Reference |     
+| :---: | :---:    | :---: | :---: | 
+|M    |base match|  yes| yes|  
+|X    |sequence mismatch|   yes| yes|
+|1-9  |Insertion and position| yes | no|    
+|E    |sequence error|  yes| yes|
+|C    |methylated CG|   yes| yes|
+|c    |unmethylated CG| yes| yes|
+|Y    |methylated CH|   yes| yes|
+|y    |unmethylated CH| yes| yes| 
+|Z    |methylated mismatch| yes| yes|
+|z    |unmethylated mismatch|   yes| yes|
+|R    |methylated insertion|    yes| no|
+|r    |unmethylated insertion|  yes| no|
+ 
 
 **BSB Simulate Commands**
 ```shell
   -h, --help  show this help message and exit
-  -G          Path for reference genome fasta file, fasta file should contain
-              all contigs
-  -A          Path to ART executable, default = bundled ART
+  -G          Path for reference genome fasta file, fasta file should contain all contigs
   -O          Output prefix
   -PE         Simulate Paired End Reads, default Single End
-  -RL         Simulated Read Lenghth
+  -RL         Simulated Read Length
   -RD         Simulated Read Depth
   -U          Simulate Undirectional Reads, default=Directional
-  -RC         Path to CGmap file to generate simulation reference profile
-  -RO         Methylation reference output directory, default = output path
-  -BR         Path to previously generate BSB simulation reference
-  -IR1        Read 1 insertion rate
-  -IR2        Read 2 insertion rate
-  -DR1        Read 1 deletion rate
-  -DR2        Read 2 deletion rate
-  -NF         Cutoff theshold for a read with gaps, -, or ambiguous bases, N.
-              Reads below the threshold will not be output
-  -M          Mean paired end fragment size
-  -SM         Paired end fragment length distribution standard deviation
-  -SS         Sequencing system, default HS25
-              ART Sequencing System Codes
-              * HS10 - HiSeq 1000 (100bp) 
-              * HS20 - HiSeq 2000 (100bp) 
-              * HS25 - HiSeq 2500 (125bp, 150bp) 
-              * HSXn - HiSeqX PCR free (150bp) 
-              * HSXt - HiSeqX TruSeq (150bp) 
-              * MinS - MiniSeq TruSeq (50bp) 
-              * MSv1 - MiSeq v1 (250bp)
-              * MSv3 - MiSeq v3 (250bp) 
-              * NS50 - NextSeq500 v2 (75bp)
-  -Q1         Optional read 1 quality profile, generated using ART Illumina
-              read profiler
-  -Q2         Path to read 2 quality profile
-
+  -CG         Path to CGmap file to generate simulation reference profile
+  -BR         Path to previously generated BSBolt methylation reference
+  -MR         Mutation rate
+  -MI         Mutation indel fraction
+  -ME         Mutation indel extension probability
+  -RS         Random seed for variant generation
+  -HA         Haplotype mode, homozygous variants only
+  -CH         Skip simulation of CH methylation, all CH sites unmethylated
+  -NS         By default observed methylation counts are saved, disable this behavior
+  -SE         Sequencing Error
+  -NF         Cutoff threshold for amibiguous bases, simulated reads with a proportion of ambiguous bases above this 
+              threshold will not be output
+  -FM         Max fragment size
+  -IM         Insert length mean
+  -SM         Insert length standard deviation
+  -verbose    Verbose read simulation
+  -overwrite  Overwrite previously generated simulation database
 ```
 
-**Simulate Paired End, Undirectional Methylation Reads**
+**Simulate Paired End, Undirectional Bisulfite Reads**
 ```shell
 python3 -m BSBolt Simulate -G ~/Tests/TestData/BSB_test.fa -O ~/Tests/TestSimulations/BSB_pe -U -PE
 ```

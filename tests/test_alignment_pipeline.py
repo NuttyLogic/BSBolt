@@ -26,7 +26,7 @@ print('BSBolt Index Built')
 
 
 bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
-                      '-G', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
+                      '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_1.fq', '-F2',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_2.fq', '-O',
                       f'{bsb_directory}tests/BSB_pe_test', '-t', '10', '-UN']
@@ -47,7 +47,7 @@ bs_call_methylation_args = ['python3', '-m', 'BSBolt', 'CallMethylation', '-I',
                             f'{bsb_directory}tests/BSB_pe_test.sorted.bam',
                             '-O', f'{bsb_directory}tests/BSB_pe_test',
                             '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB',
-                            '-t', '6', '-verbose', '-min-qual', '10']
+                            '-t', '6', '-verbose', '-BQ', '10', '-MQ', '20']
 subprocess.run(bs_call_methylation_args)
 print('Methylation Values Called')
 
@@ -126,9 +126,6 @@ class TestBSBPipeline(unittest.TestCase):
         # count number of sites out of tolerance
         out_of_tolerance_sites = 0
         for label, test_site in site_comparisons.items():
-            chromosome, pos = label.split(':')
-            if chromosome in {'chr10', 'chr15'} and int(pos) < 5000:
-                continue
             if test_site['coverage_difference'] > coverage_difference_tolerance:
                 out_of_tolerance_sites += 1
         self.assertLessEqual(out_of_tolerance_sites, 100)
@@ -139,9 +136,6 @@ class TestBSBPipeline(unittest.TestCase):
         # count site with z score above threshold
         z_site_count = 0
         for label, test_site in site_comparisons.items():
-            chromosome, pos = label.split(':')
-            if chromosome in {'chr10', 'chr15'} and int(pos) < 5000:
-                continue
             if test_site['beta_z_value'] >= z_threshold:
                 z_site_count += 1
         self.assertLessEqual(z_site_count, 300)

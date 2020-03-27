@@ -37,6 +37,7 @@ class ProcessContigs:
         max_read_depth (int): default = 8000
         threads (int): 1, if one watcher and processing on same thread else separated
         min_base_quality (int): minimum base quality for base to be considered
+        min_mapping_quality (int): minimum mapping quality for an alignment to be considered
     Attributes:
         self.input_file (str): path to input bam/sam file
         self.input_bam (pysam.AlignmentFile): pysam object to retrieve pileup information from .bam file
@@ -54,7 +55,8 @@ class ProcessContigs:
     def __init__(self, input_file: str = None, genome_database: str = None, output_prefix: str = None,
                  ignore_overlap: bool = True, text_output: bool = False, remove_ccgg: bool = False,
                  min_read_depth: int = 10, max_read_depth: int = 8000, threads: int = 1, verbose: bool = True,
-                 min_base_quality: int = 0, ATCGmap: bool = False, cg_only: bool = True, ignore_orphans: bool = False):
+                 min_base_quality: int = 0, min_mapping_quality: int = 0,
+                 ATCGmap: bool = False, cg_only: bool = True, ignore_orphans: bool = False):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(text_output, bool), 'Not valid bool'
         assert isinstance(threads, int), 'Threads must be specified with integer'
@@ -77,6 +79,7 @@ class ProcessContigs:
                                             remove_ccgg=remove_ccgg,
                                             max_read_depth=max_read_depth,
                                             min_base_quality=min_base_quality,
+                                            min_mapping_quality=min_mapping_quality,
                                             cg_only=cg_only)
         self.min_read_depth = min_read_depth
         self.ATCGmap = ATCGmap

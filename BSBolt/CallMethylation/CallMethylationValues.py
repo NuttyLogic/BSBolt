@@ -29,7 +29,7 @@ class CallMethylationValues:
     def __init__(self, input_file: str = None, genome_database: str = None,
                  ignore_overlap: bool = True, remove_ccgg: bool = False, ignore_orphans: bool = True,
                  max_read_depth: int = 8000, contig: str = None, min_base_quality: int = 1, return_queue=None,
-                 cg_only: bool = False):
+                 cg_only: bool = False, min_mapping_quality: int = 0):
         self.input_file = str(input_file)
         self.input_bam = pysam.AlignmentFile(self.input_file, mode='rb',
                                              require_index=True)
@@ -44,6 +44,7 @@ class CallMethylationValues:
         self.min_base_quality = min_base_quality
         self.chunk_size = 10000
         self.cg_only = cg_only
+        self.min_mapping_quality = min_mapping_quality
         self.context_tables = self.get_context_tables
         self.return_queue = return_queue
         self.counting_dict = {}
@@ -96,6 +97,7 @@ class CallMethylationValues:
                                                 ignore_overlaps=self.ignore_overlap,
                                                 min_base_quality=self.min_base_quality,
                                                 ignore_orphans=self.ignore_orphans,
+                                                min_mapping_quality=self.min_mapping_quality,
                                                 flag_require=0,
                                                 flag_filter=1540):
             # get sequence around pileup site

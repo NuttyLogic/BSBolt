@@ -59,7 +59,7 @@ def process_mapping_statistics(mapping_dict):
     processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict["C_G2A"]}')
     processed_list.append('------------------------------')
     processed_list.append(f'Unmapped Reads (Single / Paired Ends): {mapping_dict["Unaligned"]}')
-    processed_list.append(f'\tBisulfite Ambiguous: {mapping_dict["BSAmbiguous"]}')
+    processed_list.append(f'Bisulfite Ambiguous: {mapping_dict["BSAmbiguous"]}')
     return '\n'.join(processed_list)
 
 
@@ -83,7 +83,7 @@ def launch_alignment(arguments):
         bwa_cmd.extend([f'-O', bsb_command_dict['INDEL']])
     if bsb_command_dict['XA']:
         bwa_cmd.extend([f'-h', bsb_command_dict['XA']])
-    database = bsb_command_dict['G']
+    database = bsb_command_dict['DB']
     if not database.endswith('.fa'):
         if not database.endswith('/'):
             database = f'{database}/BSB_ref.fa'
@@ -115,7 +115,8 @@ def launch_methylation_call(arguments):
                                       min_read_depth=arguments.min,
                                       threads=arguments.t,
                                       verbose=arguments.verbose,
-                                      min_base_quality=arguments.min_qual,
+                                      min_base_quality=arguments.BQ,
+                                      min_mapping_quality=arguments.MQ,
                                       cg_only=arguments.CG,
                                       ATCGmap=arguments.ATCG,
                                       ignore_orphans=arguments.IO)
