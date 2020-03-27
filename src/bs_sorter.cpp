@@ -65,7 +65,7 @@ void samSorter::setUnmapped(bseq1_t *read){
     
     if (read->paired){
         if (read->first) kputsn("77\t", 3, str);
-        else kputsn("141\t", 3, str);
+        else kputsn("141\t", 4, str);
     }
     else kputsn("4\t", 2, str);
     kputsn("*\t0\t0\t*\t*\t0\t0\t", 14, str);
@@ -89,9 +89,9 @@ void samSorter::setUnmapped(bseq1_t *read){
 
 void samSorter::updateMappingStats(int mapped, bool bs_conflict){
     ++samSorter::alignments_observed;
+    if (bs_conflict) ++samSorter::bs_ambiguous;
     if (mapped == 0){ 
         ++samSorter::unaligned;
-        if (bs_conflict) ++samSorter::bs_ambiguous;
     }
     else if (mapped == 1) ++samSorter::cg2a;
     else if (mapped == 2) ++samSorter::cc2t;
@@ -127,12 +127,12 @@ void samSorter::outputReads(int read_group, bool output_unmapped){
 
 void samSorter::bankRead(bseq1_t *read){
     if (read->read_group == 0){
-        if (not read->bs_conflict) samSorter::group_1_score += read->alignment_score;
+        samSorter::group_1_score += read->alignment_score;
         samSorter::group_1.push(read);
     }
     else{
-         if (not read->bs_conflict) samSorter::group_2_score += read->alignment_score;
-          samSorter::group_2.push(read);
+         samSorter::group_2_score += read->alignment_score;
+         samSorter::group_2.push(read);
     }
 }
 
