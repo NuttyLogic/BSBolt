@@ -9,7 +9,7 @@ from BSBolt.Utils.Parser import parser
 def launch_bsb():
     check_python_version()
     if not check_package_version():
-        print('Please Update Package Requirements')
+        print('Please Update Packages')
         sys.exit()
 
     arguments = parser.parse_args()

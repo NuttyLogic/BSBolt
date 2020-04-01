@@ -2,37 +2,25 @@ import os
 import subprocess
 import pickle
 import gzip
+from typing import Dict, List, Union
 
 from BSBolt.Utils.UtilityFunctions import reverse_complement
 
 
 class IndexOutput:
-    """Class to output processed sequence index sequence and launch external bowtie2 build commands.
-    Keyword Arguments
-        genome_database (str):
-        bowtie2_path (str):
-        bowtie2_threads (int):
-    Attributes:
-        self.genome_database (str): formatted str to ensure proper file output
-        self.bowtie2_path (str): bowtie2 command if in path or path to executable
-        self.bowtie2_threads (int): thread count for bowtie2
-        self.database_output_object (Dict[str, TextIO]): Contains TextIO output objects for writing processed DNA
-                                                         sequence
+    """Class to output processed sequence index sequence and launch external index commands.
+
     """
 
-    def __init__(self, genome_database=None, bowtie2_path=None, bowtie2_threads=1):
-        assert isinstance(genome_database, str), 'Genome Database Path Invalid, Must be a String'
-        assert isinstance(bowtie2_path, str), 'Bowtie2 Path Invalid, Must be a String'
-        assert isinstance(bowtie2_threads, int), 'Bowtie2 Threads Invalid, Must be Integer'
+    def __init__(self, genome_database: str = None, bwa_path: str = None):
         # format genome_database path
         self.genome_database = self.generate_genome_directory(genome_database)
-        self.bowtie2 = bowtie2_path
-        self.bowtie2_threads = str(bowtie2_threads)
+        self.bwa_path = bwa_path
         # set output object
         self.database_output = open(f'{self.genome_database}BSB_ref.fa', 'w')
 
     @staticmethod
-    def generate_genome_directory(genome_database):
+    def generate_genome_directory(genome_database: str) -> str:
         """ Make directory if it doesn't exist, add / to output to ensure proper formatting
         Arguments:
             genome_database (str): output folder
@@ -45,7 +33,7 @@ class IndexOutput:
             genome_database = f'{genome_database}/'
         return genome_database
 
-    def write_contig_sequence(self, contig_id, contig_sequence):
+    def write_contig_sequence(self, contig_id: str, contig_sequence: str):
         """ Writes formatted DNA sequence. Write possible outputs for Watson and Crick strands.
         Arguments:
             contig_id (str): contig label
@@ -60,23 +48,17 @@ class IndexOutput:
         self.database_output.write(f'>{contig_id}_crick_bs\n')
         self.database_output.write(f'{reverse_contig_sequence.replace("C", "T").replace("c", "t")}\n')
 
-    def build_bowtie2_index(self):
-        """Launch external bowtie2 commands for 4 processed reference files and collect external stdout for log file
+    def build_index(self):
+        """Launch external commands for 4 processed reference files and collect external stdout for log file
         """
         # format output and input
-        index_input = f'{self.genome_database}BSB_ref.fa'
-        index_output = f'{self.genome_database}BSB_ref'
+        ref_file = f'{self.genome_database}BSB_ref.fa'
         # collect external command
-        bowtie_command = [f'{self.bowtie2}-build',
-                          '--threads', self.bowtie2_threads,
-                          '-f', index_input,
-                          index_output]
-        # open file to collect stdout
-        bowtie2_index_log = open(f'{self.genome_database}.bt2_index.log', 'w')
+        indx_command = [f'{self.bwa_path}', 'index', ref_file]
         # run external command
-        subprocess.run(args=bowtie_command, stdout=bowtie2_index_log)
+        subprocess.run(args=indx_command)
 
-    def output_contig_sequence(self, contig_id, contig_sequence):
+    def output_contig_sequence(self, contig_id: str, contig_sequence: Union[str, Dict[str, int]]):
         """Outputs serialized version of contig sequence
             Arguments:
                 contig_id (str): contig label
@@ -85,7 +67,7 @@ class IndexOutput:
         with open(f'{self.genome_database}{contig_id}.pkl', 'wb') as contig:
             return pickle.dump(contig_sequence, contig)
 
-    def output_mappable_regions(self, mappable_regions):
+    def output_mappable_regions(self, mappable_regions: List[str]):
         """Outputs mappable regions
         Arguments:
             mappable_regions (list): list of bed formatted strings

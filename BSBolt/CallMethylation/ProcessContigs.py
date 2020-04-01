@@ -1,6 +1,7 @@
 import io
 import gzip
 import multiprocessing
+from typing import Dict, List, Tuple, Union
 import pysam
 from tqdm import tqdm
 from BSBolt.CallMethylation.CallMethylationValues import CallMethylationValues
@@ -14,7 +15,7 @@ class MethylationCallingError(Exception):
 def call_contig_methylation(completed_contigs, call_methylation_kwargs):
     """ Wrapper to initialize methylation calling
     Arguments:
-        completed_contigs (multiprocessing.mangager.list): List of contigs with completed methylation calls
+        completed_contigs (multiprocessing.manager.list): List of contigs with completed methylation calls
         call_methylation_kwargs (dict): dict of argument for CallMethylation class
     """
     contig_methylation_call = CallMethylationValues(**call_methylation_kwargs)
@@ -29,7 +30,6 @@ class ProcessContigs:
         input_file (str): str to input bam/sam file
         genome_database (str): str to genome directory
         output_prefix (str): output prefix for ATCGmap, CGmap, and WIG files
-        remove_sx_reads (bool): remove incompletely converted reads
         ignore_overlap (bool):  ignore overlapping reads
         text_output (bool): output compressed or plain text files
         remove_ccgg (bool): don't call CCGG sequences
@@ -37,9 +37,10 @@ class ProcessContigs:
         max_read_depth (int): default = 8000
         threads (int): 1, if one watcher and processing on same thread else separated
         min_base_quality (int): minimum base quality for base to be considered
+        min_mapping_quality (int): minimum mapping quality for an alignment to be considered
     Attributes:
         self.input_file (str): path to input bam/sam file
-        self.input_bam (pysam.Samfile): pysam object to retrieve pileup information from .bam file
+        self.input_bam (pysam.AlignmentFile): pysam object to retrieve pileup information from .bam file
         self.text_output (bool): plain text output
         self.output_prefix (str): output prefix
         self.threads (int): , if one thread watcher and processing on same thread else separated
@@ -51,10 +52,11 @@ class ProcessContigs:
         self.methylation_stats (dict): global methylation statistics
     """
 
-    def __init__(self, input_file=None, genome_database=None, output_prefix=None,
-                 remove_sx_reads=True, ignore_overlap=True, text_output=False, remove_ccgg=False,
-                 min_read_depth=10, max_read_depth=8000, threads=1, verbose=True, min_base_quality=0,
-                 ATCGmap=False, cg_only=True, ignore_orphans=False):
+    def __init__(self, input_file: str = None, genome_database: str = None, output_prefix: str = None,
+                 ignore_overlap: bool = True, text_output: bool = False, remove_ccgg: bool = False,
+                 min_read_depth: int = 10, max_read_depth: int = 8000, threads: int = 1, verbose: bool = True,
+                 min_base_quality: int = 0, min_mapping_quality: int = 0,
+                 ATCGmap: bool = False, cg_only: bool = True, ignore_orphans: bool = False):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(text_output, bool), 'Not valid bool'
         assert isinstance(threads, int), 'Threads must be specified with integer'
@@ -77,6 +79,7 @@ class ProcessContigs:
                                             remove_ccgg=remove_ccgg,
                                             max_read_depth=max_read_depth,
                                             min_base_quality=min_base_quality,
+                                            min_mapping_quality=min_mapping_quality,
                                             cg_only=cg_only)
         self.min_read_depth = min_read_depth
         self.ATCGmap = ATCGmap
@@ -90,7 +93,7 @@ class ProcessContigs:
         self.methylation_stats = {'CG_meth': 0, 'CG_all': 0, 'CH_meth': 0, 'CH_all': 0}
 
     @property
-    def get_contigs(self):
+    def get_contigs(self) -> List[str]:
         """
         get list of contigs in input file, threads set across contigs
         """
@@ -146,7 +149,7 @@ class ProcessContigs:
             out.close()
         self.print_stats()
 
-    def write_output(self, methylation_lines):
+    def write_output(self, methylation_lines: List[Tuple[Union[int, float, str]]]):
         """Give a list of methylation call dicts, output formatted line
         Arguments:
             methylation_lines (list): list of dict containing methylation call information
@@ -166,13 +169,13 @@ class ProcessContigs:
                     self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
 
     @staticmethod
-    def unpack_meth_line(meth_line):
+    def unpack_meth_line(meth_line: Tuple[Union[int, float, str]]) -> Dict[str, Union[int, float, str]]:
         meth_keys = ['nucleotide', 'meth_cytosines', 'unmeth_cytosines', 'all_cytosines', 'meth_level',
                      'forward_counts', 'reverse_counts', 'pos', 'chrom', 'context', 'subcontext']
         return {key: value for key, value in zip(meth_keys, meth_line)}
 
     @staticmethod
-    def format_atcg(meth_line):
+    def format_atcg(meth_line: Dict[str, Union[int, float, str]]) -> str:
         """ATCGmap line formatting
         """
         ATCGmap_line = f'{meth_line["chrom"]}\t{meth_line["nucleotide"]}\t{meth_line["pos"]}\t{meth_line["context"]}' \
@@ -181,7 +184,7 @@ class ProcessContigs:
         return ATCGmap_line
 
     @staticmethod
-    def format_cgmap(meth_line):
+    def format_cgmap(meth_line: Dict[str, Union[int, float, str]]) -> str:
         """CGmap line formatting
         """
         CGmap_line = f'{meth_line["chrom"]}\t{meth_line["nucleotide"]}\t{meth_line["pos"]}' \
@@ -205,7 +208,7 @@ class ProcessContigs:
                 output_objects['ATCGmap'] = io.BufferedWriter(gzip.open(f'{output_path}.ATCGmap.gz', 'wb'))
         return output_objects
 
-    def write_line(self, output_object, line):
+    def write_line(self, output_object, line: str):
         """ Outputs line, and encodes before output if necessary
         Arguments
             output_object (TextIO/GZipIO): output object

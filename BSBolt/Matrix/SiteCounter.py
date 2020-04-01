@@ -14,7 +14,7 @@ class CGmapSiteCollector:
            cg_only (bool): only consider cg context sites
            batch_size (int): chunk size for methylation observations to return
            verbose (bool): tqdm output
-           threads (int): numbe of threads available
+           threads (int): number of threads available
     """
 
     def __init__(self, cgmap_files: List[str] = None,
@@ -60,6 +60,8 @@ class CGmapSiteCollector:
                 pbar.update(update_number)
                 update_count = len(completed_samples)
         if pbar:
+            update_number = len(completed_samples) - update_count
+            pbar.update(update_number)
             pbar.close()
 
     def process_sites(self, sites: list):

@@ -1,5 +1,6 @@
 from collections import Counter
 import pickle
+from typing import Dict, Tuple, Union
 import pysam
 
 
@@ -28,7 +29,7 @@ class CallMethylationValues:
     def __init__(self, input_file: str = None, genome_database: str = None,
                  ignore_overlap: bool = True, remove_ccgg: bool = False, ignore_orphans: bool = True,
                  max_read_depth: int = 8000, contig: str = None, min_base_quality: int = 1, return_queue=None,
-                 cg_only: bool = False):
+                 cg_only: bool = False, min_mapping_quality: int = 0):
         self.input_file = str(input_file)
         self.input_bam = pysam.AlignmentFile(self.input_file, mode='rb',
                                              require_index=True)
@@ -43,12 +44,13 @@ class CallMethylationValues:
         self.min_base_quality = min_base_quality
         self.chunk_size = 10000
         self.cg_only = cg_only
+        self.min_mapping_quality = min_mapping_quality
         self.context_tables = self.get_context_tables
         self.return_queue = return_queue
         self.counting_dict = {}
 
     @property
-    def get_context_tables(self):
+    def get_context_tables(self) -> Dict[str, Dict[str, str]]:
         """
         Returns:
             context_tables
@@ -81,7 +83,7 @@ class CallMethylationValues:
         else:
             self.call_contig(chrom_seq)
 
-    def call_contig(self, chrom_seq):
+    def call_contig(self, chrom_seq: str):
         """Iterates through bam pileup, calling methylation values if the reference nucleotide is a C or G. Pileup reads
         are buffered and accessed as needed.
         """
@@ -95,6 +97,7 @@ class CallMethylationValues:
                                                 ignore_overlaps=self.ignore_overlap,
                                                 min_base_quality=self.min_base_quality,
                                                 ignore_orphans=self.ignore_orphans,
+                                                min_mapping_quality=self.min_mapping_quality,
                                                 flag_require=0,
                                                 flag_filter=1540):
             # get sequence around pileup site
@@ -129,7 +132,7 @@ class CallMethylationValues:
                     line_count = 0
         self.return_queue.put(contig_chunk, block=True)
 
-    def get_context(self, nucleotide, fivemer):
+    def get_context(self, nucleotide: str, fivemer: str) -> Tuple[str, str]:
         """
         Arguments:
             nucleotide (str): 1 nucleotide
@@ -149,7 +152,7 @@ class CallMethylationValues:
             context = self.context_tables['antisense_context_table'].get(fivemer[0:3], null_context)
         return context, subcontext
 
-    def check_ccgg(self, sequence):
+    def check_ccgg(self, sequence: str) -> bool:
         """checks if sequence is == to CCGG
         """
         if self.remove_ccgg:
@@ -157,7 +160,7 @@ class CallMethylationValues:
         return False
 
     @staticmethod
-    def get_methylation_call(nucleotide, base_counts):
+    def get_methylation_call(nucleotide: str, base_counts: Dict[str, int]) -> Dict[str, Union[int, float, str]]:
         """
         Methylation for a C relative to the sense strand of the reference can only be called using watson reads,
         and G with crick reads
@@ -193,7 +196,7 @@ class CallMethylationValues:
                 'reverse_counts': reverse_counts}
 
     @staticmethod
-    def get_reference_sequence(path):
+    def get_reference_sequence(path: str) -> str:
         """load serialized reference file from path
         """
         with open(path, 'rb') as genome_file:

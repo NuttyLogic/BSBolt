@@ -1,3 +1,4 @@
+from typing import Tuple
 from BSBolt.Utils.UtilityFunctions import reverse_complement, retrieve_iupac
 
 
@@ -16,8 +17,7 @@ class ProcessCutSites:
 
     """
 
-    def __init__(self, cut_format=None, cut_descriptor='-'):
-        assert isinstance(cut_format, str), 'cut_format must be a str'
+    def __init__(self, cut_format: str = None, cut_descriptor: str ='-'):
         self.cut_format: list = cut_format.upper().replace(' ', '').split(',')
         self.cut_descriptor = cut_descriptor
         self.restriction_site_dict = {}
@@ -40,7 +40,7 @@ class ProcessCutSites:
                 if f_site != r_site:
                     self.restriction_site_dict[r_site] = reverse_offset
 
-    def get_site_offsets(self, site):
+    def get_site_offsets(self, site: str) -> Tuple[int, int]:
         """Given a restriction site return offset, or proper alignment based on where cut occurs in sequence
         Arguments:
             site (str): recognition site sequence
@@ -52,15 +52,14 @@ class ProcessCutSites:
             # retrieve index of cut descriptor where present
             forward_offset = site.index(self.cut_descriptor)
         except ValueError:
-            # if descriptor not present return False
-            forward_offset = False
-            reverse_offset = False
+            # if descriptor not present set to 0
+            return 0, 0
         else:
             # get location of cut_descriptor in reverse complement
             reverse_offset = reverse_complement(site).index(self.cut_descriptor)
-        return forward_offset, reverse_offset
+            return forward_offset, reverse_offset
 
-    def get_recognition_site_sequences(self, recognition_site):
+    def get_recognition_site_sequences(self, recognition_site: str) -> Tuple[str, str]:
         """
         Arguments:
             recognition_site (str): sequence of site

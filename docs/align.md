@@ -1,41 +1,24 @@
 ## Read Alignment
-BSBolt support single and paired end read alignment. Reads can be aligned in end-to-end, where the entire reads is 
-aligned without read trimming, or local mode where a read can be trimmed during alignment. Due to the low complexity of 
-bisulfite sequencing data end-to-end alignment is generally preferred. If aligning un-trimmed FASTQ files,
-alignment can be performed using Bowtie2 local mode; however, due the low complexity of bisulfite
-sequencing libraries this is not recommended.  
 
 
 ### Adapter Trimming 
 
-Adapter sequences should be trimmed from sequencing reads before alignment with BSBolt. We recommend using 
-[CutAdapt](https://cutadapt.readthedocs.io/en/stable/) to trim sequencing adapters. I adapters are not trimmed alignment 
-can be performed using BSB Align local mode. The Illumina adapter sequences commonly 
-used for bisulfite sequencing are listed below. 
+It is good practice to trim adapter sequences from sequencing reads before alignment with BSBolt. We recommend using 
+[CutAdapt](https://cutadapt.readthedocs.io/en/stable/). 
 
-**Standard Illumina TruSeq Adapter Sequences**
-
-```test
-Read 1
-    AGATCGGAAGAGCACACGTCTGAACTCCAGTCA
-
-Read 2
-    AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT
-```
 
 ### BSB Index
 Following bisulfite conversion the Watson (sense) and  Crick (anti-sense) DNA strands are no longer complementary. 
 Correctly aligning bisulfite converted reads requires the construction of an alignment index containing a bisulfite 
 converted sequence for each reference strand; resulting in a larger index. Not all regions of the genome will be 
-bisulfite unique, ie reads from these regions will not align uniquely to either a Watson or Crick sequence. 
+bisulfite unique, ie reads from these regions will not align uniquely to either the Watson or Crick strand. 
 Reads mapping to different reference strands are handled during the alignment step.  
 
-BSB support generation of 3 types of alignment indices. Local alignment is discourage for when aligning reads against 
-a masked alignment index or a RRBS index. 
+BSB support generation of 3 types of alignment indices. 
 
 1. Whole genome bisulfite sequencing indices 
     - Index is generated for complete Watson and Crick strands
-2. Masked alignment indices for targeted bisulfite sequencing 
+2. Masked alignment indices
     - Sequence outside the reference region is masked in both the Watson and Crick strands before index generation
 3. Reduced representation bisulfite sequencing (RRBS) indices
     - The reference sequence is *In silico* restriction enzyme digested to give a list of plausible target regions
@@ -49,7 +32,6 @@ a masked alignment index or a RRBS index.
                         folder does not exist
   -MR                   Path to bed file of mappable regions. Index will be
                         built using using masked contig sequence
-  -BT2-p                Bowtie2; Number of threads
   -rrbs                 Generate a Reduced Representative Bisulfite Sequencing
                         (RRBS) index
   -rrbs-cut-format      Cut format to use for generation of RRBS database,
@@ -63,60 +45,66 @@ a masked alignment index or a RRBS index.
 ```
 **WGBS Index Generation Example**
 ```shell
-# WGBS Index with 4 BT2 Threads
-python3 -m BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4
+python3 -m BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB 
 ```
 
 **Masked Alignment Index Generation Example**
 ```shell
-# WGBS Index with 4 BT2 Threads
-python3 -m BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4 -MR /Tests/TestData/test_wgbs_madking.bed
+python3 -m BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -MR /Tests/TestData/test_wgbs_madking.bed
 ```
 
 **RRBS Index Generation Example**
 ```shell
-# RRBS Index Using 4 BT2 Threads, MSPI Cut Format, 40bp Lower Fragment Bound, and 400bp Upper Fragment Bound
-python3 -m BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -BT2-p 4 -rrbs -rrbs-cut-format C-CGG -rrbs-lower 40 -rrbs-upper 400
+# RRBS Index, MSPI Cut Format, 40bp Lower Fragment Bound, and 400bp Upper Fragment Bound
+python3 -m BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -rrbs -rrbs-cut-format C-CGG -rrbs-lower 40 -rrbs-upper 400
 ```
 
 ### BSB Align
-Input reads are modified by first performing *In silico* bisulfite conversion of any unconverted cytosines (or guanines in the case of PCR products of bisulfite converted DNA).
-Read mapping is handled by Bowtie2. Bowtie2 arguments may be changed by passing the appropriate argument through the BSBolt Align module. 
-
-A mapped read is considered a valid read alignment if the number of mismatches between the reference and read is below the user set threshold, *-M*, and the 
-read is bisulfite unique. Bisulfite unique reads only map to one reference strand implying the read is fully bisulfite converted. Reads that are not bisulfite valid will be reported 
-as unmapped reads. Valid reads are further modified so all Watson reads are reported as sense (+) reads and all Crick reads are reported as anti-sense (-) reads.  
-
+Input reads are modified by first performing *In silico* bisulfite conversion of any unconverted cytosine bases 
+(or guanine for the PCR product of bisulfite converted DNA). Converted reads are mapped to a bisulfite alignment 
+index and then assessed for bisulfite uniqueness. Alignment mapping quality indicates the uniqueness of the alignment. 
+An alignment with several possible alternative mapping locations has a low mapping quality. Additionally, an alignment
+ with alternative mappings locations on different strands is assigned a mapping quality of 0, as the alignment is 
+ not bisulfite unique. Alignment score thresholds (*-T*) should be set high relative to read length to reduce the frequency of 
+observed bisulfite amibiguous reads. Valid alignments are further modified so all Watson reads are reported as sense (+) 
+reads and all Crick reads are reported as anti-sense (-) reads.  
 
 **BSB Align Commands**
 ```shell
-  -h, --help            show this help message and exit
-  -F1                   Path to fastq 1
-  -F2                   Path to fastq 2
-  -NC                   Aligned unconverted bisulfite reads
-  -D                    Library directional, in silico modificaiton of
-                        sequening bases will only account for bisulfite
-                        converted DNA and not the PCR products of converted
-                        DNA, default=False
-  -O                    Path to Output Prefix
-  -DB                   Path to BSBolt Database
-  -M                    Read mismatch threshold, reads where the total number
-                        of observed mismatches greater than the threshold will
-                        be discarded
-  -S                    Position sort output .bam, default=False
-  -BT2-local            Bowtie2; local alignment, default end-to-end
-  -BT2-D                Bowtie2; number of consecutive seed extension attempts
-                        that can fail before Bowtie2 move on
-  -BT2-k                Bowtie2; alignment search limit
-  -BT2-p                Bowtie2; Number of threads for Bowtie2 to use
-  -BT2-L                Bowtie2; Length of subseeds during alignment
-  -BT2-score-min        Bowtie2; scoring function
-  -BT2-I                Bowtie2; minimum fragment length for a valid paired-
-                        end alignment
-  -BT2-X                Bowtie2; maximum fragment length for a valid paired-
-                        end alignment
-  -discordant           Report discordant and mixed reads, default=False
-
+  -F1           Path to fastq 1
+  -F2           Path to fastq 2
+  -UN           Library Undirectional, Consider PCR products of bisulfite converted DNA
+  -O            Path to Output Prefix
+  -G            Path to BSBolt Database
+  -t            Number of bwa threads [1]
+  -k            Minimum seed length [19]
+  -w            Band width for banded alignment [100]
+  -d            off-diagonal X-dropoff [100]
+  -r            look for internal seeds inside a seed longer than {-k} * FLOAT [1.5]
+  -y            seed occurrence for the 3rd round seeding [20]
+  -c            skip seeds with more than INT occurrences [500]
+  -D            drop chains shorter than FLOAT fraction of the longest overlapping chain [0.50]
+  -W            discard a chain if seeded bases shorter than INT [0]
+  -m            perform at most INT rounds of mate rescues for each read [50]
+  -S            skip mate rescue
+  -P            skip pairing; mate rescue performed unless -S also in use
+  -A            score for a sequence match, which scales options -TdBOELU unless overridden [1]
+  -B            penalty for a mismatch [4]
+  -INDEL        gap open penalties for deletions and insertions [6,6]
+  -E            gap extension penalty; a gap of size k cost '{-O} + {-E}*k' [1,1]
+  -L            penalty for 5'- and 3'-end clipping [30,30]
+  -U            penalty for an unpaired read pair [17]
+  -p            smart pairing (ignoring in2.fq)
+  -R            read group header line such as '@RG ID:foo SM:bar' [null]
+  -H            insert STR to header if it starts with @; or insert lines in FILE [null]
+  -j            treat ALT contigs as part of the primary assembly (i.e. ignore <idxbase>.alt file)
+  -T            minimum score to output [80], set based on read length
+  -XA           if there are <INT hits with score >80 percent of the max score, output all in XA
+                [5,200]
+  -M            mark shorter split hits as secondary
+  -I            specify the mean, standard deviation (10 percent of the mean if absent), max (4
+                sigma from the mean if absent) and min of the insert size distribution. FR
+                orientation only. [inferred], Float,Float,Int,Int
 ```
 **Paired End Alignment**
 ```shell
@@ -129,3 +117,13 @@ python3 -m BSBolt Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulat
 # Single End Alignment Using Default Commands
 python3 -m BSBolt Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/Tests/BSB_pe_test 
 ```
+
+**Alignment Output**
+Aligned reads are output as a BAM file. BSBolt formats the aligned reads to convey bisulfite specific alignment information. 
+Watson reads alignments are reported on the positive strand and Crick alignments on the negative strand. This information is conveyed 
+in the sam flag, and in a BSBolt sam tag. All tags are listed in the table below.
+
+| Tag | Type    | Description | Example |
+| :---: | :---:    | :---: | :---: |
+|YS    |Z (string)| Mapping strand (C=Crick, W=Watson) and alignment conversion pattern (C2T or G2A) | YS:Z:W_C2T (ie. Watson_Cytosine.to.Thymine)|  
+|YC    |i (integer)| Bisulfite ambiguous alignments, 1 if ambiguous, not reported if non-ambiguous| YC:i:1 

@@ -1,7 +1,7 @@
-#! /usr/env python3
-
 import gzip
 import io
+from typing import Dict, List, TextIO, Union
+import numpy as np
 from BSBolt.Matrix.SiteCounter import CGmapSiteCollector
 from BSBolt.Matrix.SiteAggregator import CGmapSiteAggregator
 
@@ -21,7 +21,7 @@ class AggregateMatrix:
         site_proportion_threshold (float): proportion of samples that must have valid non-null
                                            methylation calls for a site to be included in matrix
         output_path (str): path to output file
-        cg_only (bool): consider all cystosines or only CpG sites
+        cg_only (bool): consider all cytosines or only CpG sites
         verbose (bool): verbose matrix assembly, tqdm output
         threads (int): number of threads available for matrix aggregation
     Attributes:
@@ -32,7 +32,7 @@ class AggregateMatrix:
        self.site_proportion_threshold (float): proportion of samples that must have valid non-null
                                           methylation calls for a site to be included in matrix
        self.output_path (str): path to output file
-       self.cg_only (bool): consider all cystosines or only CpG sites
+       self.cg_only (bool): consider all cytosines or only CpG sites
        self.disable_tqdm (bool): disable tqdm
        self.threads (int): number of threads available for matrix aggregation
        self.matrix_sites (tuple): tuple of ordered sites appearing in methylation matrix, only set if no output path
@@ -41,9 +41,9 @@ class AggregateMatrix:
                                     is provided
     """
 
-    def __init__(self, file_list=None, sample_list=None, min_site_coverage=10,
-                 site_proportion_threshold=0.9, output_path=None, cg_only=False, verbose=True, threads=1,
-                 count_matrix=False):
+    def __init__(self, file_list: List[str] = None, sample_list: List[str] = None, min_site_coverage: int = 10,
+                 site_proportion_threshold: float = 0.9, output_path: str = None, cg_only: bool = False,
+                 verbose: bool = True, threads: int = 1, count_matrix: bool = False):
         self.file_list = file_list
         self.sample_list = sample_list
         if not self.sample_list:
@@ -70,7 +70,7 @@ class AggregateMatrix:
             self.meth_matrix = meth_matrix
             self.matrix_sites = matrix_sites
 
-    def collect_matrix_sites(self):
+    def collect_matrix_sites(self) -> Dict[str, int]:
         """Iterate through individual files to get consensus site counts"""
         site_collector = CGmapSiteCollector(cgmap_files=self.file_list,
                                             min_site_coverage=self.min_coverage,
@@ -87,7 +87,7 @@ class AggregateMatrix:
         matrix_sites.sort(key=lambda x: x.split(':')[0])
         return {site: count for count, site in enumerate(matrix_sites)}
 
-    def assemble_matrix(self, matrix_sites):
+    def assemble_matrix(self, matrix_sites: Dict[str, int]) -> np.ndarray:
         """Append sites to site list"""
         site_aggregator = CGmapSiteAggregator(cgmap_files=self.file_list,
                                               min_site_coverage=self.min_coverage,
@@ -97,12 +97,12 @@ class AggregateMatrix:
         site_aggregator.assemble_matrix(matrix_sites=matrix_sites)
         return site_aggregator.meth_matrix
 
-    def get_output_object(self):
+    def get_output_object(self) -> Union[TextIO, io.BufferedWriter]:
         if self.output_path.endswith('gz'):
             return io.BufferedWriter(gzip.open(self.output_path, 'wb'))
         return open(self.output_path, 'w')
 
-    def output_matrix(self, meth_matrix, matrix_sites):
+    def output_matrix(self, meth_matrix: np.ndarray, matrix_sites: Dict[str, int]):
         """Output sorted aggregated matrix"""
         out = self.get_output_object()
         with out as matrix:

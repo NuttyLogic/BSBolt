@@ -13,10 +13,9 @@ BSBolt documentation can be found at [bsbolt.readthedocs.io](https://bsbolt.read
 
 ### Installation
 
-At installation two external dependencies 
-[Bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml)
-and [ART Read Simulation Tools](https://www.niehs.nih.gov/research/resources/software/biostatistics/art/index.cfm) 
-are compiled under the terms of the [GPLv3 License](https://www.gnu.org/licenses/gpl-3.0.html).
+BSBolt alignment is performed using a modified version of the [BWA-mem2](https://github.com/bwa-mem2/bwa-mem2). Simulation 
+relies utilizes [wgsim](https://github.com/lh3/wgsim) to simulate Illumina reads before bisulfite conversion. 
+
 
 Install through PIP.
 
@@ -31,9 +30,8 @@ cd BSBolt-master
 python3 setup.py install .
 ```
 
-
-1. Python Dependencies
-    - [pysam](https://github.com/pysam-developers/pysam) >= 0.15.2
-    - [numpy](https://numpy.org/) >=1.16.3
-    - [tqdm](https://github.com/tqdm/tqdm) >= 4.31.1
+Python Dependencies
+- [pysam](https://github.com/pysam-developers/pysam) >= 0.15.2
+- [numpy](https://numpy.org/) >=1.16.3
+- [tqdm](https://github.com/tqdm/tqdm) >= 4.31.1
 

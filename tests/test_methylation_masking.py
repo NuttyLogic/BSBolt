@@ -1,11 +1,10 @@
-import os
 import unittest
 import numpy as np
 from BSBolt.Impute.Validation.MaskValues import MaskImputationValues
 from BSBolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
+from tests.TestHelpers import test_directory
 
 
-test_directory = os.path.dirname(os.path.realpath(__file__))
 test_methylation_data = f'{test_directory}/TestData/kNN_test_matrix.txt'
 test_matrix, test_sites, test_samples = get_bsb_matrix(test_methylation_data)
 

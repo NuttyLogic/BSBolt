@@ -3,13 +3,25 @@ repo_url: https://github.com/NuttyLogic/BSBolt
 repo_name: 'GitHub'
 
 theme:
-  name: 'readthedocs'
+  name: 'material'
+
 nav:
-    - Home: index.md
-    - Alignment: align.md
-    - Methylation Calling: methylation_calling.md
-    - Matrix Assembly and Imputation: matrix.md
-    - Pipelines: pipelines.md
-    - Simulation: simulation.md
-    - Python API: API.md
-    - Tutorial: tutorial.md
+  - Home: index.md
+  - Alignment: align.md
+  - Methylation Calling: methylation_calling.md
+  - Matrix Assembly and Imputation: matrix.md
+  - Pipelines: pipelines.md
+  - Simulation: simulation.md
+  - API: API.md
+  - Tutorial: tutorial.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          rendering:
+            show_source: true
+      watch:
+        - BSBolt

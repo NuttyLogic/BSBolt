@@ -2,11 +2,12 @@
 
 import gzip
 import io
+from typing import List, Union
 
 
 class OpenCGmap:
 
-    def __init__(self, cgmap=None):
+    def __init__(self, cgmap: str = None):
         if cgmap.endswith('.gz'):
             self.f = io.BufferedReader(gzip.open(cgmap, 'rb'))
         else:
@@ -21,7 +22,7 @@ class OpenCGmap:
                 yield self.process_line(line)
 
     @staticmethod
-    def process_line(line):
+    def process_line(line: Union[str, bytes]) -> List[str]:
         if isinstance(line, bytes):
             return line.decode('utf-8').replace('\n', '').split('\t')
         else:

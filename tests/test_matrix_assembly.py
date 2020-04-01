@@ -2,16 +2,14 @@ import os
 import random
 import subprocess
 import unittest
+
+import numpy as np
+
 from BSBolt.Matrix.MatrixAggregator import AggregateMatrix
 from BSBolt.Utils.CGmapIterator import OpenCGmap
 from BSBolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
-import numpy as np
+from tests.TestHelpers import test_directory
 
-# get current directory
-
-test_directory = os.path.dirname(os.path.realpath(__file__))
-bsb_directory = '/'.join(test_directory.split('/')[:-1]) + '/'
-bsbolt = f'{bsb_directory}BSBolt.py'
 
 test_cgmap_file = [f'{test_directory}/TestData/test_cgmap_files/1.cgmap.gz',
                    f'{test_directory}/TestData/test_cgmap_files/2.cgmap',
@@ -66,7 +64,6 @@ cg_only_test.aggregate_matrix()
 cg_only_test_high = AggregateMatrix(file_list=test_cgmap_file, min_site_coverage=10,
                                     site_proportion_threshold=1, verbose=False, cg_only=True, threads=4)
 cg_only_test_high.aggregate_matrix()
-
 
 # test_command line
 test_matrix_output = f'{test_directory}/TestData/test_cgmap_files/matrix_test.txt'

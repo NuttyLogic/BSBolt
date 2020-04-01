@@ -1,5 +1,6 @@
 import pickle
 import re
+from typing import Any, Dict, List, Tuple, Union
 import pysam
 import numpy as np
 
@@ -11,7 +12,7 @@ class CallMethylationVector:
     """
 
     def __init__(self, input_file: str = None, genome_database: str = None,
-                 contig: str = None, min_base_quality: int = 0, return_queue=None,
+                 contig: str = None, min_base_quality: int = 0, min_mapping_quality: int = 0, return_queue=None,
                  cg_only: bool = False, start=None, end=None, filter_duplicates=True):
         self.input_file = str(input_file)
         self.input_bam = pysam.AlignmentFile(self.input_file, 'rb',
@@ -25,13 +26,14 @@ class CallMethylationVector:
         self.filter_duplicates = filter_duplicates
         self.end = end
         self.min_base_quality = min_base_quality
+        self.min_mapping_quality = min_mapping_quality
         self.chunk_size = 10000
         self.cg_only = cg_only
         self.return_queue = return_queue
         self.counting_dict = {}
 
     @property
-    def get_mate_flags(self):
+    def get_mate_flags(self) -> Dict[int, int]:
         # mate flag check for read pairing
         mate_flags = {67: 131, 323: 387, 115: 179, 371: 435,
                       131: 67, 387: 323, 179: 115, 435: 371}
@@ -48,7 +50,7 @@ class CallMethylationVector:
         else:
             self.call_contig(chrom_seq)
 
-    def call_contig(self, chrom_seq):
+    def call_contig(self, chrom_seq: str):
         """Iterates through bam reads call methylation along vectors. When a read overlaps a site where methylation is
          called the site with a higher quality is taken. If overlapping sites with the same quality are observed
          the first observed site is reported. If an overlapping site is reported as a mismatch only the site with
@@ -66,6 +68,8 @@ class CallMethylationVector:
             if aligned_read.is_unmapped:
                 continue
             if aligned_read.is_duplicate and self.filter_duplicates:
+                continue
+            if aligned_read.mapping_quality < self.min_mapping_quality:
                 continue
             # get sequence around pileup site
             reference_start = aligned_read.reference_start
@@ -98,7 +102,9 @@ class CallMethylationVector:
         if contig_chunk:
             self.return_queue.put((self.contig, contig_chunk))
 
-    def call_vector(self, aligned_read, positions: set, reference_nuc: str):
+    def call_vector(self, aligned_read: pysam.AlignedRead,
+                    positions: set,
+                    reference_nuc: str) -> List:
         methylation_calls = [[], [], []]
         reference_consumers = {0, 2, 3, 7, 8}
         query_consumers = {0, 1, 4, 7, 8}
@@ -127,7 +133,10 @@ class CallMethylationVector:
                 query_position += cigar_count
         return methylation_calls
 
-    def process_methylation_vector(self, aligned_read, methylation_calls, strand, methylation_vectors):
+    def process_methylation_vector(self,
+                                   aligned_read: pysam.AlignedRead,
+                                   methylation_calls: List,
+                                   strand: str, methylation_vectors: Dict[str, Any]) -> Union[None, Tuple]:
         if aligned_read.is_proper_pair:
             mate_flag = self.mate_flags[aligned_read.flag]
             mate_pair_label = f'{aligned_read.query_name}_{mate_flag}_{aligned_read.next_reference_start}'
@@ -151,7 +160,7 @@ class CallMethylationVector:
                     np.array(methylation_calls[0]), np.array(methylation_calls[1]), aligned_read.flag, None, strand)
 
     @staticmethod
-    def clean_overlap(methylation_calls):
+    def clean_overlap(methylation_calls: List) -> List:
         cleaned_calls = {}
         for meth_call, pos, qual in zip(methylation_calls[0], methylation_calls[1], methylation_calls[2]):
             if pos not in cleaned_calls:
@@ -162,7 +171,7 @@ class CallMethylationVector:
         return [[call[0] for call in cleaned_calls.values()], list(cleaned_calls.keys())]
 
     @staticmethod
-    def get_methylation_call(reference_nucleotide, base_call):
+    def get_methylation_call(reference_nucleotide: str, base_call: str) -> Tuple[bool, Union[None, int]]:
         """
         Methylation for a C relative to the sense strand of the reference can only be called using watson reads,
         and G with crick reads
@@ -172,7 +181,7 @@ class CallMethylationVector:
         Returns:
              methylation call dictionary
         """
-        # call cytosines with watson
+        # call cytosine with watson
         if reference_nucleotide == 'C':
             if base_call == 'C':
                 return True, 1
@@ -186,7 +195,7 @@ class CallMethylationVector:
         return False, None
 
     @staticmethod
-    def get_reference_sequence(path):
+    def get_reference_sequence(path: str) -> str:
         """load serialized reference file from path
         """
         with open(path, 'rb') as genome_file:

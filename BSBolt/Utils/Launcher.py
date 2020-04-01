@@ -1,17 +1,15 @@
 import datetime
-import subprocess
 import time
-import pysam
 from BSBolt.Align.AlignReads import BisulfiteAlignmentAndProcessing
 from BSBolt.CallMethylation.ProcessContigs import ProcessContigs
 from BSBolt.Impute.kNN_Impute import ImputeMissingValues
 from BSBolt.Index.RRBSGenomeBuild import RRBSGenomeIndexBuild
 from BSBolt.Index.WholeGenomeBuild import WholeGenomeIndexBuild
 from BSBolt.Matrix.MatrixAggregator import AggregateMatrix
-from BSBolt.Simulate.SimulateMethylatedReads import SimulateMethylatedReads
-from BSBolt.Utils.UtilityFunctions import get_external_paths
+from BSBolt.Simulate import SimulateMethylatedReads
+from BSBolt.Utils.UtilityFunctions import index_bam, get_external_paths, sort_bam
 
-bt2_path, art_path = get_external_paths()
+bwa_path, wgsim_path = get_external_paths()
 
 
 def launch_index(arguments):
@@ -21,8 +19,7 @@ def launch_index(arguments):
               f'Cut Format {arguments.rrbs_cut_format}')
         index = RRBSGenomeIndexBuild(reference_file=arguments.G,
                                      genome_database=arguments.DB,
-                                     bowtie2_path=bt2_path,
-                                     bowtie2_threads=arguments.BT2_p,
+                                     bwa_path=bwa_path,
                                      cut_format=arguments.rrbs_cut_format,
                                      lower_bound=arguments.rrbs_lower,
                                      upper_bound=arguments.rrbs_upper)
@@ -31,91 +28,80 @@ def launch_index(arguments):
         print(f'Generating WGBS Database at {arguments.DB}')
         index = WholeGenomeIndexBuild(reference_file=arguments.G,
                                       genome_database=arguments.DB,
-                                      bowtie2_path=bt2_path,
-                                      bowtie2_threads=arguments.BT2_p,
+                                      bwa_path=bwa_path,
                                       mappable_regions=arguments.MR)
         index.generate_bsb_database()
 
 
-def align_bisulfite(alignment_kwargs):
+def align_bisulfite(bwa_cmd, output_path):
     start = time.time()
-    if alignment_kwargs['fastq2']:
-        print(f'Aligning {alignment_kwargs["fastq1"]} {alignment_kwargs["fastq2"]}')
-    else:
-        print(f'Aligning {alignment_kwargs["fastq1"]}')
-    bs_alignment = BisulfiteAlignmentAndProcessing(**alignment_kwargs)
+    print(' '.join(bwa_cmd))
+    bs_alignment = BisulfiteAlignmentAndProcessing(bwa_cmd, output_path)
     bs_alignment.align_reads()
     alignment_time = datetime.timedelta(seconds=round(time.time() - start))
     print(f'Alignment Complete: Time {alignment_time}')
     print('------------------------------')
-    mapping_stats = process_mapping_statistics(bs_alignment.mapping_statistics, alignment_kwargs['allow_discordant'])
+    mapping_stats = process_mapping_statistics(bs_alignment.mapping_statistics)
     print(mapping_stats)
 
 
-def process_mapping_statistics(mapping_dict, allow_discordant):
-    total_umapped = mapping_dict["unmapped_reads"] + mapping_dict["multireference_reads"]
-    mapped_proper = mapping_dict['reads_mapped_1'] + mapping_dict["reads_mapped_more_than_1"]
-    mapped_discordant = mapping_dict['discordant_reads_1'] + mapping_dict['discordant_reads_more_than_1']
-    mapped_mixed = mapping_dict['mixed_reads_1'] + mapping_dict['mixed_reads_more_than_1']
-    total_mapped = mapped_proper + mapped_discordant + mapped_mixed
-    processed_list = [f'Total Reads: {mapping_dict["total_reads"]}',
-                      f'Reads Mapped 0 Times: {total_umapped}, {mapping_dict["multireference_reads"]} Multi-reference',
-                      f'Reads Mapped 1 Time: {mapping_dict["reads_mapped_1"]}',
-                      f'Reads Mapped >1 Times: {mapping_dict["reads_mapped_more_than_1"]}']
-    if allow_discordant:
-        processed_list.append('------------------------------')
-        processed_list.append(f'Reads Mapped Discordantly 1 Time: {mapping_dict["discordant_reads_1"]}')
-        processed_list.append(f'Reads Mapped Discordantly >1 Times: {mapping_dict["discordant_reads_more_than_1"]}')
-        processed_list.append(f'Reads with Mixed Mapping 1 Time: {mapping_dict["mixed_reads_1"]}')
-        processed_list.append(f'Reads with Mixed Mapping >1 Times: {mapping_dict["mixed_reads_more_than_1"]}')
-        processed_list.append('------------------------------')
-    mappability = total_mapped / mapping_dict['total_reads']
+def process_mapping_statistics(mapping_dict):
+    dict(TotalReads=0, TotalAlignments=0, BSAmbiguous=0, C_C2T=0, C_G2A=0,
+         W_C2T=0, W_G2A=0, Unaligned=0)
+    processed_list = []
+    mappability = (mapping_dict['TotalAlignments'] - mapping_dict['Unaligned']) / mapping_dict['TotalAlignments']
+    processed_list.append(f'Total Reads: {mapping_dict["TotalReads"]}')
     processed_list.append(f'Mappability: {mappability * 100:.3f} %')
     processed_list.append('------------------------------')
     processed_list.append(f'Reads Mapped to Watson_C2T: {mapping_dict["W_C2T"]}')
     processed_list.append(f'Reads Mapped to Crick_C2T: {mapping_dict["C_C2T"]}')
-    if 'W_G2A' in mapping_dict:
-        processed_list.append(f'Reads Mapped to Watson_G2A: {mapping_dict["W_G2A"]}')
-        processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict["C_G2A"]}')
+    processed_list.append(f'Reads Mapped to Watson_G2A: {mapping_dict["W_G2A"]}')
+    processed_list.append(f'Reads Mapped to Crick_G2A: {mapping_dict["C_G2A"]}')
+    processed_list.append('------------------------------')
+    processed_list.append(f'Unmapped Reads (Single / Paired Ends): {mapping_dict["Unaligned"]}')
+    processed_list.append(f'Bisulfite Ambiguous: {mapping_dict["BSAmbiguous"]}')
     return '\n'.join(processed_list)
 
 
 def launch_alignment(arguments):
     bsb_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
-    arg_order = ['F1', 'F2', 'D', 'NC', 'O', 'DB', 'M', 'BT2_D', 'BT2_I', 'BT2_L',
-                 'BT2_X', 'BT2_k', 'BT2_local', 'BT2_p', 'BT2_score_min']
-    bowtie2_commands = ['--quiet', '--sam-nohead', '--reorder',
-                        '-k', str(arguments.BT2_k),
-                        '-p', str(arguments.BT2_p),
-                        '-L', str(arguments.BT2_L),
-                        '-D', str(arguments.BT2_D)]
-    if not arguments.discordant:
-        bowtie2_commands.extend(['--no-mixed --no-discordant'])
-    if arguments.BT2_local:
-        bowtie2_commands.append('--local')
-        if arguments.BT2_score_min == 'L,-0.6,-0.6':
-            arguments.BT2_score_min = 'L,10,1.1'
-    else:
-        bowtie2_commands.append('--end-to-end')
-    bowtie2_commands.extend(['--score-min', arguments.BT2_score_min])
-    if arguments.F2:
-        pe_commands = ['-I', str(arguments.BT2_I),
-                       '-X', str(arguments.BT2_X)]
-        bowtie2_commands.extend(pe_commands)
-    if not arguments.DB.endswith('/'):
-        arguments.DB = f'{arguments.DB}/'
-    command_line_arg = 'BSBolt Align ' + ' '.join([f'-{arg} {bsb_command_dict[arg]}' for arg in arg_order])
-    undirectional_library = True if not arguments.D else False
-    aligment_kwargs = dict(fastq1=arguments.F1, fastq2=arguments.F2, undirectional_library=undirectional_library,
-                           bowtie2_commands=bowtie2_commands, bsb_database=arguments.DB,
-                           bowtie2_path=bt2_path, output_path=arguments.O, mismatch_threshold=arguments.M,
-                           command_line_arg=command_line_arg, non_converted_output=arguments.NC,
-                           allow_discordant=arguments.discordant)
-    align_bisulfite(aligment_kwargs)
-    if arguments.S:
-        pysam.sort('-o', f'{arguments.O}.sorted.bam', f'{arguments.O}.bam')
-        subprocess.run(['rm', f'{arguments.O}.bam'])
-        pysam.index(f'{arguments.O}.sorted.bam')
+    bwa_cmd = [bwa_path, 'mem', '-Y']
+    if bsb_command_dict['UN'] == 'True':
+        bwa_cmd.extend(['-z', 'true'])
+    bool_args = ['M', 'S', 'j', 'p']
+    for arg in bool_args:
+        if bsb_command_dict[arg] == 'True':
+            bwa_cmd.append(f'-{arg}')
+    default_args = ['A', 'B', 'D', 'E', 'L', 'T', 'U', 'W', 'c', 'd', 'k', 'm', 'r', 't', 'w', 'y']
+    for arg in default_args:
+        bwa_cmd.extend([f'-{arg}', bsb_command_dict[arg]])
+    if bsb_command_dict['H'] != 'None':
+        bwa_cmd.extend([f'-H', bsb_command_dict['H']])
+    if bsb_command_dict['I'] != 'None':
+        bwa_cmd.extend([f'-I', bsb_command_dict['I']])
+    if bsb_command_dict['INDEL']:
+        bwa_cmd.extend([f'-O', bsb_command_dict['INDEL']])
+    if bsb_command_dict['XA']:
+        bwa_cmd.extend([f'-h', bsb_command_dict['XA']])
+    database = bsb_command_dict['DB']
+    if not database.endswith('.fa'):
+        if not database.endswith('/'):
+            database = f'{database}/BSB_ref.fa'
+        else:
+            database = f'{database}BSB_ref.fa'
+    bwa_cmd.append(database)
+    bwa_cmd.append(bsb_command_dict['F1'])
+    if bsb_command_dict['F2'] != 'None':
+        bwa_cmd.append(bsb_command_dict['F2'])
+    align_bisulfite(bwa_cmd, arguments.O)
+
+
+def launch_sort_bam(arguments):
+    sort_bam(bam_output=arguments.O, bam_input=arguments.I)
+
+
+def launch_index_bam(arguments):
+    index_bam(bam_input=arguments.I)
 
 
 def launch_methylation_call(arguments):
@@ -125,12 +111,12 @@ def launch_methylation_call(arguments):
                                       genome_database=arguments.DB,
                                       output_prefix=arguments.O,
                                       remove_ccgg=arguments.remove_ccgg,
-                                      remove_sx_reads=arguments.remove_sx,
                                       text_output=arguments.text,
                                       min_read_depth=arguments.min,
                                       threads=arguments.t,
                                       verbose=arguments.verbose,
-                                      min_base_quality=arguments.min_qual,
+                                      min_base_quality=arguments.BQ,
+                                      min_mapping_quality=arguments.MQ,
                                       cg_only=arguments.CG,
                                       ATCGmap=arguments.ATCG,
                                       ignore_orphans=arguments.IO)
@@ -165,17 +151,22 @@ def launch_matrix_aggregation(arguments):
 
 
 def launch_simulation(arguments):
-    read_simulation = SimulateMethylatedReads(reference_file=arguments.G, art_path=art_path,
-                                              output_path=arguments.O, paired_end=arguments.PE,
-                                              read_length=arguments.RL, read_depth=arguments.RD,
-                                              undirectional=arguments.U, methylation_reference_output=arguments.RO,
-                                              methylation_reference=arguments.BR, methylation_profile=arguments.RC,
-                                              insertion_rate1=arguments.IR1, insertion_rate2=arguments.IR2,
-                                              deletion_rate1=arguments.DR1, deletion_rate2=arguments.DR2,
-                                              n_base_cutoff=arguments.NF, sequencing_system=arguments.SS,
-                                              pe_fragment_size=arguments.M, fragment_size_deviation=arguments.SM,
-                                              read1_quality_profile=arguments.Q1,
-                                              read2_quality_profile=arguments.Q2)
+    read_simulation = SimulateMethylatedReads(reference_file=arguments.G, wgsim_path=wgsim_path,
+                                              sim_output=arguments.O,
+                                              sequencing_error=arguments.SE, mutation_rate=arguments.MR,
+                                              mutation_indel_fraction=arguments.MI,
+                                              indel_extension_probability=arguments.ME, random_seed=arguments.RS,
+                                              paired_end=arguments.PE, read_length=arguments.RL,
+                                              read_depth=arguments.RD, undirectional=arguments.U,
+                                              methylation_reference=arguments.BR,
+                                              cgmap=arguments.CG, ambiguous_base_cutoff=arguments.NF,
+                                              haplotype_mode=arguments.HA,
+                                              pe_fragment_size=arguments.FM, insert_deviation=arguments.SM,
+                                              mean_insert_size=arguments.IM,
+                                              collect_ch_sites=arguments.CH, collect_sim_stats=arguments.NS,
+                                              verbose=arguments.verbose,
+                                              overwrite_db=arguments.overwrite)
+
     read_simulation.run_simulation()
 
 
@@ -196,4 +187,6 @@ bsb_launch = {'Index': launch_index,
               'CallMethylation': launch_methylation_call,
               'AggregateMatrix': launch_matrix_aggregation,
               'Simulate': launch_simulation,
-              'Impute': launch_imputation}
+              'Impute': launch_imputation,
+              'Sort': launch_sort_bam,
+              'BamIndex': launch_index_bam}
