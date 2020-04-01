@@ -15,13 +15,4 @@ nav:
   - API: API.md
   - Tutorial: tutorial.md
 
-plugins:
-  - search
-  - mkdocstrings:
-      default_handler: python
-      handlers:
-        python:
-          rendering:
-            show_source: true
-      watch:
-        - BSBolt
+
