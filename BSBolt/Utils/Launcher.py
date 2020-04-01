@@ -6,7 +6,7 @@ from BSBolt.Impute.kNN_Impute import ImputeMissingValues
 from BSBolt.Index.RRBSGenomeBuild import RRBSGenomeIndexBuild
 from BSBolt.Index.WholeGenomeBuild import WholeGenomeIndexBuild
 from BSBolt.Matrix.MatrixAggregator import AggregateMatrix
-from BSBolt.Simulate.SimulateMethylatedReads import SimulateMethylatedReads
+from BSBolt.Simulate import SimulateMethylatedReads
 from BSBolt.Utils.UtilityFunctions import index_bam, get_external_paths, sort_bam
 
 bwa_path, wgsim_path = get_external_paths()

@@ -43,6 +43,7 @@ error simulation.
 |z    |unmethylated mismatch|   yes| yes|
 |R    |methylated insertion|    yes| no|
 |r    |unmethylated insertion|  yes| no|
+
  
 
 **BSB Simulate Commands**

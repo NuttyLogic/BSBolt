@@ -7,13 +7,40 @@ from BSBolt.Utils.UtilityFunctions import reverse_complement
 
 
 class SimulateMethylatedReads:
-    """Tool to simulated methylation bisulfite sequencing reads. The process works in three distinct steps:
-        1. Given a reference Cytosine methylation levels are designated by dinucleotide context, ie CG, CT, etc.
-        2. Illumina sequencing Reads are simulated using ART (Huang et al. 2012)
-        3. Illumina reads are converted to bisulfite sequencing reads with unconverted methylated cytosines
-        Keyword Arguments:
-            reference_file (str): path to fasta reference file, all contigs should be in same fasta file
-            wgsim_path (str): path to ART executable
+    """Bisulifite read simulation class. The class works as follows:
+    1. WGSIM (forked and modified version) is called to simulate paired end Illumina reads
+        - If run in single end mode, the number of read simulated is double to get desired coverage and the second read
+          isn't process as a bisulfite read or output.
+    2. Methylation values are set for all methylatable bases (Cytosine and Guanine relative to the reference)
+        - Values can be set randomly or taken from a reference file (BSBolt simulation database or CGmap file)
+    3. Reads are bisulfite converted and output
+    Args:
+        reference_file (str): path to reference fasta file
+        wgsim_path (str): path to WGSIM executable
+        sim_output (str): output path
+        sequencing_error (float): simulated sequencing error rate, [0.005]
+        mutation_rate (float): simulated mutation error rate, [0.0010]
+        mutation_indel_fraction (float): fraction of mutations that are INDELs, [0.15]
+        indel_extension_probability (float): probability INDEL length will be extended, [0.15]
+        random_seed (int): random seed for mutation and sequencing error generation, [-1]
+        paired_end (bool): simulate paired end bisulfite sequencing data. [False]
+        read_length (int): length of simulated reads, [100]
+        read_depth (int): average read depth over simulated contigs, [20]
+        undirectional (bool): simulate undirectional (PCR product of Watson and Crick strands), [False]
+        methylation_reference (str): path to previously generated BSBolt reference directory
+        cgmap (str): path to CGmap file to use as methylation reference
+        ambiguous_base_cutoff (float): reference segments where the proportion of ambiguous bases, - or N, greater than
+                                       threshold will be skipped, [0.05]
+        haplotype_mode (bool): simulate only homozygous variants, [False]
+        pe_fragment_size (int): maximum fragment size, [400]
+        insert_deviation (int): standard deviation of simulated insert sizes, [25]
+        mean_insert_size (int): mean insert size, [100]
+        collect_ch_sites (bool): simulated and collect CH methylation sites, [True]
+        collect_sim_stats (bool): output simulated bases for all collected methylatable bases, [False]
+        verbose (bool): verbose output, [True]
+        overwrite_db (bool): overwrite previously generated BSBolt simulated database, [False]
+    
+    
      """
 
     def __init__(self, reference_file: str = None, wgsim_path: str = None, sim_output: str = None,
@@ -54,7 +81,7 @@ class SimulateMethylatedReads:
         self.variant_data = {}
 
     def run_simulation(self):
-        """Commands to execute read simulation"""
+        """Simulated bisulfite sequencing reads"""
         genome_length = sum([len(seq) for seq in self.reference.values()])
         coverage_length = self.read_coverage[0] * 2 if self.paired_end else self.read_coverage[0]
         read_number = (genome_length / coverage_length) * self.read_coverage[1]
