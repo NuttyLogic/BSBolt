@@ -5,6 +5,7 @@
 using namespace std;
  
 
+
 int countAlts(char *tag, bool is_crick){
     char strand = '-';
     if (is_crick) strand = '+';
@@ -63,14 +64,14 @@ void formatCrickRname(char rname[]){
     rname[strlen(rname) - 9] = '\0';
 }
 
-void reverseCigar(uint32_t cigar[], int cigar_length){
+void reverseCigar(unsigned int cigar[], int cigar_length){
     for(int i=0; i< cigar_length/2; i++)
     {
         swap(cigar[i], cigar[cigar_length-i-1]);
     }
 }
 
-int getCrickMappingPos(uint32_t cigar[], int cigar_length, int reference_length, int mapping_position){
+int getCrickMappingPos(unsigned int cigar[], int cigar_length, int reference_length, int mapping_position){
     int mapping_length = 0;
     for (int i = 0; i < cigar_length; ++i) {
 		int c = cigar[i]&0xf;
