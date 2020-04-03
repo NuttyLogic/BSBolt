@@ -21,14 +21,12 @@ def make_external_dependencies():
     working_directory = os.path.dirname(os.path.realpath(__file__))
     bwa_directory = f'{working_directory}/BSBolt/External/BWA'
     wgsim_directory = f'{working_directory}/BSBolt/External/WGSIM'
-    make_bwa = ['make']
-    make_wgsim = ['gcc', '-g', '-O2', '-Wall', '-o', 'wgsim', 'wgsim.cpp', '-lz', '-lm']
     if not os.path.exists(f'{wgsim_directory}/wgsim'):
         print('Compiling wgsim')
-        compile_dependency(make_wgsim, wgsim_directory)
+        compile_dependency(['make'], wgsim_directory)
     if not os.path.exists(f'{bwa_directory}/bwa-mem2'):
         print('Compiling bwa-mem2')
-        compile_dependency(make_bwa, bwa_directory)
+        compile_dependency(['make'], bwa_directory)
 
 
 try:
