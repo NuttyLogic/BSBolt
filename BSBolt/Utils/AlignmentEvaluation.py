@@ -33,6 +33,14 @@ def get_read_reference_info(fastq_files: List[str] = None):
 
 
 class AlignmentEvaluator:
+    """Evaluate alignment against simulated bisulfite sequencing data.
+
+    Params:
+
+    * *duplicated_regions (dict)*: regions duplicated in the simulation reference, [None]
+    * *matching_target_prop (float)*: proportion of alignment that most overlap with target region
+                                     for a valid alignment to be called, [0.95]
+    """
 
     def __init__(self, duplicated_regions: Dict[str, Tuple[int, int]] = None, matching_target_prop: float = 0.95,
                  verbose: bool = False):
@@ -41,6 +49,17 @@ class AlignmentEvaluator:
         self.verbose = verbose
 
     def evaluate_alignment(self, alignment_file: str, fastq_files: List[str] = None) -> Dict[str, int]:
+        """
+
+        Params:
+
+        * *alignment_file (str)*: path to alignment file
+        * *fastq_files (list)*: list of paths to fastq files
+
+        Returns:
+
+        * *alignment_evaluations (dict)*: target alignment stats
+        """
         alignment_evaluations = defaultdict(int)
         reads_observed = set()
         reference_info = get_read_reference_info(fastq_files=fastq_files)
@@ -72,6 +91,7 @@ class AlignmentEvaluator:
 
     @staticmethod
     def assess_alignment(alignment: pysam.AlignedSegment, alignment_info: Dict):
+        """ Compare alignment against simulated reference"""
         chrom_match = alignment.reference_name == alignment_info['chrom']
         # assess reference bases that match between the two reads
         matching_pos = np.array(alignment.get_reference_positions(full_length=False))

@@ -1,35 +1,35 @@
 from typing import Dict, List, Tuple
 
-from BSBolt.Utils.FastaIterator import OpenFasta
 from BSBolt.Index.IndexOutput import IndexOutput
+from BSBolt.Utils.FastaIterator import OpenFasta
 
 
-class WholeGenomeIndexBuild:
+class WholeGenomeBuild:
     """Class to build whole genome bisulfite bwa index.
-    Keyword Arguments
-        reference_file (str): path to reference file in fasta format
-        genome_database (str): directory to output processed datafiles
-        bwa_path (str): path to bwa executable, default = bwa-mem if in path
-    Attributes
-        self.reference_file (OpenFasts): Instance of OpenFasta to parse input reference file
-        self.index_output (IndexOutput): Instance of IndexOutput class to handle file output and external bwa
-            commands
-        self.contig_size_dict (dict): dict of contig lengths
+
+    Params:
+
+    * *reference_file (str)*: path to reference file in fasta format
+    * *bwa_path (str)*: path to bwa executable, default = bwa-mem if in path
+
+    Usage:
+    ```python
+    index = WholeGenomeBuild(**kwargs)
+    index.generate_bsb_database()
+    ```
     """
 
     def __init__(self, reference_file: str = None, genome_database: str = None,
-                 bwa_path: str = None, mappable_regions: str = None):
+                 mappable_regions: str = None):
         self.reference_file = OpenFasta(fasta=reference_file)
-        self.index_output = IndexOutput(**dict(genome_database=genome_database,
-                                               bwa_path=bwa_path))
+        self.index_output = IndexOutput(**dict(genome_database=genome_database))
         self.mappable_regions = None
         if mappable_regions:
             self.mappable_regions = self.get_mappable_regions(mappable_regions)
         self.contig_size_dict = {}
 
     def generate_bsb_database(self):
-        """ Wrapper for class functions to process and build mapping indices. Loops through fasta file and processes
-        complete contig sequences.
+        """ Wrapper for class functions to process and build mapping indices.
         """
         contig_sequence = []
         contig_id = None
@@ -66,6 +66,16 @@ class WholeGenomeIndexBuild:
 
     @staticmethod
     def get_mappable_regions(bed_file: str) -> Dict[str, List[Tuple[int, int]]]:
+        """Get mappable regions if masking with bed file
+
+        Params:
+
+        * *bed_file (str)*: path to bed file of mappable regions
+
+        Returns:
+
+        * *mappable_regions (list)*: sorted list of mappable regions
+        """
         mappable_regions = {}
         with open(bed_file, 'r') as regions:
             for bed_line in regions:
@@ -81,6 +91,17 @@ class WholeGenomeIndexBuild:
         return mappable_regions
 
     def mask_contig(self, contig_id: str, contig_str: str) -> str:
+        """Mask contig sequence outside mappable regions
+
+        Params:
+
+        * *contig_id (str)* contig label
+        * *contig_str (str)*: contig sequence
+
+        Returns:
+
+        * *contig_str (str)*: masked sequence
+        """
         if contig_id in self.mappable_regions:
             contig_mappable_regions = iter(self.mappable_regions[contig_id])
             start, end = next(contig_mappable_regions)

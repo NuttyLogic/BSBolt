@@ -1,49 +1,56 @@
 import random
-from typing import Dict, Union
+from typing import Dict, Union, Tuple
 from tqdm import tqdm
 from BSBolt.Simulate.SetCyotsineMethylation import SetCytosineMethylation
 from BSBolt.Simulate.StreamSim import StreamSim
-from BSBolt.Utils.UtilityFunctions import reverse_complement
+from BSBolt.Utils.UtilityFunctions import get_external_paths, reverse_complement
 
 
 class SimulateMethylatedReads:
     """Bisulifite read simulation class. The class works as follows:
+
     1. WGSIM (forked and modified version) is called to simulate paired end Illumina reads
         - If run in single end mode, the number of read simulated is double to get desired coverage and the second read
           isn't process as a bisulfite read or output.
     2. Methylation values are set for all methylatable bases (Cytosine and Guanine relative to the reference)
         - Values can be set randomly or taken from a reference file (BSBolt simulation database or CGmap file)
     3. Reads are bisulfite converted and output
-    Args:
-        reference_file (str): path to reference fasta file
-        wgsim_path (str): path to WGSIM executable
-        sim_output (str): output path
-        sequencing_error (float): simulated sequencing error rate, [0.005]
-        mutation_rate (float): simulated mutation error rate, [0.0010]
-        mutation_indel_fraction (float): fraction of mutations that are INDELs, [0.15]
-        indel_extension_probability (float): probability INDEL length will be extended, [0.15]
-        random_seed (int): random seed for mutation and sequencing error generation, [-1]
-        paired_end (bool): simulate paired end bisulfite sequencing data. [False]
-        read_length (int): length of simulated reads, [100]
-        read_depth (int): average read depth over simulated contigs, [20]
-        undirectional (bool): simulate undirectional (PCR product of Watson and Crick strands), [False]
-        methylation_reference (str): path to previously generated BSBolt reference directory
-        cgmap (str): path to CGmap file to use as methylation reference
-        ambiguous_base_cutoff (float): reference segments where the proportion of ambiguous bases, - or N, greater than
-                                       threshold will be skipped, [0.05]
-        haplotype_mode (bool): simulate only homozygous variants, [False]
-        pe_fragment_size (int): maximum fragment size, [400]
-        insert_deviation (int): standard deviation of simulated insert sizes, [25]
-        mean_insert_size (int): mean insert size, [100]
-        collect_ch_sites (bool): simulated and collect CH methylation sites, [True]
-        collect_sim_stats (bool): output simulated bases for all collected methylatable bases, [False]
-        verbose (bool): verbose output, [True]
-        overwrite_db (bool): overwrite previously generated BSBolt simulated database, [False]
-    
-    
+
+    Params:
+
+       * *reference_file (str)*: path to reference fasta file.
+       * *sim_output (str)*: output path
+       * *sequencing_error (float)*: simulated sequencing error rate, [0.005]
+       * *mutation_rate (float)*: simulated mutation error rate, [0.0010]
+       * *mutation_indel_fraction (float)*: fraction of mutations that are INDELs, [0.15]
+       * *indel_extension_probability (float)*: probability INDEL length will be extended, [0.15]
+       * *random_seed (int)*: random seed for mutation and sequencing error generation, [-1]
+       * *paired_end (bool)*: simulate paired end bisulfite sequencing data. [False]
+       * *read_length (int)*: length of simulated reads, [100]
+       * *read_depth (int)*: average read depth over simulated contigs, [20]
+       * *undirectional (bool)*: simulate undirectional (PCR product of Watson and Crick strands), [False]
+       * *methylation_reference (str)*: path to previously generated BSBolt reference directory
+       * *cgmap (str)*: path to CGmap file to use as methylation reference
+       * *ambiguous_base_cutoff (float)*: reference segments where the proportion of ambiguous bases, - or N, greater than
+                                        threshold will be skipped, [0.05]
+       * *haplotype_mode (bool)*: simulate only homozygous variants, [False]
+       * *pe_fragment_size (int)*: maximum fragment size, [400]
+       * *insert_deviation (int)*: standard deviation of simulated insert sizes, [25]
+       * *mean_insert_size (int)*: mean insert size, [100]
+       * *collect_ch_sites (bool)*: simulated and collect CH methylation sites, [True]
+       * *collect_sim_stats (bool)*: output simulated bases for all collected methylatable bases, [False]
+       * *verbose (bool)*: verbose output, [True]
+       * *overwrite_db (bool)*: overwrite previously generated BSBolt simulated database, [False]
+
+    Usage:
+    ```python
+    simulation = SimulateMethylatedReads(**kwargs)
+    simulation.run_simulation()
+    ```
+
      """
 
-    def __init__(self, reference_file: str = None, wgsim_path: str = None, sim_output: str = None,
+    def __init__(self, reference_file: str = None, sim_output: str = None,
                  sequencing_error: float = 0.005, mutation_rate: float = 0.0010, mutation_indel_fraction: float = 0.15,
                  indel_extension_probability: float = 0.15, random_seed: int = -1,
                  paired_end: bool = False, read_length: int = 100,
@@ -52,6 +59,7 @@ class SimulateMethylatedReads:
                  pe_fragment_size: int = 400, insert_deviation: int = 25, mean_insert_size: int = 100,
                  collect_ch_sites: bool = True, collect_sim_stats: bool = False, verbose: bool = True,
                  overwrite_db: bool = False):
+        _, wgsim_path = get_external_paths()
         self.sim_command = [wgsim_path, '-1', str(read_length), '-2', str(read_length),
                             '-e', str(sequencing_error), '-d', str(pe_fragment_size),
                             '-s', str(insert_deviation),
@@ -91,6 +99,7 @@ class SimulateMethylatedReads:
         print('Finished Simulation')
 
     def simulate_methylated_reads(self):
+        """Read processing loop"""
         for variant_contig, sim_data in tqdm(StreamSim(paired_end=self.paired_end, sim_command=self.sim_command),
                                              desc='Simulating Bisulfite Converted Read Pairs',
                                              disable=self.tqdm_disabe):
@@ -111,6 +120,7 @@ class SimulateMethylatedReads:
             output.close()
 
     def output_reference(self):
+        """Output reference methylation values used for simulation"""
         self.sim_db.sim_db.output_contig(self.contig_profile, self.current_contig)
         if self.variant_data:
             self.sim_db.sim_db.output_contig(self.variant_data, self.current_contig, variant=True)
@@ -119,6 +129,7 @@ class SimulateMethylatedReads:
             self.contig_values = {}
 
     def process_read_group(self, sim_data):
+        """Set read methylation values, randomly assign reads to Watson or Crick strand"""
         # randomly select reference strand
         sub_pattern = ('C', 'T') if self.random_roll(0.5) else ('G', 'A')
         # set read methylation
@@ -135,6 +146,7 @@ class SimulateMethylatedReads:
         self.output_sim_reads(sim_data, sub_pattern[0], ref_strand)
 
     def output_sim_reads(self, sim_data, sub_base, ref_strand):
+        """Write simulated bisulfite reads"""
         # format reads
         reverse_read = 2
         if sub_base == 'G':
@@ -188,7 +200,7 @@ class SimulateMethylatedReads:
         read['cigar'] = ''.join(methyl_cigar)
         read['sub_base'] = sub_base
 
-    def set_variant_methylation(self, meth_pos, seq_base, variant_type='X'):
+    def set_variant_methylation(self, meth_pos, seq_base, variant_type='X') -> Tuple[str, str]:
         cigar_type = 'Z' if variant_type == 'X' else 'R'
         methyl_status, context = self.set_base_methylation(meth_pos)
         if methyl_status:
@@ -207,6 +219,7 @@ class SimulateMethylatedReads:
                 return seq_base, 'c' if context else 'y'
 
     def set_base_methylation(self, methyl_position):
+        """Perform random roll to set methylated bases. Update reference values if *self.collect_sim_stats=True*"""
         # nucleotide, methylation_level, context, 0, 0, 0
         try:
             methyl_info = self.contig_profile[str(methyl_position)]
@@ -222,7 +235,18 @@ class SimulateMethylatedReads:
                 self.contig_values[f'{self.current_contig}:{methyl_position}'][1] += 1
         return methyl_status, methyl_info[2]
 
-    def get_methylation_reference(self, contig: str, variant_data: Union[bool, Dict] = False):
+    def get_methylation_reference(self, contig: str, variant_data: Union[bool, Dict] = False) -> Dict:
+        """ Set variant methylation if variant data provided and return methylation profile else
+        return methylation profile
+
+        Params:
+
+        * *contig (str)*: contig id
+        * *variant_data (dict)*: simulated variant information
+
+        Returns:
+
+        * *contig_profile (Dict[str, float])*: methylation reference values"""
         if variant_data:
             contig_profile = self.sim_db.get_contig_methylation(contig)
             self.sim_db.set_variant_methylation(variant_data, contig_profile, self.current_contig)
@@ -232,6 +256,7 @@ class SimulateMethylatedReads:
 
     @property
     def get_output_objects(self):
+        """Return io object for fastq writing"""
         output_list = [open(f'{self.sim_output}_1.fq', 'w')]
         if self.paired_end:
             output_list.append(open(f'{self.sim_output}_2.fq', 'w'))

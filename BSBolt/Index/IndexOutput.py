@@ -4,7 +4,7 @@ import pickle
 import gzip
 from typing import Dict, List, Union
 
-from BSBolt.Utils.UtilityFunctions import reverse_complement
+from BSBolt.Utils.UtilityFunctions import get_external_paths, reverse_complement
 
 
 class IndexOutput:
@@ -12,8 +12,9 @@ class IndexOutput:
 
     """
 
-    def __init__(self, genome_database: str = None, bwa_path: str = None):
+    def __init__(self, genome_database: str = None):
         # format genome_database path
+        bwa_path, _ = get_external_paths()
         self.genome_database = self.generate_genome_directory(genome_database)
         self.bwa_path = bwa_path
         # set output object

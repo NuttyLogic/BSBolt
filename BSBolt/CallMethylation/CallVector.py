@@ -7,7 +7,8 @@ import numpy as np
 
 class CallMethylationVector:
     """
-     Experimental
+     Experimental:
+
      return vector of methylated sites
     """
 

@@ -1,5 +1,3 @@
-## Methylation Calling 
-
 Methylation values, the proportion of methylated bases to the total number of observed bases, are called using the BSBolt CallMethylation module. 
 Methylation values for guanine nucleotides are made for reads aligned to the Crick (anti-sense) strands and calls for cytosine nucleotides are made for 
 reads aligned to the Watson (sense) strand. Methylation calls for WGBS and targeted bisuflite sequencing can be improved by removing PCR duplicate reads 

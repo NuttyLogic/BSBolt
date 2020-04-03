@@ -34,7 +34,6 @@ def check_bases(sequence, methyl_cigar, ref_strand, count):
 
 
 test_sim = SimulateMethylatedReads(reference_file=test_genome,
-                                   wgsim_path=wgsim_path,
                                    paired_end=True,
                                    sim_output=sim_out,
                                    undirectional=True,

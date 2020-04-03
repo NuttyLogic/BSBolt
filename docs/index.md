@@ -1,4 +1,4 @@
-# **BSBolt (BiSulfite Bolt)** - Under Construction
+# **BSBolt (BiSulfite Bolt)**
 ## A fast and safe read alignment platform for bisulfite sequencing data
 
 [BiSuflite Bolt (BSBolt)](https://github.com/NuttyLogic/BSBolt); a fast and scalable bisulfite sequencing analysis platform. BSBolt is an integrated analysis 

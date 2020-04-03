@@ -3,15 +3,8 @@ import subprocess
 import unittest
 import pysam
 
+from BSBolt.Utils.AlignmentEvaluation import get_read_reference_info
 from tests.TestHelpers import bsb_directory
-
-
-bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
-                         '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
-                         '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-U', '-PE']
-subprocess.run(bsb_simulate_commands)
-
-print('Reads Simulated')
 
 
 bsb_wgbs_masked_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G',
@@ -19,19 +12,35 @@ bsb_wgbs_masked_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G',
                                   '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked', '-MR',
                                   f'{bsb_directory}tests/TestData/test_wgbs_masking.bed']
 
-subprocess.run(bsb_wgbs_masked_index_commands)
+#subprocess.run(bsb_wgbs_masked_index_commands)
+
+
+bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
+                         '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
+                         '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe_masked', '-U', '-PE', '-RD', '2',
+                         '-verbose']
+#subprocess.run(bsb_simulate_commands)
+
 
 bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked', '-F1',
-                      f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_1.fastq', '-F2',
-                      f'{bsb_directory}tests/TestSimulations/BSB_pe_meth_2.fastq', '-O',
+                      f'{bsb_directory}tests/TestSimulations/BSB_pe_masked_1.fq', '-F2',
+                      f'{bsb_directory}tests/TestSimulations/BSB_pe_masked_2.fq', '-O',
                       f'{bsb_directory}tests/BSB_pe_test_masked']
-subprocess.run(bsb_align_commands)
+#subprocess.run(bsb_align_commands)
 
 sorted_output = f'{bsb_directory}tests/BSB_pe_test_masked.sorted.bam'
 if os.path.exists(sorted_output):
     subprocess.run(['rm', sorted_output])
+
+subprocess.run(['python3', '-m', 'BSBolt', 'Sort', '-I', f'{bsb_directory}tests/BSB_pe_test_masked.bam',
+                '-O', f'{bsb_directory}tests/BSB_pe_test_masked.sorted.bam'])
+
+if os.path.exists(f'{sorted_output}.bai'):
     subprocess.run(['rm', f'{sorted_output}.bai'])
+
+subprocess.run(['python3', '-m', 'BSBolt', 'BamIndex', '-I', sorted_output])
+
 # import alignment regions
 
 target_regions = []
@@ -63,48 +72,38 @@ combined_target_regions[region_chrom].append([region_start, region_end])
 # retrieve read names for reads that overlap target regions
 
 
-def check_overlap(region, start, end):
-    if region[0] <= start <= region[1] and region[0] <= end <= region[1]:
+def check_overlap(region, chrom, start, end):
+    if chrom != region[0]:
+        return False
+    if region[1] <= start and end <= region[2]:
         return True
     return False
 
 
-overlaping_reads = []
+reference_info = get_read_reference_info([f'{bsb_directory}tests/TestSimulations/BSB_pe_masked_1.fq',
+                                          f'{bsb_directory}tests/TestSimulations/BSB_pe_masked_2.fq'])
 
-with open(f'{bsb_directory}tests/TestSimulations/BSB_pe.sam', 'r') as sam:
-    sam_iter = iter(sam)
-    while True:
-        try:
-            sam1 = next(sam_iter).split('\t')
-        except StopIteration:
-            break
-        else:
-            if '@' in sam1[0]:
-                continue
-        sam2 = next(sam_iter).split('\t')
-        s1_name, s1_chrom, s1_start, s1_end = sam1[0], sam1[2], int(sam1[3]), int(sam1[3]) + 125
-        s2_name, s2_chrom, s2_start, s2_end = sam2[0], sam2[2], int(sam2[3]), int(sam2[3]) + 125
-        assert s1_name == s2_name
-        target_regions = combined_target_regions.get(s1_chrom, [])
-        complete_overlap = False
-        for site in target_regions:
-            if check_overlap(site, s1_start, s1_end) and check_overlap(site, s2_start, s2_end):
-                overlaping_reads.append(s1_name)
+overlapping_reads = []
 
+for name, info in reference_info.items():
+    for site in target_regions:
+        if check_overlap(site, info['chrom'], int(info['start']), int(info['end'])):
+            overlapping_reads.append(name)
 
 # extract mapped read names
 
-expected_reads = []
-non_target_reads = []
+on_target = []
+off_target = []
 
-masked_alingment_file = pysam.AlignmentFile(f'{bsb_directory}tests/BSB_pe_test_masked.sorted.bam', 'rb')
-for count, read in enumerate(masked_alingment_file.fetch()):
-    if read.query_name in overlaping_reads:
-        if read.query_name not in expected_reads:
-            expected_reads.append(read.query_name)
+masked_alingnment_file = pysam.AlignmentFile(f'{bsb_directory}tests/BSB_pe_test_masked.sorted.bam', 'rb')
+for count, read in enumerate(masked_alingnment_file.fetch()):
+    read_name = f'{read.query_name}/1'
+    if not read.is_read2:
+        read_name = f'{read.query_name}/2'
+    if read_name in overlapping_reads:
+        on_target.append(read_name)
     else:
-        if read.query_name not in non_target_reads:
-            non_target_reads.append(read.query_name)
+        off_target.append(read_name)
 
 
 class TestMaskedAlignment(unittest.TestCase):
@@ -113,12 +112,12 @@ class TestMaskedAlignment(unittest.TestCase):
         pass
 
     def test_reads_on_target(self):
-        on_target_proportion = len(expected_reads) / len(overlaping_reads)
-        self.assertGreater(on_target_proportion, .95)
+        on_target_proportion = len(on_target) / len(overlapping_reads)
+        self.assertGreater(on_target_proportion, .70)
 
     def test_off_target_reads(self):
-        off_target_proportion = len(non_target_reads) / len(overlaping_reads)
-        self.assertLess(off_target_proportion, .95)
+        off_target_proportion = len(off_target) / len(overlapping_reads)
+        self.assertLess(off_target_proportion, 2)
 
 
 if __name__ == '__main__':

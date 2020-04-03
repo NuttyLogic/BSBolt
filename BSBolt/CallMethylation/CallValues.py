@@ -6,30 +6,31 @@ import pysam
 
 class CallMethylationValues:
     """
-    Keyword Arguments
-        input_file (str): str to input bam/sam file
-        genome_database (str): str to genome directory
-        rm_overlap (bool):  remove overlapping signal, by default calls from one overlapping read
-        remove_ccgg (bool): don't call CCGG sequences
-        max_read_depth (int): default = 8000
-        contig (str): contig to process
-        min_base_quality (int): minimum quality for a base to be reported for methylation calling
+    Params:
+
+    * *input_file (str)*: str to input bam/sam file
+    * *genome_database (str)*: str to genome directory
+    * *ignore_overlap (bool)*:  ignore overlapping signal, calls methylation using the higher quality base for
+                                reads with overlapping alignments, [True]
+    * *remove_ccgg (bool)*: don't call CCGG sequences, [False]
+    * *ignore_oprhans (bool)*: ignore orphaned reads (not properly paired), [True]
+    * *max_read_depth (int)*: maximum read depth for pileup, [8000]
+    * *contig (str)*: contig to process
+    * *min_base_quality (int)*: minimum quality for a base to be reported for methylation calling, [10]
+    * *return_queue (Queue.queue)*: results are added to a queue in batches for multi-threaded access
+    * *cg_only (bool)*: only return CG sites to queue, [False]
+    * *min_mapping_quality (int)*: minimum mapping quality for an alignment to be used for methylation calling, [10]
+
     Attributes:
-        self.input_file (str): path to input bam/sam file
-        self.input_bam (pysam.Samfile): pysam.Samfile object to retrieve pileup information
-        self.genome_database (str): formatted path to genome database
-        self.rm_overlap (bool):  remove overlapping signal, by default calls from one overlapping read
-        self.remove_ccgg (bool): don't call CCGG sequences
-        self.max_read_depth (int): default = 8000
-        self.contig (str): contig to process
-        self.min_base_quality (int): minimum quality for a base to be reported for methylation calling
-        self.context_tables (dict): dict of dicts listing nucleotide context
+
+    * *self.chunk_size (int)*: Number of sites in chunk added to queue, [10000]
+
     """
 
     def __init__(self, input_file: str = None, genome_database: str = None,
                  ignore_overlap: bool = True, remove_ccgg: bool = False, ignore_orphans: bool = True,
-                 max_read_depth: int = 8000, contig: str = None, min_base_quality: int = 1, return_queue=None,
-                 cg_only: bool = False, min_mapping_quality: int = 0):
+                 max_read_depth: int = 8000, contig: str = None, min_base_quality: int = 10, return_queue=None,
+                 cg_only: bool = False, min_mapping_quality: int = 10):
         self.input_file = str(input_file)
         self.input_bam = pysam.AlignmentFile(self.input_file, mode='rb',
                                              require_index=True)
@@ -53,7 +54,8 @@ class CallMethylationValues:
     def get_context_tables(self) -> Dict[str, Dict[str, str]]:
         """
         Returns:
-            context_tables
+
+        * *context_tables (dict)*: base methylation context relative to sense strand
         """
         context_tables = {'context_table': {'CAA': 'CHH', 'CAC': 'CHH', 'CAG': 'CHG', 'CAT': 'CHH', 'CCA': 'CHH',
                                             'CCC': 'CHH', 'CCG': 'CHG', 'CCT': 'CHH', 'CGA': 'CG', 'CGC': 'CG',
@@ -74,6 +76,7 @@ class CallMethylationValues:
         return context_tables
 
     def call_methylation(self):
+        """Run methylation call for contig"""
         try:
             chrom_seq = self.get_reference_sequence(f'{self.genome_database}{self.contig}.pkl')
         except FileNotFoundError:
@@ -85,7 +88,11 @@ class CallMethylationValues:
 
     def call_contig(self, chrom_seq: str):
         """Iterates through bam pileup, calling methylation values if the reference nucleotide is a C or G. Pileup reads
-        are buffered and accessed as needed.
+        are buffered and accessed as needed. Process sites are appended to list and returned in chunks.
+
+        Reads flagged as:
+
+        * pcr duplicates (1024), read unmapped (4), read fails platform/vendor quality checks (512) are ignored
         """
         # iterate through pileup
         line_count = 0
@@ -134,12 +141,15 @@ class CallMethylationValues:
 
     def get_context(self, nucleotide: str, fivemer: str) -> Tuple[str, str]:
         """
-        Arguments:
-            nucleotide (str): 1 nucleotide
-            fivemer (str): 5 nucleotides
+        Params:
+
+        * *nucleotide (str)*: 1 nucleotide
+        * *fivemer (str)*: 5 nucleotides
+
         Returns:
-            context (str): methylation context
-            subcontext (str): methylation subcontext
+
+        * *context (str)*: methylation context
+        * *subcontext (str)*: methylation subcontext
         """
         null_context = '--'
         context = null_context
@@ -164,11 +174,15 @@ class CallMethylationValues:
         """
         Methylation for a C relative to the sense strand of the reference can only be called using watson reads,
         and G with crick reads
-        Arguments
-            nucleotide (str): reference nucleotide
-            base_counts (collections.Counter): watson nucleotides are Uppercase and crick nucleotides lowercase
+
+        Param:
+
+        * *nucleotide (str)*: reference nucleotide
+        * *base_counts (collections.Counter)*: watson nucleotides are Uppercase and crick nucleotides lowercase
+
         Returns:
-             methylation call dictionary
+
+        * *meth_line (dict)*: formatted methylation calls for output
         """
         meth_cytosines = 0
         unmeth_cytosines = 0
