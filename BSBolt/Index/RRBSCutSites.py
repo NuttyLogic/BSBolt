@@ -1,30 +1,26 @@
-from typing import Tuple
+from typing import List, Tuple
 from BSBolt.Utils.UtilityFunctions import reverse_complement, retrieve_iupac
 
 
 class ProcessCutSites:
     """ Process cut format information and returns a dictionary with restriction sequence, reverse complement of
     restriction sequence and offset.
-    Keyword Arguments:
-        cut_format (str):
-        cut_descriptor (str):
-    Attributes:
-        self.cut_format (list): list of recognition sites split by ,
-        self.cut_descriptor (str): default = -, character that specifies where the restriction enzyme cuts in the
-            recognition sequence
-        self.restriction_site_dict (dict): dictionary of restriction sites with offset information
-        self.process_cut_sites (func): population self.restriction_site_dict
+
+    Params:
+
+    * *cut_format (str)*: restriction enzyme recognition sequence, [C-CGG]
+    * *cut_descriptor (str)*: character used to designate cut site, [-]
 
     """
 
-    def __init__(self, cut_format: str = None, cut_descriptor: str ='-'):
+    def __init__(self, cut_format: str = None, cut_descriptor: str = '-'):
         self.cut_format: list = cut_format.upper().replace(' ', '').split(',')
         self.cut_descriptor = cut_descriptor
         self.restriction_site_dict = {}
         self.process_cut_sites()
 
     def process_cut_sites(self):
-        """Process forward and reverse complement of all restriction sites
+        """Process forward and reverse strand restriction sites
         """
         for site in self.cut_format:
             # get offset for restriction sequence
@@ -41,12 +37,16 @@ class ProcessCutSites:
                     self.restriction_site_dict[r_site] = reverse_offset
 
     def get_site_offsets(self, site: str) -> Tuple[int, int]:
-        """Given a restriction site return offset, or proper alignment based on where cut occurs in sequence
-        Arguments:
-            site (str): recognition site sequence
+        """Given a restriction site return offset, or proper position based on where cut occurs in sequence
+
+        Params:
+
+        * *site (str)*: recognition site sequence
+
         Returns:
-            forward_offest (int/bool): if cut descriptor int, else False
-            reverse_offset (int/bool): if cut descriptor int, else False
+
+        * *forward_offest (int/bool)*: if cut descriptor int, else False
+        * *reverse_offset (int/bool)*: if cut descriptor int, else False
         """
         try:
             # retrieve index of cut descriptor where present
@@ -59,13 +59,16 @@ class ProcessCutSites:
             reverse_offset = reverse_complement(site).index(self.cut_descriptor)
             return forward_offset, reverse_offset
 
-    def get_recognition_site_sequences(self, recognition_site: str) -> Tuple[str, str]:
+    def get_recognition_site_sequences(self, recognition_site: str) -> Tuple[List[str], List[str]]:
         """
-        Arguments:
-            recognition_site (str): sequence of site
+        Params:
+
+        * *recognition_site (str)*: sequence of site
+
         Returns:
-            forward_recognition_sites (list): list of str
-            reverse_recognition_sites (list): list of str
+
+        * *forward_recognition_sites (list)*: list of forward recognition sites
+        * *reverse_recognition_sites (list)*: list of reverse recognition sites
         """
         forward_recognition_sites = ['']
         # iterate through nucleotides in recognition site and replace cut_descriptor

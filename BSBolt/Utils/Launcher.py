@@ -1,10 +1,10 @@
 import datetime
 import time
 from BSBolt.Align.AlignReads import BisulfiteAlignmentAndProcessing
-from BSBolt.CallMethylation.ProcessContigs import ProcessContigs
+from BSBolt.CallMethylation.ProcessMethylationContigs import ProcessContigs
 from BSBolt.Impute.kNN_Impute import ImputeMissingValues
-from BSBolt.Index.RRBSGenomeBuild import RRBSGenomeIndexBuild
-from BSBolt.Index.WholeGenomeBuild import WholeGenomeIndexBuild
+from BSBolt.Index.RRBSIndex import RRBSBuild
+from BSBolt.Index.WholeGenomeIndex import WholeGenomeBuild
 from BSBolt.Matrix.MatrixAggregator import AggregateMatrix
 from BSBolt.Simulate import SimulateMethylatedReads
 from BSBolt.Utils.UtilityFunctions import index_bam, get_external_paths, sort_bam
@@ -17,19 +17,17 @@ def launch_index(arguments):
         print(f'Generating RRBS Database at {arguments.DB}: '
               f'lower bound {arguments.rrbs_lower}, upper bound {arguments.rrbs_upper}: '
               f'Cut Format {arguments.rrbs_cut_format}')
-        index = RRBSGenomeIndexBuild(reference_file=arguments.G,
-                                     genome_database=arguments.DB,
-                                     bwa_path=bwa_path,
-                                     cut_format=arguments.rrbs_cut_format,
-                                     lower_bound=arguments.rrbs_lower,
-                                     upper_bound=arguments.rrbs_upper)
+        index = RRBSBuild(reference_file=arguments.G,
+                          genome_database=arguments.DB,
+                          cut_format=arguments.rrbs_cut_format,
+                          lower_bound=arguments.rrbs_lower,
+                          upper_bound=arguments.rrbs_upper)
         index.generate_rrbs_database()
     else:
         print(f'Generating WGBS Database at {arguments.DB}')
-        index = WholeGenomeIndexBuild(reference_file=arguments.G,
-                                      genome_database=arguments.DB,
-                                      bwa_path=bwa_path,
-                                      mappable_regions=arguments.MR)
+        index = WholeGenomeBuild(reference_file=arguments.G,
+                                 genome_database=arguments.DB,
+                                 mappable_regions=arguments.MR)
         index.generate_bsb_database()
 
 
@@ -151,7 +149,7 @@ def launch_matrix_aggregation(arguments):
 
 
 def launch_simulation(arguments):
-    read_simulation = SimulateMethylatedReads(reference_file=arguments.G, wgsim_path=wgsim_path,
+    read_simulation = SimulateMethylatedReads(reference_file=arguments.G,
                                               sim_output=arguments.O,
                                               sequencing_error=arguments.SE, mutation_rate=arguments.MR,
                                               mutation_indel_fraction=arguments.MI,

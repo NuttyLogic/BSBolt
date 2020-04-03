@@ -4,7 +4,7 @@ import multiprocessing
 from typing import Dict, List, Tuple, Union
 import pysam
 from tqdm import tqdm
-from BSBolt.CallMethylation.CallMethylationValues import CallMethylationValues
+from BSBolt.CallMethylation.CallValues import CallMethylationValues
 
 
 class MethylationCallingError(Exception):
@@ -26,36 +26,37 @@ def call_contig_methylation(completed_contigs, call_methylation_kwargs):
 
 class ProcessContigs:
     """
-    Keyword Arguments:
-        input_file (str): str to input bam/sam file
-        genome_database (str): str to genome directory
-        output_prefix (str): output prefix for ATCGmap, CGmap, and WIG files
-        ignore_overlap (bool):  ignore overlapping reads
-        text_output (bool): output compressed or plain text files
-        remove_ccgg (bool): don't call CCGG sequences
-        min_read_depth (int): default = 1
-        max_read_depth (int): default = 8000
-        threads (int): 1, if one watcher and processing on same thread else separated
-        min_base_quality (int): minimum base quality for base to be considered
-        min_mapping_quality (int): minimum mapping quality for an alignment to be considered
-    Attributes:
-        self.input_file (str): path to input bam/sam file
-        self.input_bam (pysam.AlignmentFile): pysam object to retrieve pileup information from .bam file
-        self.text_output (bool): plain text output
-        self.output_prefix (str): output prefix
-        self.threads (int): , if one thread watcher and processing on same thread else separated
-        self.call_methylation_kwargs (dict): dict of kwargs to pass to CallMethylation class
-        self.min_read_depth (int): default = 1, minimum read depth to output values
-        self.contigs (list): list of contigs in self.input_bam
-        self.return_queue (multiprocessing.manager.Queue): object to return methylation calls
-        self.output_objects (dict[str, TextIO]): dict of output objects
-        self.methylation_stats (dict): global methylation statistics
+    Multi-threaded contig processing wrapper. Passes thread safe queue to workers and outputs values as CGmap file.
+
+    Params:
+
+   * *input_file (str)*: str to input bam/sam file
+   * *genome_database (str)*: str to genome directory
+   * *output_prefix (str)*: output prefix for  CGmap
+   * *ignore_overlap (bool)*:  ignore overlapping reads, [True]
+   * *text_output (bool)*: output compressed or plain text files, [False]
+   * *remove_ccgg (bool)*: don't call CCGG sequences, [False]
+   * *min_read_depth (int)*: default = minimum read depth to call methylation values, [1]
+   * *max_read_depth (int)*: maximum read depth for pileup, [8000]
+   * *threads (int)*: , if one watcher and processing on same thread else separated, [1]
+   * *min_base_quality (int)*: minimum base quality for base to be considered, [10]
+   * *min_mapping_quality (int)*: minimum mapping quality for an alignment to be considered, [10]
+   * *verbose (bool)*: Verbose processing, [False]
+   * *cg_only (bool)*: only return CG sites to queue, [False]
+   * *ignore_oprhans (bool)*: ignore orphaned reads (not properly paired), [True]
+
+    Usage:
+
+    ```python
+    process_values = ProcessContigs(**kwargs)
+    process_values.process_contigs()
+    ```
     """
 
     def __init__(self, input_file: str = None, genome_database: str = None, output_prefix: str = None,
                  ignore_overlap: bool = True, text_output: bool = False, remove_ccgg: bool = False,
                  min_read_depth: int = 10, max_read_depth: int = 8000, threads: int = 1, verbose: bool = True,
-                 min_base_quality: int = 0, min_mapping_quality: int = 0,
+                 min_base_quality: int = 10, min_mapping_quality: int = 10,
                  ATCGmap: bool = False, cg_only: bool = True, ignore_orphans: bool = False):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(text_output, bool), 'Not valid bool'
@@ -151,8 +152,10 @@ class ProcessContigs:
 
     def write_output(self, methylation_lines: List[Tuple[Union[int, float, str]]]):
         """Give a list of methylation call dicts, output formatted line
-        Arguments:
-            methylation_lines (list): list of dict containing methylation call information
+
+        Params:
+
+        * *methylation_lines (list)*: list of dict containing methylation call information
         """
         # write wig contig designation
         if methylation_lines:
@@ -209,10 +212,12 @@ class ProcessContigs:
         return output_objects
 
     def write_line(self, output_object, line: str):
-        """ Outputs line, and encodes before output if necessary
-        Arguments
-            output_object (TextIO/GZipIO): output object
-            line: formatted line to write
+        """ Outputs line, and encodes if necessary
+
+        Params:
+
+        * *output_object (TextIO/GZipIO)*: output object
+        * *line (str)*: formatted line to write
         """
         if self.text_output:
             output_object.write(line)

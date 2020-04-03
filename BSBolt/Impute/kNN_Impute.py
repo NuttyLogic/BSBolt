@@ -9,21 +9,24 @@ from BSBolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
 
 class ImputeMissingValues:
     """
-    Launch and knn imputation task. This wrapper import data for imputation, split data for batch imputation,
-    and combines data after imputation. Note, data is held in memory during imputation..
-    Keyword Arguments
-        input_matrix_file (str):
-        :param batch_size:
-        :param imputation_window_size:
-        :param k:
-        :param threads:
-        :param verbose:
-        :param sep:
-        :param output_path:
-        :param randomize_batch:
-        :param meth_matrix:
-        :param meth_site_order:
-        :param sample_ids:
+    Launch and knn imputation task. This wrapper imports data for imputation, split data for batch imputation,
+    and combines data after imputation. Data is held in memory for access during imputation. If closest neighbors null,
+    null imputed value returned.
+
+    Params:
+
+    * *input_matrix_file (str)*: Path to BSBolt matrix
+    * *batch_size (int)*: Batch size for batch imputation
+    * *imputation_window_size (int)*: Size (bp) for imputation window, [3,000,000]
+    * *k (int)*: Nearest neighbors used for imputation, [5]
+    * *threads (int)*: Number of threads available for imputation, [1]
+    * *verbose (bool)*: Verbose imputation, [False]
+    * *sep (str)*: separator character used in methylation matrix, [\t]
+    * *output_path (str)*: output path
+    * *randomize_batch (bool)*: randomize batch, [False]
+    * *meth_matrix (np.ndarray)*: imputed methylation matrix
+    * *meth_site_order (list)*: ordered methylation sites, sorted by contig then position
+    * *sample_ids (list)*: sample names
     """
 
     def __init__(self, input_matrix_file: str = None, batch_size: int = None, imputation_window_size: int = 3000000,
@@ -50,7 +53,6 @@ class ImputeMissingValues:
     def impute_values(self):
         """
         Launch kNN imputation for each batch and set values in original matrix.
-        :return:
         """
         imputation_order = [count for count in range(len(self.sample_ids[1]))]
         if self.batch_commands[1]:
@@ -65,6 +67,7 @@ class ImputeMissingValues:
                 self.meth_matrix[:, sample] = batch_impute.genomic_array[:, count]
 
     def process_batch(self, imputation_order: List[int]) -> List[List[int]]:
+        """Generate sample batches"""
         batches = []
         if not self.batch_commands[0]:
             self.batch_commands[0] = len(self.sample_ids)
@@ -85,6 +88,13 @@ class ImputeMissingValues:
         return batches
 
     def get_batch_data(self, batch: List[int]) -> Tuple[np.ndarray, List[str]]:
+        """Return methylation value for batch imputation
+
+        Returns:
+
+        * *batch_array (np.ndarry)*: array of methylation values
+        * *sample_labels (list)*: list of samples in batch
+            """
         batch_array = self.meth_matrix[:, batch]
         sample_labels = [self.sample_ids[1][sample] for sample in batch]
         return batch_array, sample_labels
@@ -94,6 +104,7 @@ class ImputeMissingValues:
 
     @staticmethod
     def get_output_matrix(output_path: str):
+        """Get output object"""
         if output_path.endswith('.gz'):
             out = io.BufferedWriter(gzip.open(output_path, 'wb'))
         else:
@@ -101,6 +112,7 @@ class ImputeMissingValues:
         return out
 
     def output_imputed_matrix(self):
+        """Write imputed values"""
         self.output_matrix.write('\t'.join([self.sample_ids[0]] + self.sample_ids[1]) + '\n')
         for site_label, values in zip(self.meth_site_order, self.meth_matrix):
             str_values = '\t'.join([str(value) for value in values])

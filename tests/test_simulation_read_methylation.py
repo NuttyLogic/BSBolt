@@ -132,7 +132,6 @@ i_expected_seq = list(expected_watson_sequence)
 i_expected_seq = ''.join(i_expected_seq[0:10] + ['CG'] + i_expected_seq[10:100])
 
 test_sim = SimulateMethylatedReads(reference_file=test_genome,
-                                   wgsim_path=wgsim_path,
                                    paired_end=True,
                                    sim_output=sim_out,
                                    undirectional=False,
@@ -174,13 +173,13 @@ class TestReadMethylationSetting(unittest.TestCase):
         self.assertEqual(reverse_complement(read_m[2]['seq']), ''.join(expected_watson_sequence[100:200]))
 
     def test_read_m_w_2_cigar(self):
-        self.assertEqual(read_m[2]['cigar'], ''.join(expected_watson_cigar[100:200]))
+        self.assertEqual(read_m[2]['cigar'], ''.join(expected_watson_cigar[100:200:])[::-1])
 
     def test_crick_seq(self):
         self.assertEqual(read_mc[1]['seq'], reverse_complement(expected_crick_sequence[0:100]))
 
     def test_crick_cigar(self):
-        self.assertEqual(read_mc[1]['cigar'], ''.join(expected_crick_cigar[0:100]))
+        self.assertEqual(read_mc[1]['cigar'], ''.join(expected_crick_cigar[0:100])[::-1])
 
     def test_crick_seq_2(self):
         self.assertEqual(read_mc[2]['seq'], ''.join(expected_crick_sequence[100:200]))

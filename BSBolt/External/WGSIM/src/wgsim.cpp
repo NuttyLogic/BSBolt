@@ -277,7 +277,8 @@ void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, i
 			int insert_dev = (int)std_dev * dis_rn(gen_rn);
 			insert_size = mean_insert + insert_dev;
 			if (insert_size < min_insert) insert_size = min_insert;
-			else if (insert_size > max_insert) insert_size = max_insert;			
+			else if (insert_size > max_insert) insert_size = max_insert;
+
 
 			// flip or not
 			s[0] = size[0]; s[1] = size[1];
@@ -376,6 +377,19 @@ void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, i
 			//for (k = 0; k < s[1]; ++k) tmp_seq[1][k] = tmp_seq[1][k] < 4? 3 - tmp_seq[1][k] : 4; // complement
 			if (ext_coor[0] < 0 || ext_coor[1] < 0) { // fail to generate the read(s)
 				--ii;
+				// should never need to delete, here for safety
+				delete c_bases[0];
+				delete c_bases[1];
+				delete c_bases;
+				delete g_bases[0];
+				delete g_bases[1];
+				delete g_bases;
+				delete c_offset[0];
+				delete c_offset[1];
+				delete c_offset;
+				delete g_offset[0];
+				delete g_offset[1];
+				delete g_offset;
 				continue;
 			}
 
@@ -398,6 +412,18 @@ void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, i
 			}
 			if (j < 2) { // too many ambiguous bases on one of the reads
 				--ii;
+				delete c_bases[0];
+				delete c_bases[1];
+				delete c_bases;
+				delete g_bases[0];
+				delete g_bases[1];
+				delete g_bases;
+				delete c_offset[0];
+				delete c_offset[1];
+				delete c_offset;
+				delete g_offset[0];
+				delete g_offset[1];
+				delete g_offset;
 				continue;
 			}
 

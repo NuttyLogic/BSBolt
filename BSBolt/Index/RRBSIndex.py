@@ -1,38 +1,37 @@
 import re
 from typing import List, Tuple
 
-from BSBolt.Utils.FastaIterator import OpenFasta
-from BSBolt.Index.ProcessCutSites import ProcessCutSites
+from BSBolt.Index.RRBSCutSites import ProcessCutSites
 from BSBolt.Index.IndexOutput import IndexOutput
+from BSBolt.Utils.FastaIterator import OpenFasta
+from BSBolt.Utils.UtilityFunctions import get_external_paths
 
 
-class RRBSGenomeIndexBuild:
-    """Class to format reference sequence inputs for processing by bwa. In silico digests reference sequence and
+class RRBSBuild:
+    """Format reference sequence inputs for processing by BWA. In silico digests reference sequence and
     return mappable regions that are within the fragment boundary. Fragments are relative to the restriction cut site
-    if provided, or the complete restriction sequence is considered as part of the mappable fragment.
-        Keyword Arguments:
-            reference_file (str): path to reference file in fasta format
-            genome_database (str): directory to output processed datafiles
-            bwa_path (str): path to bwa-mem executable, default = bwa-mem if in path
-            lower_bound (int): smallest mappable fragment size
-            upper_bound (int): largest mappable fragment size
-            cut_format (str): Comma separated list of restriction sites, - represent cut break
-        Attributes:
-            self.reference_file (OpenFasta): Instance of OpenFasta to parse input reference file
-            self.index_output (IndexOutput): Instance of IndexOutput class to handle file output and external bwa
-                commands
-            self.lower_bound (int): == lower_bound kwarg
-            self.higher_bound (int): == high_bound kwarg
-            self.cut_sites (ProcessCutSites): ProcessCutSites instance containing recognition sequences and cut offsets
-            self.mappable_regions (list): list of regions that are mappable
-            self.contig_size_dict (dict): list of contig sizes for downstream use
+    if provided, or the complete restriction sequence is considered as part of the mappable fragment.:
+
+    Params:
+
+    * *reference_file (str)*: path to reference file in fasta format
+    * *genome_database (str)*: directory to output processed datafiles
+    * *lower_bound (int)*: smallest mappable fragment size
+    * *upper_bound (int)*: largest mappable fragment size
+    * *cut_format (str)*: Comma separated list of restriction sites, - represent cut break
+
+    Usage:
+    ```python
+    index = RRBSBuild(**kwargs)
+    index.generate_rrbs_database()
+    ```
         """
 
-    def __init__(self, reference_file: str = None, genome_database: str = None, bwa_path: str = 'bwa-mem',
+    def __init__(self, reference_file: str = None, genome_database: str = None,
                  lower_bound: int = 30, upper_bound: int = 500, cut_format: str = 'C-CGG'):
+        bwa_path, _ = get_external_paths()
         self.reference_file = OpenFasta(fasta=reference_file)
-        self.index_output = IndexOutput(**dict(genome_database=genome_database,
-                                               bwa_path=bwa_path))
+        self.index_output = IndexOutput(**dict(genome_database=genome_database))
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.cut_sites = ProcessCutSites(cut_format=cut_format)
@@ -40,8 +39,7 @@ class RRBSGenomeIndexBuild:
         self.contig_size_dict = {}
 
     def generate_rrbs_database(self):
-        """ Wrapper for class functions to process and build mapping indices. Loops through fasta file and processes
-        complete contig sequences.
+        """ Wrapper for class functions to process and build mapping indices.
         """
         contig_id = None
         contig_sequence = []
@@ -69,9 +67,11 @@ class RRBSGenomeIndexBuild:
     def process_contig_region(self, contig_id: str, contig_sequence: List[str]):
         """Given a contig_id will output a pickle file of the whole sequence and output a masked version of the
         the sequence where only mappable regions are reported.
-            Arguments:
-                contig_id (str): contig label
-                contig_sequence (list): a list of of string containing DNA Sequence
+
+        Params:
+
+        * *contig_id (str)*: contig label
+        * *contig_sequence (list)*: a list of of string containing DNA Sequence
         """
         # join contig_squence to get ease downstream processing
         contig_str: str = ''.join(contig_sequence)
@@ -95,11 +95,15 @@ class RRBSGenomeIndexBuild:
         """Designate mappable regions by finding all occurrences of the restriction site string in the passed DNA
         sequence. Merge restriction map into regions by considering pairs of downstream and upstream restriction sites
         that pass the size limits.
-            Arguments:
-                contig_str (str): STR of continuous DNA sequence
-            Returns:
-                mappable_regions (list): List of tuples the contain the start and end position of fragments that
-                    are with the size limits
+
+        Params:
+
+        * *contig_str (str)*: STR of continuous DNA sequence
+
+        Returns:
+
+        * *mappable_regions (list)*: List of tuples the contain the start and end position of fragments that
+            are with the size limits
         """
         restriction_site_locations = []
         # get the position of the all occurrences of the restriction site pattern in the DNA sequence and add to list
@@ -131,15 +135,18 @@ class RRBSGenomeIndexBuild:
                               contig_regions: List[Tuple[int, int]], masking_nucleotide='-') -> str:
         """Given a list of mappable regions, if cut site isn't designated merges mappable fragments, returns a string
         of DNA sequence with masked unmappable regions
-        Arguments:
-            contig_id (str): contig label
-            contig_str (str): str of DNA sequence
-            contig_regions (list): list of mappable regions
-            masking_nucleotide (str): str to use for nucleotide maksing
-        Keyword Arguments:
-            masking_nucleotide (str): default = '-', character used to masked DNA sequence
+
+        Params:
+
+        * *contig_id (str)*: contig label
+        * *contig_str (str)*: str of DNA sequence
+        * *contig_regions (list)*: list of mappable regions
+        * *masking_nucleotide (str)*: str to use for nucleotide maksing
+        * *masking_nucleotide (str)*: default = '-', character used to masked DNA sequence
+
         Returns:
-            masked_contig_sequence (str): str of DNA sequence with un-mappable regions masked
+
+        * *masked_contig_sequence (str)*: str of DNA sequence with un-mappable regions masked
         """
         masked_contig_sequence = []
         # initialize last index at 0

@@ -2,7 +2,7 @@ import gzip
 import os
 import subprocess
 import unittest
-from BSBolt.Index.ProcessCutSites import ProcessCutSites
+from BSBolt.Index.RRBSCutSites import ProcessCutSites
 from BSBolt.Utils.UtilityFunctions import reverse_complement
 from tests.TestHelpers import bsb_directory
 

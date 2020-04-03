@@ -6,10 +6,13 @@ import pysam
 
 def reverse_complement(sequence):
     """
-    Arguments:
-        sequence (str): DNA sequence, can have non ATGC nucleotide will remain untouched
+    Params:
+
+    * *sequence (str)*: DNA sequence, non ATGC nucleotide will be returned unaltered
+
     Returns:
-       reversed_string.translate(_rc_trans) (str): reverse complement of input sequence
+
+    * *reversed_string.translate(_rc_trans) (str)*: reverse complement of input sequence
     """
     # reverse string
     reversed_string = sequence[::-1]
@@ -20,10 +23,13 @@ def reverse_complement(sequence):
 
 def retrieve_iupac(nucleotide):
     """
-    Arguments:
-        nucleotide (str): single character
+    Params:
+
+    * *nucleotide (str)*: single character
+
     Returns:
-        iupac_tuple (tuple): tuple of strings with possible bases
+
+    * *iupac_tuple (tuple)*: tuple of strings with possible bases
     """
     iupac_key = {'R': ('A', 'G'), 'Y': ('C', 'T'), 'S': ('G', 'C'), 'W': ('A', 'T'), 'K': ('G', 'T'), 'M': ('A', 'C'),
                  'B': ('C', 'G', 'T'), 'D': ('A', 'G', 'T'), 'H': ('A', 'C', 'T'), 'V': ('A', 'C', 'G'),
@@ -66,6 +72,12 @@ def check_python_version():
 
 
 def get_external_paths():
+    """Get paths of dependencies. Print warning if setup.py not run and dependencies not compiled.
+
+    Returns:
+    * *bwa (str)*: path to bwa executable
+    * *wgsim (str)*: path to wgsim executable
+    """
     utility_directory = os.path.dirname(os.path.realpath(__file__))
     external_directory = '/'.join(utility_directory.split('/')[:-1]) + '/External/'
     bwa = f'{external_directory}BWA/bwa-mem2'
@@ -80,8 +92,19 @@ def propagate_error(error):
 
 
 def sort_bam(bam_output=None, bam_input=None):
+    """ Sort bam file
+
+    Params:
+    * *bam_output (str)*: output path for sorted bam file
+    * *bam_input (str)*: input bam file"""
     pysam.sort('-o', bam_output, bam_input)
 
 
 def index_bam(bam_input=None):
+    """
+    Index bam file
+
+    Params:
+    * *bam_input (str)*: input bam files
+    """
     pysam.index(bam_input)

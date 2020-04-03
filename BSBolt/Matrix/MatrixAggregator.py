@@ -12,33 +12,43 @@ def propagate_error(error):
 
 class AggregateMatrix:
     """
-    Class to aggregate CGMap files into combined methylation matrix
-    Keyword Arguments:
-        file_list (list): list of file CGmap files
-        sample_list (list): if passed, sample labels for CGmaps files, 
-                            else labels taken from sample names
-        min_site_coverage (int): minimum read coverage for a CpG site to be considered for matrix
-        site_proportion_threshold (float): proportion of samples that must have valid non-null
-                                           methylation calls for a site to be included in matrix
-        output_path (str): path to output file
-        cg_only (bool): consider all cytosines or only CpG sites
-        verbose (bool): verbose matrix assembly, tqdm output
-        threads (int): number of threads available for matrix aggregation
-    Attributes:
-       self.file_list (list): list of file CGmap files
-       self.sample_list (list): if passed, sample labels for CGmaps files, 
+    Aggregate CGMap files into combined methylation matrix. CGmap files are first iterated through to count sites and
+    then iterated to through to retrieve values. While slower this prevents the construction of large sparse matrices.
+    Assembly is multi-threaded to improve performance.
+
+    Params:
+
+   * *file_list (list)*: list of file CGmap files
+   * *sample_list (list)*: if passed, sample labels for CGmaps files,
                            else labels taken from sample names
-       self.min_site_coverage (int): minimum read coverage for a CpG site to be considered for matrix
-       self.site_proportion_threshold (float): proportion of samples that must have valid non-null
-                                          methylation calls for a site to be included in matrix
-       self.output_path (str): path to output file
-       self.cg_only (bool): consider all cytosines or only CpG sites
-       self.disable_tqdm (bool): disable tqdm
-       self.threads (int): number of threads available for matrix aggregation
-       self.matrix_sites (tuple): tuple of ordered sites appearing in methylation matrix, only set if no output path
-                                  is provided
-       self.meth_matrix (np.array): array of methylation values (rows) by sample (columns), only set if not output path
+   * *min_site_coverage (int)*: minimum read coverage for a CpG site to be considered for matrix, [10]
+   * *site_proportion_threshold (float)*: proportion of samples that must have valid non-null
+                                         methylation calls for a site to be included in matrix, [0.9]
+   * *output_path (str)*: path to output file
+   * *cg_only (bool)*: consider all cytosines or only CpG sites, [False]
+   * *verbose (bool)*: verbose matrix assembly, [False]
+   * *threads (int)*: threads available for matrix aggregation, [1]
+
+    Attributes:
+
+    * *self.sample_list (list)*: list of samples as they are ordered in the methylation matrix
+    * *self.matrix_sites (tuple)*: tuple of ordered sites appearing in methylation matrix, only set if no output path
+                                   is provided
+    * *self.meth_matrix (np.array)*: array of methylation values (rows) by sample (columns), only set if not output path
                                     is provided
+
+    Usage:
+
+    ```python
+    matrix = AggregateMatrix(**kwargs)
+    matrix.aggregate_matrix()
+
+    # access samples
+    matrix.sample_list
+    # access site list
+    matrix.matrix_sites
+    # access methylation matrix
+    matrix.meth_matrix
     """
 
     def __init__(self, file_list: List[str] = None, sample_list: List[str] = None, min_site_coverage: int = 10,
@@ -61,7 +71,7 @@ class AggregateMatrix:
         self.matrix_sites = None
 
     def aggregate_matrix(self):
-        """Collapse matrix"""
+        """Iterate through passed CGmap files and aggregate matrix"""
         matrix_sites = self.collect_matrix_sites()
         meth_matrix = self.assemble_matrix(matrix_sites)
         if self.output_path:

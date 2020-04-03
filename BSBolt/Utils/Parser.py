@@ -19,7 +19,7 @@ matrix_parser = subparsers.add_parser('AggregateMatrix', help='CGmap Matrix Aggr
 sim_parser = subparsers.add_parser('Simulate', help='BSBolt Illumina Read Simulation Module')
 imputation_parser = subparsers.add_parser('Impute', help='kNN Imputation Module')
 sort_parser = subparsers.add_parser('Sort', help='BAM Sort')
-bam_index = subparsers.add_parser("BamIndex", help='BAM Index')
+bam_index = subparsers.add_parser('BamIndex', help='BAM Index')
 # Add Alignment Parser Commands
 
 align_parser.add_argument('-F1', type=str, default=None, help='Path to fastq 1', required=True)
@@ -137,7 +137,7 @@ call_meth_parser.add_argument('-min', type=int, default=10,
                               help='Minimum read depth required to report methylation site')
 call_meth_parser.add_argument('-t', type=int, default=1,
                               help='Number of threads to use when calling methylation values')
-call_meth_parser.add_argument('-BQ', type=int, default=0, help='Minimum base quality for a base to considered for'
+call_meth_parser.add_argument('-BQ', type=int, default=10, help='Minimum base quality for a base to considered for'
                                                                'methylation calling, default=0')
 call_meth_parser.add_argument('-MQ', type=int, default=20, help='Minimum alignment quality for an alignment to be '
                                                                 'considered for methylation calling, default=20')

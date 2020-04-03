@@ -13,7 +13,7 @@ bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
                          '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                          '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-PE', '-U',
                          '-MR', '0.01', '-verbose', '-overwrite', '-RD', '20']
-subprocess.run(bsb_simulate_commands)
+#subprocess.run(bsb_simulate_commands)
 
 print('Reads Simulated')
 # map simulated reads

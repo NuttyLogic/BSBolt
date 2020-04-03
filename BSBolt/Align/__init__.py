@@ -1,1 +1,1 @@
-__author__ = 'pf'
+from BSBolt.Align.AlignReads import BisulfiteAlignmentAndProcessing

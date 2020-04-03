@@ -31,7 +31,6 @@ class SimulationOutput:
             with open(f'{self.sim_dir}.{contig_label}.pkl', 'rb') as contig_out:
                 contig_profile = pickle.load(contig_out)
         except FileNotFoundError:
-            print(f'{contig_id}: Simulating methylation\n')
             return None
         else:
             return contig_profile

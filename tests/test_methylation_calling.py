@@ -4,8 +4,8 @@ import queue
 import time
 import unittest
 
-from BSBolt.CallMethylation.CallMethylationValues import CallMethylationValues
-from BSBolt.CallMethylation.CallMethylationVector import CallMethylationVector
+from BSBolt.CallMethylation.CallValues import CallMethylationValues
+from BSBolt.CallMethylation.CallVector import CallMethylationVector
 from tests.TestHelpers import bsb_directory, z_test_of_proportion
 
 
