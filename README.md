@@ -30,6 +30,10 @@ cd BSBolt-master
 python3 setup.py install .
 ```
 
+*External Dependencies*
+- BWA-MEM2 and WGSIM forks compiled using gcc 8.3.1 with zlib 
+- Setup.py will fail without gcc and zlib accessible
+
 Python Dependencies
 - [pysam](https://github.com/pysam-developers/pysam) >= 0.15.4
 - [numpy](https://numpy.org/) >=1.16.3
