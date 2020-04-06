@@ -2,49 +2,47 @@ include BSBolt/External/WGSIM/src/kseq.h
 include BSBolt/External/WGSIM/src/wgsim.cpp
 include BSBolt/External/WGSIM/Makefile
 include BSBolt/External/BWA/Makefile
-BSBolt/External/BWA/src/bandedSWA.cpp
-BSBolt/External/BWA/src/bandedSWA.h
-BSBolt/External/BWA/src/bntseq.cpp
-BSBolt/External/BWA/src/bntseq.h
-BSBolt/External/BWA/src/bs_helpers.cpp
-BSBolt/External/BWA/src/bs_helpers.h
-BSBolt/External/BWA/src/bs_sorter.cpp
-BSBolt/External/BWA/src/bs_sorter.h
-BSBolt/External/BWA/src/bwa.cpp
-BSBolt/External/BWA/src/bwa.h
-BSBolt/External/BWA/src/bwamem.cpp
-BSBolt/External/BWA/src/bwamem.h
-BSBolt/External/BWA/src/bwamem_extra.cpp
-BSBolt/External/BWA/src/bwamem_pair.cpp
-BSBolt/External/BWA/src/bwt.h
-BSBolt/External/BWA/src/bwtbuild.cpp
-BSBolt/External/BWA/src/bwtbuild.h
-BSBolt/External/BWA/src/bwtindex.cpp
-BSBolt/External/BWA/src/fastmap.cpp
-BSBolt/External/BWA/src/fastmap.h
-BSBolt/External/BWA/src/FMI_search.cpp
-BSBolt/External/BWA/src/FMI_search.h
-BSBolt/External/BWA/src/kbtree.h
-BSBolt/External/BWA/src/khash.h
-BSBolt/External/BWA/src/kseq.h
-BSBolt/External/BWA/src/ksort.h
-BSBolt/External/BWA/src/kstring.cpp
-BSBolt/External/BWA/src/kstring.h
-BSBolt/External/BWA/src/ksw.cpp
-BSBolt/External/BWA/src/ksw.h
-BSBolt/External/BWA/src/kswv.cpp
-BSBolt/External/BWA/src/kswv.h
-BSBolt/External/BWA/src/kthread.cpp
-BSBolt/External/BWA/src/kthread.h
-BSBolt/External/BWA/src/kvec.h
-BSBolt/External/BWA/src/macro.h
-BSBolt/External/BWA/src/main.cpp
-BSBolt/External/BWA/src/main.h
-BSBolt/External/BWA/src/profiling.cpp
-BSBolt/External/BWA/src/profiling.h
-BSBolt/External/BWA/src/read_index_ele.cpp
-BSBolt/External/BWA/src/read_index_ele.h
-BSBolt/External/BWA/src/runsimd.cpp
-BSBolt/External/BWA/src/sais.h
-BSBolt/External/BWA/src/utils.cpp
-BSBolt/External/BWA/src/utils.h
+include BSBolt/External/BWA/src/bandedSWA.cpp
+include BSBolt/External/BWA/src/bntseq.h
+include BSBolt/External/BWA/src/bs_helpers.cpp
+include BSBolt/External/BWA/src/bs_helpers.h
+include BSBolt/External/BWA/src/bs_sorter.cpp
+include BSBolt/External/BWA/src/bs_sorter.h
+include BSBolt/External/BWA/src/bwa.cpp
+include BSBolt/External/BWA/src/bwa.h
+include BSBolt/External/BWA/src/bwamem.cpp
+include BSBolt/External/BWA/src/bwamem.h
+include BSBolt/External/BWA/src/bwamem_extra.cpp
+include BSBolt/External/BWA/src/bwamem_pair.cpp
+include BSBolt/External/BWA/src/bwt.h
+include BSBolt/External/BWA/src/bwtbuild.cpp
+include BSBolt/External/BWA/src/bwtbuild.h
+include BSBolt/External/BWA/src/bwtindex.cpp
+include BSBolt/External/BWA/src/fastmap.cpp
+include BSBolt/External/BWA/src/fastmap.h
+include BSBolt/External/BWA/src/FMI_search.cpp
+include BSBolt/External/BWA/src/FMI_search.h
+include BSBolt/External/BWA/src/kbtree.h
+include BSBolt/External/BWA/src/khash.h
+include BSBolt/External/BWA/src/kseq.h
+include BSBolt/External/BWA/src/ksort.h
+include BSBolt/External/BWA/src/kstring.cpp
+include BSBolt/External/BWA/src/kstring.h
+include BSBolt/External/BWA/src/ksw.cpp
+include BSBolt/External/BWA/src/ksw.h
+include BSBolt/External/BWA/src/kswv.cpp
+include BSBolt/External/BWA/src/kswv.h
+include BSBolt/External/BWA/src/kthread.cpp
+include BSBolt/External/BWA/src/kthread.h
+include BSBolt/External/BWA/src/kvec.h
+include BSBolt/External/BWA/src/macro.h
+include BSBolt/External/BWA/src/main.cpp
+include BSBolt/External/BWA/src/main.h
+include BSBolt/External/BWA/src/profiling.cpp
+include BSBolt/External/BWA/src/profiling.h
+include BSBolt/External/BWA/src/read_index_ele.cpp
+include BSBolt/External/BWA/src/read_index_ele.h
+include BSBolt/External/BWA/src/runsimd.cpp
+include BSBolt/External/BWA/src/sais.h
+include BSBolt/External/BWA/src/utils.cpp
+include BSBolt/External/BWA/src/utils.h
