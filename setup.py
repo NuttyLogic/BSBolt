@@ -1,5 +1,5 @@
 import os
-from setuptools import setup
+from setuptools import Extension, setup
 from setuptools.command.develop import develop
 from setuptools.command.build_py import build_py
 import subprocess
@@ -7,6 +7,11 @@ import subprocess
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+"""
+External dependencies compiled for linux using quay.io/pypa/manylinux2010_x86_64 image:
+/opt/python/cpXX-cpXX/bin/python setup.py bdist_wheel
+auditwheel repair /output/mylibrary*whl -w /output
+"""
 
 def compile_dependency(compilation_command, cwd):
     comp = subprocess.Popen(compilation_command, stdout=subprocess.PIPE,
@@ -23,7 +28,7 @@ def make_external_dependencies():
     wgsim_directory = f'{working_directory}/BSBolt/External/WGSIM'
     if not os.path.exists(f'{wgsim_directory}/wgsim'):
         print('Compiling wgsim')
-        compile_dependency(['make'], wgsim_directory)
+        compile_dependency(['make', '-portable'], wgsim_directory)
     if not os.path.exists(f'{bwa_directory}/bwa-mem2'):
         print('Compiling bwa-mem2')
         compile_dependency(['make'], bwa_directory)
