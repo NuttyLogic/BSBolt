@@ -10,7 +10,6 @@ with open("README.md", "r") as fh:
 """
 External dependencies compiled for linux using quay.io/pypa/manylinux2010_x86_64 image:
 /opt/python/cpXX-cpXX/bin/python setup.py bdist_wheel
-auditwheel repair /output/mylibrary*whl -w /output
 """
 
 def compile_dependency(compilation_command, cwd):
