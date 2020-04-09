@@ -55,7 +55,7 @@ class IndexOutput:
         # format output and input
         ref_file = f'{self.genome_database}BSB_ref.fa'
         # collect external command
-        indx_command = [f'{self.bwa_path}', 'index', ref_file]
+        indx_command = [f'{self.bwa_path}', 'index', '-a', 'bwtsw', ref_file]
         # run external command
         subprocess.run(args=indx_command)
 
