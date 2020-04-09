@@ -5,9 +5,9 @@
 platform that offers support for bisulfite sequencing read simulation, alignment, methylation calling, data aggregation, 
 and data imputation. BSBolt has been validated to work with a wide array of bisulfite sequencing data, 
 including whole genome bisulfite sequencing (WGBS), reduced representative bisulfite sequencing data (RRBS), 
-and targeted methylation sequencing data. BSBolt utilizes forked versions of [BWA-MEM2](https://github.com/bwa-mem2/bwa-mem2) 
+and targeted methylation sequencing data. BSBolt utilizes forked versions of [BWA](https://github.com/lh3/bwa) 
 and [WGSIM](https://github.com/lh3/wgsim) for read alignment and read simulation respectively. BSBolt is release under the 
- MIT licensed. 
+ MIT licensed, individual components of BWA are packaged under the original release license. 
 
 
 ### Installation
@@ -18,7 +18,7 @@ BSBolt can be installed through the python packages index using the command belo
 pip3 install BSBolt -v
 ```
 
-BSBolt can also be installed by cloning the github repository and manually compiling included dependencies. 
+BSBolt can also be installed by cloning the github repository and manually compiling the packaged dependencies. 
 
 ```shell
 # clone the repository
@@ -53,7 +53,3 @@ Impute              kNN Imputation Module
 Sort                Sort BAM File
 BamIndex            Index BAM file
 ```
-
-
-
-

@@ -66,7 +66,7 @@ def launch_alignment(arguments):
     bsb_command_dict = {arg[0]: str(arg[1]) for arg in arguments._get_kwargs()}
     bwa_cmd = [bwa_path, 'mem', '-Y']
     if bsb_command_dict['UN'] == 'True':
-        bwa_cmd.extend(['-z', 'true'])
+        bwa_cmd.extend(['-z', '1'])
     bool_args = ['M', 'S', 'j', 'p']
     for arg in bool_args:
         if bsb_command_dict[arg] == 'True':

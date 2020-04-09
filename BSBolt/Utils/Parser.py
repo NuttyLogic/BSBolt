@@ -85,7 +85,7 @@ align_parser.add_argument('-T', type=int, default=80,
                           required=False)
 align_parser.add_argument('-XA', type=lambda x: x.strip(), default='100,200',
                           help='if there are <INT hits with score >80 percent of the max score, '
-                               'output all in XA [5,200]',
+                               'output all in XA [100,200]',
                           required=False)
 align_parser.add_argument('-M', action='store_true', default=False,
                           help='mark shorter split hits as secondary',

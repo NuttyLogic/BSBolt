@@ -80,7 +80,7 @@ def get_external_paths():
     """
     utility_directory = os.path.dirname(os.path.realpath(__file__))
     external_directory = '/'.join(utility_directory.split('/')[:-1]) + '/External/'
-    bwa = f'{external_directory}BWA/bwa-mem2'
+    bwa = f'{external_directory}BWA/bwa'
     wgsim = f'{external_directory}WGSIM/wgsim'
     if not os.path.exists(bwa) or not os.path.exists(wgsim):
         print(f'Must compile external dependencies\n python3 setup.py build')

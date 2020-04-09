@@ -12,6 +12,10 @@ External dependencies compiled for linux using quay.io/pypa/manylinux2010_x86_64
 /opt/python/cpXX-cpXX/bin/python setup.py bdist_wheel
 """
 
+bwa_ext = Extension('bwa', sources=['BSBolt/External/BWA/bwa'])
+wgsim_ext = Extension('wgsim', sources=['BSBolt/External/WGSIM/wgsim'])
+
+
 def compile_dependency(compilation_command, cwd):
     comp = subprocess.Popen(compilation_command, stdout=subprocess.PIPE,
                             universal_newlines=True, cwd=cwd)
@@ -27,7 +31,7 @@ def make_external_dependencies():
     wgsim_directory = f'{working_directory}/BSBolt/External/WGSIM'
     if not os.path.exists(f'{wgsim_directory}/wgsim'):
         print('Compiling wgsim')
-        compile_dependency(['make', '-portable'], wgsim_directory)
+        compile_dependency(['make'], wgsim_directory)
     if not os.path.exists(f'{bwa_directory}/bwa-mem2'):
         print('Compiling bwa-mem2')
         compile_dependency(['make'], bwa_directory)
@@ -59,7 +63,7 @@ class BuildCmd(build_py):
                            ('BSBolt.Align', 'BSBolt/Align', 'build/lib/BSBolt/Align', []),
                            ('BSBolt.CallMethylation', 'BSBolt/CallMethylation', 'build/lib/BSBolt/CallMethylation', []),
                            ('BSBolt.External', 'BSBolt/External', 'build/lib/BSBolt/External',
-                            ['WGSIM/wgsim', 'BWA/bwa-mem2']),
+                            ['WGSIM/wgsim', 'BWA/bwa']),
                            ('BSBolt.Impute', 'BSBolt/Impute', 'build/lib/BSBolt/Impute', []),
                            ('BSBolt.Impute.Imputation', 'BSBolt/Impute/Imputation',
                             'build/lib/BSBolt/Impute/Imputation', []),
@@ -76,7 +80,7 @@ class BuildCmd(build_py):
 
 
 setup(name='BSBolt',
-      version='0.3.0',
+      version='1.0.0',
       description='Bisulfite Sequencing Processing Platform',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -88,7 +92,6 @@ setup(name='BSBolt',
       packages=['BSBolt',
                 'BSBolt.Align',
                 'BSBolt.CallMethylation',
-                'BSBolt.External',
                 'BSBolt.Impute',
                 'BSBolt.Impute.Imputation',
                 'BSBolt.Impute.Impute_Utils',
@@ -111,5 +114,6 @@ setup(name='BSBolt',
       cmdclass={'develop': DevelopCmd,
                 'build_py': BuildCmd,
                 'bdist_wheel': bdist_wheel},
-      zip_safe=False
+      zip_safe=False,
+      extension_modules=[bwa_ext, wgsim_ext]
       )

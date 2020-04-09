@@ -13,8 +13,8 @@ BSBolt documentation can be found at [bsbolt.readthedocs.io](https://bsbolt.read
 
 ### Installation
 
-BSBolt alignment is performed using a modified version of the [BWA-mem2](https://github.com/bwa-mem2/bwa-mem2). Simulation 
-relies utilizes [wgsim](https://github.com/lh3/wgsim) to simulate Illumina reads before bisulfite conversion. 
+BSBolt alignment is performed using a modified version of [BWA](https://github.com/lh3/bwa). Read simulation is carried 
+out using a modified version of [wgsim](https://github.com/lh3/wgsim). 
 
 
 Install through PIP.
@@ -33,6 +33,7 @@ python3 setup.py install .
 *External Dependencies*
 - BWA-MEM2 and WGSIM forks compiled using gcc 8.3.1 with zlib 
 - Setup.py will fail without gcc and zlib accessible
+- Bdist Wheels [manylinux2010](https://www.python.org/dev/peps/pep-0571/) compatible
 
 Python Dependencies
 - [pysam](https://github.com/pysam-developers/pysam) >= 0.15.4
