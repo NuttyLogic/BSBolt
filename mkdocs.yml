@@ -4,6 +4,8 @@ repo_name: 'GitHub'
 
 theme:
   name: 'material'
+  logo: img/lightning-bolt.png
+  favicon: img/lightning-bolt.png
 
 nav:
   - Home: index.md
