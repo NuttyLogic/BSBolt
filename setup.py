@@ -27,7 +27,7 @@ def compile_dependency(compilation_command, cwd):
                             universal_newlines=True, cwd=cwd)
     comp.wait()
     if comp.returncode:
-        print('Please compile with GCC >= xxx')
+        print('Please compile with GCC >= 8.3.1 / zlib-devel >= 1.2.3')
         for line in iter(comp.stderr.readline, ''):
             print(line)
         raise BuildError
@@ -99,7 +99,7 @@ setup(name='BSBolt',
       project_urls={'Documentation': 'https://bsbolt.readthedocs.io/en/latest/'},
       author='Colin P. Farrell',
       author_email='colinpfarrell@gmail.com',
-      license='GPLv3',
+      license='MIT',
       packages=['BSBolt',
                 'BSBolt.Align',
                 'BSBolt.CallMethylation',

@@ -85,6 +85,7 @@ celerybeat-schedule
 # test files
 /tests/TestData/BSB_Test_DB
 /tests/TestSimulations/BSB*
+<<<<<<< HEAD
 /tests/TestData/BSB*
 /tests/BSB_*
 /tests/*.sam
@@ -94,6 +95,9 @@ celerybeat-schedule
 /tests/TestData/test_imputed_matrix.txt
 /tests/TestData/test_cgmap_files/matrix_test.txt
 /tests/TestData/test_cgmap_files/matrix_test.txt_count
+=======
+/tests/BSB*
+>>>>>>> f2dcbc03251b16e1757838d7d685e04f9a5037bf
 
 
 # Environments
@@ -105,8 +109,11 @@ ENV/
 env.bak/
 venv.bak/
 
+<<<<<<< HEAD
 *.ipynb
 
+=======
+>>>>>>> f2dcbc03251b16e1757838d7d685e04f9a5037bf
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -132,6 +139,12 @@ scratch*
 BSBolt/External/WGSIM/wgsim
 /BSBolt/External/WGSIM/wgsim.dSYM/Contents/Info.plist
 /BSBolt/External/WGSIM/wgsim.dSYM/Contents/Resources/DWARF/wgsim
+<<<<<<< HEAD
 BSBolt/External/BWA/bwa
 BSBolt/External/BWA/libwa.a
 BSBolt/External/BWA/*.o
+=======
+BSBolt/External/BWA/bwa-mem2
+BSBolt/External/BWA/libwa.a
+BSBolt/External/BWA/src/*.o
+>>>>>>> f2dcbc03251b16e1757838d7d685e04f9a5037bf
