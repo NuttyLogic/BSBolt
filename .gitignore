@@ -85,9 +85,11 @@ celerybeat-schedule
 # test files
 /tests/TestData/BSB_Test_DB
 /tests/TestSimulations/BSB*
-/tests/BSB*
+/tests/TestData/BSB*
+/tests/BSB_*
 /tests/*.sam
 /tests/TestSimulations/*
+/tests/BSB_pe_test.bam
 /tests/TestData/BSB_test.fa.fai
 /tests/TestData/test_imputed_matrix.txt
 /tests/TestData/test_cgmap_files/matrix_test.txt
