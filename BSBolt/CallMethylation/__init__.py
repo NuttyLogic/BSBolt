@@ -1,0 +1,3 @@
+from BSBolt.CallMethylation.CallValues import CallMethylationValues
+from BSBolt.CallMethylation.CallVector import CallMethylationVector
+from BSBolt.CallMethylation.ProcessMethylationContigs import ProcessContigs
