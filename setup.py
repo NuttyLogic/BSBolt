@@ -44,7 +44,7 @@ def make_external_dependencies():
         print('Compiling wgsim')
         compile_dependency(['make'], wgsim_directory)
     if not os.path.exists(f'{bwa_directory}/bwa-mem2'):
-        print('Compiling bwa-mem2')
+        print('Compiling bwa-mem')
         compile_dependency(['make'], bwa_directory)
 
 
