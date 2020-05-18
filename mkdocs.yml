@@ -1,0 +1,39 @@
+site_name: BSBolt (BiSulfite Bolt)
+repo_url: https://github.com/NuttyLogic/BSBolt
+repo_name: 'GitHub'
+
+theme:
+  name: 'material'
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Alignment:
+    - Index Generation: bsb_index.md
+    - Read Alignment: align.md
+    - Alignment Output: alignment_output.md
+  - Methylation Calling: methylation_calling.md
+  - Methylation Matrix Generation:
+    - Matrix Assembly: matrix.md
+    - Matrix Imputation: imputation.md
+  - Simulation:
+    - Simulation Background: sim_ref.md
+    - Read Simulation: read_simulation.md
+  - API:
+    - Index: index_api.md
+    - Align: align_api.md
+    - Methylation Calling: meth_call_api.md
+    - Matrix Assembly: matrix_api.md
+    - Imputation: imputation_api.md
+    - Simulation: simulation_api.md
+    - Utilities: utils_api.md
+  #- Tutorial: tutorial.md
+  #- Pipelines: pipelines.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - mkautodoc
+
+extra_css:
+    - custom.css

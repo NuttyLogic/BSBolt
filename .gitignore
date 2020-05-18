@@ -11,6 +11,7 @@ __pycache__/
 build/
 develop-eggs/
 dist/
+fixed_wheels/
 downloads/
 eggs/
 .eggs/
@@ -82,9 +83,15 @@ celerybeat-schedule
 *.sage.py
 
 # test files
-/Tests/TestData/BSB_Test_DB
-/Tests/TestSimulations/BSB*
-/Tests/BSB*
+/tests/TestData/BSB_Test_DB
+/tests/TestSimulations/BSB*
+/tests/BSB*
+/tests/*.sam
+/tests/TestSimulations/*
+/tests/TestData/BSB_test.fa.fai
+/tests/TestData/test_imputed_matrix.txt
+/tests/TestData/test_cgmap_files/matrix_test.txt
+/tests/TestData/test_cgmap_files/matrix_test.txt_count
 
 
 # Environments
@@ -95,6 +102,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+*.ipynb
 
 # Spyder project settings
 .spyderproject
@@ -116,3 +125,11 @@ venv.bak/
 .idea/workspace.xml
 .DS_Store
 scratch*
+
+# compiled binaries
+BSBolt/External/WGSIM/wgsim
+/BSBolt/External/WGSIM/wgsim.dSYM/Contents/Info.plist
+/BSBolt/External/WGSIM/wgsim.dSYM/Contents/Resources/DWARF/wgsim
+BSBolt/External/BWA/bwa
+BSBolt/External/BWA/libwa.a
+BSBolt/External/BWA/*.o
