@@ -85,7 +85,7 @@ align_parser.add_argument('-H', type=str, default=None,
                           help='insert STR to header if it starts with @; or insert lines in FILE [null]',
                           required=False)
 align_parser.add_argument('-j', action='store_true', default=False,
-                          help='treat ALT contigs as part of the primary assembly (i.e. ignore <idxbase>.alt file)',
+                          help='ignore ALT contigs',
                           required=False)
 align_parser.add_argument('-T', type=int, default=80,
                           help='minimum score to output [80], set based on read length',

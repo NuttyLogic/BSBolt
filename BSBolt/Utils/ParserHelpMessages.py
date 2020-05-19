@@ -12,7 +12,7 @@ Input / Output Options:
   -H Str       insert STR to header if it starts with @; or insert lines in FILE [null]
   -XA Int,Int  if there are <INT hits with score >80 percent of the max score, output all in XA [100,200]
   -DR Float    drop ratio for alternative hits reported in XA tag, 
-               for best bisulifte alignment performance set at or above default [0.95]
+               for best bisulfite alignment performance set at or above default [0.95]
   -p           smart pairing (ignoring in2.fq)
 Scoring Options
   -A Int       score for a sequence match, which scales options -TdBOELU unless overridden [1]
@@ -29,7 +29,7 @@ Algorithm Options
   -t Int       number of bwa threads [1]
   -k Int       minimum seed length [19]
   -w Int       band width for banded alignment [100]
-  -d Int       off-diagonal X-dropoff [100]
+  -d Int       off-diagonal X drop off [100]
   -r Float     look for internal seeds inside a seed longer than {-k} * FLOAT [1.5]
   -y Int       seed occurrence for the 3rd round seeding [20]
   -c Int       skip seeds with more than INT occurrences [500]
@@ -38,7 +38,7 @@ Algorithm Options
   -m Int       perform at most INT rounds of mate rescues for each read [50]\
   -S           skip mate rescue
   -P           skip pairing; mate rescue performed unless -S also in use
-  -j           treat ALT contigs as part of the primary assembly (i.e. ignore <idxbase>.alt file)
+  -j           ignore ALT contigs
   -T Int       minimum score to output [80], set based on read length
   -M           mark shorter split hits as secondary
   -I Fl,Fl,Int,Int    specify the mean, standard deviation (10 percent of the mean if absent), 
@@ -54,7 +54,7 @@ BSBolt Index -G {fasta reference} -DB {database output}
 
 Index Options:
   -G File      path to reference genome fasta file, fasta file should contain all contigs
-  -DB File     path to index directory, alingment index generated inside existing directory 
+  -DB File     path to index directory, alignment index generated inside existing directory 
                or new directory made if directory doesn't exist
   -B Int       block size for bwtsw algorithm, 
                increasing block will speed up indexing and increase memory consumption [10000000]
@@ -63,8 +63,8 @@ Index Options:
   -rrbs        generate a Reduced Representative Bisulfite Sequencing (RRBS) index\n
   -rrbs-cut-format Str    Cut format to use for generation of RRBS database, [C-CGG] MSPI, 
                           input multiple enzymes as a comma separate string, C-CGG,C-CGG,...
-  -rrbs-lower Int      lower bound fragment size to consider RRBS indexgeneration [40]
-  -rrbs-upper Int      upper bound fragment size to consider RRBS indexgeneration [500]
+  -rrbs-lower Int      lower bound fragment size to consider RRBS index generation [40]
+  -rrbs-upper Int      upper bound fragment size to consider RRBS index generation [500]
 '''
 
 meth_help = '''
@@ -101,7 +101,7 @@ Options:
   -S Str,Str,.          comma separated list of samples labels. If sample labels are not provided sample labels 
                         are extracted from CGmap files. Can also pass path to txt for line separated sample labels.
   -min-coverage Int     minimum site read depth coverage 
-  -min-sample Flaot     proportion of samples that must have a valid site (above minimum coverage threshold)
+  -min-sample Float     proportion of samples that must have a valid site (above minimum coverage threshold)
   -O File               Aggregate matrix output path
   -CG                   Only output CG sites
   -verbose              Verbose aggregation
@@ -134,7 +134,8 @@ Algorithm Options:
   -HA         haplotype mode, homozygous variants only
   -CH         skip simulation of CH methylation, all CH sites unmethylated
   -SE Float   sequencing Error [0.001]
-  -NF Float   cutoff threshold for amibiguous bases, simulated reads with a proportion of ambiguous bases above this threshold will not be output [0.05]
+  -NF Float   cutoff threshold for ambiguous bases, simulated reads with a proportion of ambiguous 
+              bases above this threshold will not be output [0.05]
   -FM Int     max fragment size [400]
   -IM Int     insert length mean [50]
   -SM Int     insert length standard deviation [50]
@@ -147,11 +148,12 @@ BSBolt Impute -M {BSBolt_matrix.txt} -O {imputed_matrix.txt}
 
 Options:
   -M File     path to BSBolt matrix file
-  -B Int      imputation sample batch size kNN imputation, by default the all of the samples will be processed as a single batch
+  -B Int      imputation sample batch size kNN imputation, by default the all of the samples 
+              will be processed as a single batch
   -W Int      sliding window size for imputation [3000000]
   -k Int      number of neighbors to use for imputation [5]
   -t Int      number of threads available for imputation [1]
-  -verbose    verbose imputaiton
+  -verbose    verbose imputation
   -O File     output path for imputed matrix
   -R          randomize batches
 '''

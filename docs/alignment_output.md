@@ -39,5 +39,5 @@ with non-methylatable bases reported as counts.
 
 Read bisulfite conversion status is assessed by counting the number of methylated CH sites to total number of observed CH sites
 within a read or read pair. A high proportion of methylated CH to total CH sites suggests the read has not been fully bisulfite converted.
-The parameters used to assess bisulfite conversion status are set through the *-CT* and *-CP* alignment options. If not enough CH sites are 
+The parameters used to assess bisulfite conversion status are set through the *-CT* and *-CP* alignment options. If not enough CH sites are
 observed the XC tag is not reported.

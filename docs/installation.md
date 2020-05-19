@@ -21,6 +21,6 @@ Dependencies
 # clone the repository
 git clone https://github.com/NuttyLogic/BSBolt.git
 cd BSBolt
-# compile executables and install package
+# compile and install package
 pip3 install .
 ```
