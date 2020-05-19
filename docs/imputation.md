@@ -1,8 +1,9 @@
-BSBolt Impute leverages the correlation structure between neighboring CpG sites to impute missing values through the use of a kNN sliding window.  
-Within each window the nearest neighbors are calculated using Euclidean distance for non-null sites. The average value of k nearest neighbors is used to impute the null methylation value. 
-To efficiently scale the algorithm, imputation can be performed in batches. 
+BSBolt Impute leverages the correlation structure between neighboring CpG sites to impute missing values 
+through the use of a kNN sliding window. Within each window the nearest neighbors are calculated using Euclidean 
+distance for non-null sites. The average value of k nearest neighbors is used to impute the null methylation value.
+To efficiently scale the algorithm, imputation can be performed in batches.
 
-![](img/kNN_graphic.png)
+![kNN Window](img/kNN_graphic.png)
 
 ```shell
 BSBolt Impute -M {BSBolt_matrix.txt} -O {imputed_matrix.txt}
@@ -15,17 +16,19 @@ Options:
   -W Int      sliding window size for imputation [3000000]
   -k Int      number of neighbors to use for imputation [5]
   -t Int      number of threads available for imputation [1]
-  -verbose    verbose imputaiton
+  -verbose    verbose imputation
   -O File     output path for imputed matrix
   -R          randomize batches
 ```  
 
-**Impute No Batches**
+#### **Impute No Batches**
+
 ```shell
 python3 -m BSBolt Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt
 ```
 
-**Batch Imputation**
+### **Batch Imputation**
+
 ```shell
 python3 -m BSBolt Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt -B 10 -R
 ```
