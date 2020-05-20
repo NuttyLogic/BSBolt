@@ -6,8 +6,6 @@
 
 
 
-
-
 samSorter::samSorter(bseq1_t *first_read){
         group_1_score = 0;
         group_2_score = 0;
@@ -78,7 +76,7 @@ void samSorter::setUnmapped(bseq1_t *read){
         str->s[str->l] = 0;
     }
     kputsn("\tAS:i:0", 7, str); 
-    kputsn("\tXO:Z:WC\n", 9, str);
+    kputsn("\tYS:Z:WC\n", 9, str);
     read->sam = strdup(str->s);
     free(str->s);
 }

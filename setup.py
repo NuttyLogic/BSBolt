@@ -1,8 +1,15 @@
 import os
-from setuptools import Extension, setup
+import subprocess
+
+try:
+    from setuptools import Extension, setup
+except ImportError as e:
+    print('Please install python setuptools, '
+          'https://packaging.python.org/tutorials/installing-packages/#use-pip-for-installing ')
+    raise e
+
 from setuptools.command.develop import develop
 from setuptools.command.build_py import build_py
-import subprocess
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -12,12 +19,12 @@ External dependencies compiled for linux using quay.io/pypa/manylinux2010_x86_64
 /opt/python/cpXX-cpXX/bin/python setup.py bdist_wheel
 """
 
-bwa_ext = Extension('bwa', sources=['BSBolt/External/BWA/bwa'])
-wgsim_ext = Extension('wgsim', sources=['BSBolt/External/WGSIM/wgsim'])
+# bwa_ext = Extension('bwa', sources=['BSBolt/External/BWA/bwa'])
+# wgsim_ext = Extension('wgsim', sources=['BSBolt/External/WGSIM/wgsim'])
 
 
 class BuildError(Exception):
-    """Error in methylation calling process"""
+    """Build error"""
     pass
 
 
@@ -43,8 +50,8 @@ def make_external_dependencies():
     if not os.path.exists(f'{wgsim_directory}/wgsim'):
         print('Compiling wgsim')
         compile_dependency(['make'], wgsim_directory)
-    if not os.path.exists(f'{bwa_directory}/bwa-mem2'):
-        print('Compiling bwa-mem')
+    if not os.path.exists(f'{bwa_directory}/bwa'):
+        print('Compiling bwa')
         compile_dependency(['make'], bwa_directory)
 
 
@@ -91,7 +98,7 @@ class BuildCmd(build_py):
 
 
 setup(name='BSBolt',
-      version='1.1.1',
+      version='1.1.2',
       description='Bisulfite Sequencing Processing Platform',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -117,7 +124,7 @@ setup(name='BSBolt',
                    'Programming Language :: Python :: 3.8'],
       platforms=["Linux", "Mac OS-X", "Unix"],
       requires=['pysam', 'numpy', 'tqdm'],
-      install_requires=['pysam>=0.15.4', 'numpy>=1.16.3', 'tqdm>=4.31.1'],
+      install_requires=['pysam>=0.15.4', 'numpy>=1.16.3', 'tqdm>=4.31.1', 'setuptools>=46.0.0'],
       entry_points={'console_scripts': ['BSBolt = BSBolt.__main__:launch_bsb']},
       python_requires='>=3.6',
       test_suite='tests',
@@ -125,6 +132,6 @@ setup(name='BSBolt',
       cmdclass={'develop': DevelopCmd,
                 'build_py': BuildCmd,
                 'bdist_wheel': bdist_wheel},
-      zip_safe=False,
-      extension_modules=[bwa_ext, wgsim_ext]
+      zip_safe=False
+      # extension_modules=[bwa_ext, wgsim_ext]
       )

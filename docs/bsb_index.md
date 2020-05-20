@@ -27,6 +27,7 @@ Index Options:
                increasing block will speed up indexing and increase memory consumption [10000000]
   -MR File     path to bed file of mappable regions.
                Index will be built using using masked contig sequence [null]
+  -IA          ignore alt contigs when constructing alignment index
   -rrbs        generate a Reduced Representative Bisulfite Sequencing (RRBS) index
 
   -rrbs-cut-format Str    Cut format to use for generation of RRBS database, [C-CGG] MSPI,
