@@ -22,8 +22,9 @@ class WholeGenomeBuild:
     """
 
     def __init__(self, reference_file: str = None, genome_database: str = None,
-                 mappable_regions: str = None, block_size: int = None):
+                 mappable_regions: str = None, block_size: int = None, ignore_alt: bool = False):
         self.reference_file = OpenFasta(fasta=reference_file)
+        self.ignore_alt = ignore_alt
         self.index_output = IndexOutput(genome_database=genome_database, block_size=block_size)
         self.mappable_regions = None
         if mappable_regions:
@@ -39,34 +40,32 @@ class WholeGenomeBuild:
         for is_contig_label, sequence in self.reference_file:
             if is_contig_label:
                 if contig_id:
-                    # join contig sequence
-                    contig_str = ''.join(contig_sequence)
-                    if self.mappable_regions:
-                        contig_str = self.mask_contig(contig_id, contig_str)
-                    # serialize contig file
-                    self.index_output.output_contig_sequence(contig_id, contig_str)
-                    # output contig reference
-                    self.index_output.write_contig_sequence(contig_id, contig_str)
-                    # get contig length
-                    self.contig_size_dict[contig_id] = len(contig_str)
-                    contig_sequence = []
-                # reset contig_id
+                    self.process_contig(contig_id, ''.join(contig_sequence))
                 contig_id = sequence.replace('>', '').split()[0]
+                contig_sequence = []
             else:
                 contig_sequence.append(sequence)
         # process remaining contig sequence
-        contig_str = ''.join(contig_sequence)
-        contig_len = len(contig_str)
-        if self.mappable_regions:
-            contig_str = self.mask_contig(contig_id, contig_str)
-            assert contig_len == len(contig_str), "Indexing error masked contig larger than reference"
-        self.index_output.output_contig_sequence(contig_id, contig_str)
-        self.index_output.write_contig_sequence(contig_id, contig_str)
+        self.process_contig(contig_id, ''.join(contig_sequence))
         self.index_output.database_output.close()
-        self.contig_size_dict[contig_id] = len(contig_str)
         self.index_output.output_contig_sequence('genome_index', self.contig_size_dict)
         # launch external commands
         self.index_output.build_index()
+
+    def process_contig(self, contig_id: str, contig_str: str):
+        """Process contig sequence"""
+        if self.ignore_alt and 'alt' in contig_id.lower():
+            return
+        if self.mappable_regions:
+            contig_len = len(contig_str)
+            contig_str = self.mask_contig(contig_id, contig_str)
+            assert contig_len == len(contig_str), "masking error, contig lens differ"
+        # serialize contig file
+        self.index_output.output_contig_sequence(contig_id, contig_str)
+        # output contig reference
+        self.index_output.write_contig_sequence(contig_id, contig_str)
+        # get contig length
+        self.contig_size_dict[contig_id] = len(contig_str)
 
     @staticmethod
     def get_mappable_regions(bed_file: str) -> Dict[str, List[Tuple[int, int]]]:

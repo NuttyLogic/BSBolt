@@ -5,11 +5,11 @@ from BSBolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impu
 
 bt2_path, art_path = get_external_paths()
 
-parser = argparse.ArgumentParser(description='BiSulfite Bolt, A bisulfite sequencing processing platform.',
+parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.1.2',
                                  usage='BSBolt Module {Module Arguments}')
 
-subparsers = parser.add_subparsers(description='BSBolt Modules, Please Invoke BSBolt Modules for Help\n '
-                                               'Documentation at bsbolt.readthedocs.io',
+subparsers = parser.add_subparsers(description='Please invoke BSBolt module for help,'
+                                               ' see bsbolt.readthedocs.io for detailed documentation',
                                    metavar='Index, Align, CallMethylation, AggregateMatrix, Simulate, Impute',
                                    dest='subparser_name')
 
@@ -85,7 +85,7 @@ align_parser.add_argument('-H', type=str, default=None,
                           help='insert STR to header if it starts with @; or insert lines in FILE [null]',
                           required=False)
 align_parser.add_argument('-j', action='store_true', default=False,
-                          help='ignore ALT contigs',
+                          help='treat ALT contigs as part of the primary assembly (i.e. ignore <idxbase>.alt file)',
                           required=False)
 align_parser.add_argument('-T', type=int, default=80,
                           help='minimum score to output [80], set based on read length',
@@ -116,6 +116,8 @@ index_parser.add_argument('-B', type=int, default=10000000, help='Block size for
                                                                  'consumption')
 index_parser.add_argument('-MR', type=str, default=None, help='Path to bed file of mappable regions. Index will be '
                                                               'built using using masked contig sequence')
+index_parser.add_argument('-IA', action='store_true', default=False, help='ignore alt contigs during '
+                                                                          'index construction')
 index_parser.add_argument('-rrbs', action="store_true", default=False, help='Generate a Reduced Representative'
                                                                             ' Bisulfite Sequencing (RRBS) index')
 index_parser.add_argument('-rrbs-cut-format', default='C-CGG',

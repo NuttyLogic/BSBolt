@@ -23,14 +23,16 @@ def launch_index(arguments):
                           cut_format=arguments.rrbs_cut_format,
                           lower_bound=arguments.rrbs_lower,
                           upper_bound=arguments.rrbs_upper,
-                          block_size=arguments.B)
+                          block_size=arguments.B,
+                          ignore_alt=arguments.IA)
         index.generate_rrbs_database()
     else:
         print(f'Generating WGBS Database at {arguments.DB}')
         index = WholeGenomeBuild(reference_file=arguments.G,
                                  genome_database=arguments.DB,
                                  mappable_regions=arguments.MR,
-                                 block_size=arguments.B)
+                                 block_size=arguments.B,
+                                 ignore_alt=arguments.IA)
         index.generate_bsb_database()
 
 

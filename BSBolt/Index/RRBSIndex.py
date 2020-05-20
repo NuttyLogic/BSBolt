@@ -20,6 +20,7 @@ class RRBSBuild:
     * *lower_bound (int)*: smallest mappable fragment size
     * *upper_bound (int)*: largest mappable fragment size
     * *cut_format (str)*: Comma separated list of restriction sites, - represent cut break
+    * *ignore_alt (bool)*: ignore alt contigs when constructing alignment index
 
     Usage:
     ```python
@@ -30,12 +31,13 @@ class RRBSBuild:
 
     def __init__(self, reference_file: str = None, genome_database: str = None,
                  lower_bound: int = 30, upper_bound: int = 500, cut_format: str = 'C-CGG',
-                 block_size: int = None):
+                 block_size: int = None, ignore_alt: bool = False):
         bwa_path, _ = get_external_paths()
         self.reference_file = OpenFasta(fasta=reference_file)
         self.index_output = IndexOutput(genome_database=genome_database, block_size=block_size)
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
+        self.ignore_alt = ignore_alt
         self.cut_sites = ProcessCutSites(cut_format=cut_format)
         self.mappable_regions = []
         self.contig_size_dict = {}
@@ -49,7 +51,6 @@ class RRBSBuild:
         for is_contig_label, sequence in self.reference_file:
             if is_contig_label:
                 if contig_id:
-                    # process contig sequence
                     self.process_contig_region(contig_id, contig_sequence)
                     contig_sequence = []
                 # set contig_id
@@ -75,6 +76,8 @@ class RRBSBuild:
         * *contig_id (str)*: contig label
         * *contig_sequence (list)*: a list of of string containing DNA Sequence
         """
+        if self.ignore_alt and 'alt' in contig_id.lower():
+            return
         # join contig_squence to get ease downstream processing
         contig_str: str = ''.join(contig_sequence)
         # save contig size to dict
