@@ -27,7 +27,7 @@ bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_1.fq', '-F2',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_2.fq', '-O',
-                      f'{bsb_directory}tests/BSB_pe_test', '-t', '10', '-UN']
+                      f'{bsb_directory}tests/BSB_pe_test', '-t', '10', '-UN', '-SP', '0.1']
 subprocess.run(bsb_align_commands)
 
 sorted_output = f'{bsb_directory}tests/BSB_pe_test.sorted.bam'
@@ -125,7 +125,7 @@ class TestBSBPipeline(unittest.TestCase):
         for label, test_site in site_comparisons.items():
             if test_site['coverage_difference'] > coverage_difference_tolerance:
                 out_of_tolerance_sites += 1
-        self.assertLessEqual(out_of_tolerance_sites, 20)
+        self.assertLessEqual(out_of_tolerance_sites, 50)
 
     def test_beta_proportion(self):
         # set z threshold

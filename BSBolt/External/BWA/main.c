@@ -4,7 +4,7 @@
 #include "utils.h"
 
 #ifndef PACKAGE_VERSION
-#define PACKAGE_VERSION "BSB-1.1.2-BWA-fork-0.7.17"
+#define PACKAGE_VERSION "BSB-1.2.0-BWA-fork-0.7.17"
 #endif
 
 int bwa_index(int argc, char *argv[]);
