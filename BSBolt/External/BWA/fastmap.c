@@ -17,7 +17,8 @@ static void *process(void *shared, int step, void *_data)
 		int64_t size = 0;
 	    const mem_opt_t *opt = aux->opt;
 		ret = calloc(1, sizeof(ktp_data_t));
-		ret->seqs = bseq_read(aux->actual_chunk_size, &ret->n_seqs, aux->ks, aux->ks2, 0, 1, opt->undirectional);
+		ret->seqs = bseq_read(aux->actual_chunk_size, &ret->n_seqs, aux->ks, aux->ks2, 0, 1, 
+		                      opt->undirectional, opt->substitution_proportion);
 		if (ret->seqs == 0) {
 			free(ret);
 			return 0;
@@ -109,7 +110,7 @@ int main_mem(int argc, char *argv[])
 
 	aux.opt = opt = mem_opt_init();
 	memset(&opt0, 0, sizeof(mem_opt_t));
-	while ((c = getopt(argc, argv, "51qpaMCSPVYjuzk:c:v:s:r:t:R:A:B:O:E:U:w:L:d:T:Q:D:m:I:N:o:f:W:x:G:h:Z:y:K:X:H:l:n:")) >= 0) {
+	while ((c = getopt(argc, argv, "51qpaMCSPVYjuzk:c:v:s:r:t:R:A:B:O:E:U:w:L:d:T:Q:D:m:I:N:o:f:W:x:G:h:Z:y:K:X:H:l:n:e:")) >= 0) {
 		if (c == 'k') opt->min_seed_len = atoi(optarg), opt0.min_seed_len = 1;
 		else if (c == '1') no_mt_io = 1;
 		else if (c == 'x') mode = optarg;
@@ -130,6 +131,7 @@ int main_mem(int argc, char *argv[])
 		else if (c == 'q') opt->flag |= MEM_F_KEEP_SUPP_MAPQ;
 		else if (c == 'u') opt->flag |= MEM_F_XB;
 		else if (c == 'z') opt->undirectional = 1; // bisulfite undirectional true 
+		else if (c == 'e') opt->substitution_proportion = atof(optarg);
 		else if (c == 'c') opt->max_occ = atoi(optarg), opt0.max_occ = 1;
 		else if (c == 'd') opt->zdrop = atoi(optarg), opt0.zdrop = 1;
 		else if (c == 'v') bwa_verbose = atoi(optarg);
@@ -250,8 +252,9 @@ int main_mem(int argc, char *argv[])
 		//fprintf(stderr, "                     intractg: -B9 -O16 -L5  (intra-species contigs to ref)\n");
 		fprintf(stderr, "\nBisulfite Alignment Options\n");
 		fprintf(stderr, "       -z             perform undirectional alignment and report only best alignments (ie. consider PCR duplicates of bisulfite converted DNA)\n                      Note, if alignment scores are equivalent read reported as unmapped\n");
-		fprintf(stderr, "       -l             proportion of unconverted CH sites to total obsererved CH sites required to mark a read bisulfite conversion incomplete [0.50]\n");
+		fprintf(stderr, "       -l             proportion of unconverted CH sites to total observed CH sites required to mark a read bisulfite conversion incomplete [0.50]\n");
 		fprintf(stderr, "       -n             number of CH that must be observed to calculate bisulfite conversion status [5]\n                      Paired reads converion status is assessed using the primary paired alignments\n");
+		fprintf(stderr, "       -e             substitution threshold for read bisulfite conversion patterns (ie C2T, G2A) [0.1]\n                      for undirectional libraries the substitution pattern with the fewer number of substitutions relative to the total read length\n                      is aligned preferentially\n");
 		fprintf(stderr, "\nInput/output options:\n\n");
 		fprintf(stderr, "       -p            smart pairing (ignoring in2.fq)\n");
 		fprintf(stderr, "       -R STR        read group header line such as '@RG\\tID:foo\\tSM:bar' [null]\n");

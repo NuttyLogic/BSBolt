@@ -31,12 +31,12 @@ python3 -m BSBolt
 ```shell
 BSBolt Module
 
-Align               Alignment Module
-Index               Index Generation Module
-CallMethylation     Methylation Calling Module
-AggregateMatrix     CGmap Matrix Aggregation Module
-Simulate            BSBolt Illumina Read Simulation Module
-Impute              kNN Imputation Module
+Align               Alignment
+Index               Index Generation
+CallMethylation     Methylation Calling
+AggregateMatrix     CGmap Matrix Aggregation
+Simulate            BSBolt Illumina Read Simulation
+Impute              kNN Imputation
 Sort                Sort BAM File
 BamIndex            Index BAM file
 ```

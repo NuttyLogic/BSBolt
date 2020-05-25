@@ -1,8 +1,15 @@
+#! /usr/bin/env python3
+
 import os
 import subprocess
+import sys
+
+if sys.version_info < (3, 6):
+    print('Python must be >= 3.6.0')
+    raise OSError
 
 try:
-    from setuptools import Extension, setup
+    from setuptools import setup
 except ImportError as e:
     print('Please install python setuptools, '
           'https://packaging.python.org/tutorials/installing-packages/#use-pip-for-installing ')
@@ -19,8 +26,6 @@ External dependencies compiled for linux using quay.io/pypa/manylinux2010_x86_64
 /opt/python/cpXX-cpXX/bin/python setup.py bdist_wheel
 """
 
-# bwa_ext = Extension('bwa', sources=['BSBolt/External/BWA/bwa'])
-# wgsim_ext = Extension('wgsim', sources=['BSBolt/External/WGSIM/wgsim'])
 
 
 class BuildError(Exception):
@@ -98,7 +103,7 @@ class BuildCmd(build_py):
 
 
 setup(name='BSBolt',
-      version='1.1.2',
+      version='1.2.0',
       description='Bisulfite Sequencing Processing Platform',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -133,5 +138,4 @@ setup(name='BSBolt',
                 'build_py': BuildCmd,
                 'bdist_wheel': bdist_wheel},
       zip_safe=False
-      # extension_modules=[bwa_ext, wgsim_ext]
       )

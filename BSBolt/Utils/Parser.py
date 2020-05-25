@@ -36,6 +36,8 @@ align_parser.add_argument('-CP', type=float, default=0.5, help='CH conversion pr
                           required=False)
 align_parser.add_argument('-CT', type=int, default=5, help='number of CH sites needed to assess read conversion',
                           required=False)
+align_parser.add_argument('-SP', type=float, default=0.1, help='substitution threshold for read bisulfite '
+                                                               'conversion patterns (ie C2T, G2A) [0.1]')
 align_parser.add_argument('-t', type=int, default=1, help='number of bwa threads [1]', required=False)
 align_parser.add_argument('-k', type=int, default=19, help='minimum seed length [19]', required=False)
 align_parser.add_argument('-w', type=int, default=100, help='band width for banded alignment [100]', required=False)
@@ -94,7 +96,9 @@ align_parser.add_argument('-XA', type=lambda x: x.strip(), default='100,200',
                           help='if there are <INT hits with score >80 percent of the max score, '
                                'output all in XA [100,200]',
                           required=False)
-align_parser.add_argument('-DR', type=float, default=0.95, help='drop ratio for alternative hits reported in XA tag, for best bisulifte alignment performance set at or above default [0.95]')
+align_parser.add_argument('-DR', type=float, default=0.95, help='drop ratio for alternative hits reported in XA tag, '
+                                                                'for best bisulifte alignment performance set at or '
+                                                                'above default [0.95]')
 align_parser.add_argument('-M', action='store_true', default=False,
                           help='mark shorter split hits as secondary',
                           required=False)

@@ -9,6 +9,13 @@ BSBolt utilizes a modified version of [BWA MEM](https://github.com/lh3/bwa) tail
 sequencing data, that follows the general workflow below.
 
   1. Input reads are *In silico* bisulfite converted, modifying unconverted methylatable bases.
+     1. When aligning undirectional reads, two substitution patterns per read are possible. DNA originating from
+        either reference strand will have a cytosine to thymine conversion pattern while its PCR product will have a
+        guanine to adenine conversion pattern. To assess which conversion pattern is most appropriate the read with
+        the fewer conversion substitutions relative to the read length is preferentially aligned.
+        So, a read with a cytosine to thymine conversion pattern
+        should contain fewer cytosine bases than guanine bases. If there are a high number of both cytosine and guanine
+        bases alignments for both conversion patterns are assessed and the better alignment is output.
   2. Converted reads are mapped to a bisulfite alignment index that contains
      both the sense and anti-sense bisulfite strands relative to the reference.
   3. Read alignments are assessed for mapping quality and bisulfite uniqueness.
@@ -44,6 +51,9 @@ Bisulfite Options
   -UN          library undirectional, ie. consider PCR products of bisulfite converted DNA
   -CP Float    CH conversion proportion threshold [0.5]
   -CT Int      number of CH sites needed to assess read conversion
+  -SP Float    substitution threshold for read bisulfite conversion patterns (ie C2T, G2A) [0.1]
+               for undirectional libraries the substitution pattern with the fewer number of
+               substitutions relative to the total read length (if < threshold) is aligned preferentially
 Algorithm Options
   -t Int       number of bwa threads [1]
   -k Int       minimum seed length [19]

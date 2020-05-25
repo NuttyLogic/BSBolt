@@ -79,13 +79,14 @@ def launch_alignment(arguments):
     for arg in default_args:
         bwa_cmd.extend([f'-{arg}', bsb_command_dict[arg]])
     if bsb_command_dict['H'] != 'None':
-        bwa_cmd.extend([f'-H', bsb_command_dict['H']])
+        bwa_cmd.extend(['-H', bsb_command_dict['H']])
     if bsb_command_dict['I'] != 'None':
-        bwa_cmd.extend([f'-I', bsb_command_dict['I']])
+        bwa_cmd.extend(['-I', bsb_command_dict['I']])
     if bsb_command_dict['INDEL']:
-        bwa_cmd.extend([f'-O', bsb_command_dict['INDEL']])
+        bwa_cmd.extend(['-O', bsb_command_dict['INDEL']])
     if bsb_command_dict['XA']:
-        bwa_cmd.extend([f'-h', bsb_command_dict['XA']])
+        bwa_cmd.extend(['-h', bsb_command_dict['XA']])
+    bwa_cmd.extend(['-e', bsb_command_dict['SP']])
     bwa_cmd.extend(['-l', bsb_command_dict['CP']])
     bwa_cmd.extend(['-n', bsb_command_dict['CT']])
     bwa_cmd.extend(['-Z', bsb_command_dict['DR']])

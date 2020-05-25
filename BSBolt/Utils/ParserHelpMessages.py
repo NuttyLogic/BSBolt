@@ -25,6 +25,9 @@ Bisulfite Options
   -UN          library undirectional, ie. consider PCR products of bisulfite converted DNA
   -CP Float    CH conversion proportion threshold [0.5]
   -CT Int      number of CH sites needed to assess read conversion
+  -SP Float    substitution threshold for read bisulfite conversion patterns (ie C2T, G2A) [0.1]
+               for undirectional libraries the substitution pattern with the fewer number of 
+               substitutions relative to the total read length (if < threshold) is aligned preferentially
 Algorithm Options
   -t Int       number of bwa threads [1]
   -k Int       minimum seed length [19]
@@ -35,7 +38,7 @@ Algorithm Options
   -c Int       skip seeds with more than INT occurrences [500]
   -D Float     drop chains shorter than FLOAT fraction of the longest overlapping chain [0.50]
   -W Int       discard a chain if seeded bases shorter than INT [0]
-  -m Int       perform at most INT rounds of mate rescues for each read [50]\
+  -m Int       perform at most INT rounds of mate rescues for each read [50]
   -S           skip mate rescue
   -P           skip pairing; mate rescue performed unless -S also in use
   -j           ignore ALT contigs

@@ -71,7 +71,7 @@ static inline void kseq2bseq1(const kseq_t *ks, bseq1_t *s, int conversion, int 
 }
 
 bseq1_t *bseq_read(int64_t chunk_size, int *n_, void *ks1_, void *ks2_, int64_t *s, int conversion, 
-                        int undirectional)
+                        int undirectional, float substitution_proportion)
 {
 	kseq_t *ks = (kseq_t*)ks1_, *ks2 = (kseq_t*)ks2_;
 	int64_t size = 0, m, n;
@@ -88,7 +88,17 @@ bseq1_t *bseq_read(int64_t chunk_size, int *n_, void *ks1_, void *ks2_, int64_t 
 			seqs = (bseq1_t*) realloc(seqs, m * sizeof(bseq1_t));
 		}
 		trim_readno(&ks->name);
-		kseq2bseq1(ks, &seqs[n], conversion, 0, 0, 0);
+		int substitution_pattern = 0;
+		int compare_reads = 0;
+		// assess read conversion type for undirectional reads
+		if (undirectional){
+			int un_type = 0;
+			if (ks2) un_type = assessConversion(ks->seq.s, ks2->seq.s, 1, substitution_proportion);
+			else un_type = assessConversion(ks->seq.s, ks->seq.s, 0, substitution_proportion);
+			if (un_type == 2) compare_reads = 1;
+			else  substitution_pattern = un_type;
+		}
+		kseq2bseq1(ks, &seqs[n], conversion, 0, 0, substitution_pattern);
 		seqs[n].id = n;
 		//{
 		//	size += strlen(seqs[n].name);
@@ -101,11 +111,11 @@ bseq1_t *bseq_read(int64_t chunk_size, int *n_, void *ks1_, void *ks2_, int64_t 
 
 		if (ks2) {
 			trim_readno(&ks2->name);
-			kseq2bseq1(ks2, &seqs[n], conversion, 1, 0, 1);
+			kseq2bseq1(ks2, &seqs[n], conversion, 1, 0, substitution_pattern ? 0: 1);
 			seqs[n].id = n;
 			size += seqs[n++].l_seq;
 		}
-		if (undirectional){
+		if (compare_reads){
 			trim_readno(&ks->name);
 			kseq2bseq1(ks, &seqs[n], conversion, 0, 1, 1);
 			seqs[n].id = n;
