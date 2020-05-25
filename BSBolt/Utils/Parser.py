@@ -13,14 +13,14 @@ subparsers = parser.add_subparsers(description='Please invoke BSBolt module for 
                                    metavar='Index, Align, CallMethylation, AggregateMatrix, Simulate, Impute',
                                    dest='subparser_name')
 
-align_parser = subparsers.add_parser('Align', help='Alignment Module', usage=alignment_help, add_help=False)
-index_parser = subparsers.add_parser('Index', help='Index Generation Module', usage=index_help, add_help=False)
-call_meth_parser = subparsers.add_parser('CallMethylation', help='Methylation Calling Module',
+align_parser = subparsers.add_parser('Align', help='Alignment', usage=alignment_help, add_help=False)
+index_parser = subparsers.add_parser('Index', help='Index Generation', usage=index_help, add_help=False)
+call_meth_parser = subparsers.add_parser('CallMethylation', help='Methylation Calling',
                                          usage=meth_help, add_help=False)
-matrix_parser = subparsers.add_parser('AggregateMatrix', help='CGmap Matrix Aggregation Module', add_help=False,
+matrix_parser = subparsers.add_parser('AggregateMatrix', help='CGmap Matrix Aggregation', add_help=False,
                                       usage=aggregate_help)
-sim_parser = subparsers.add_parser('Simulate', help='Read Simulation Module', add_help=False, usage=sim_help)
-imputation_parser = subparsers.add_parser('Impute', help='kNN Imputation Module', add_help=False, usage=impute_help)
+sim_parser = subparsers.add_parser('Simulate', help='Read Simulation', add_help=False, usage=sim_help)
+imputation_parser = subparsers.add_parser('Impute', help='kNN Imputation', add_help=False, usage=impute_help)
 sort_parser = subparsers.add_parser('Sort', help='BAM Sort')
 bam_index = subparsers.add_parser('BamIndex', help='BAM Index')
 # Add Alignment Parser Commands
