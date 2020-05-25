@@ -58,6 +58,7 @@ typedef struct {
 	int undirectional;
 	int ch_conversion_threshold; // number of ch sites required to assess bisulfite conversion
 	float ch_conversion_proportion; // proportion of uncoverted ch sites within read used to set XC tag
+	float substitution_proportion; // reads substition patterns for reads above this threshold will not be considered if other read is also above 
 } mem_opt_t;
 
 typedef struct {

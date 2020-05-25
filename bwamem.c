@@ -82,6 +82,7 @@ mem_opt_t *mem_opt_init()
 	o->undirectional = 0;
 	o->ch_conversion_threshold = 5;
 	o->ch_conversion_proportion = 0.5;
+	o->substitution_proportion = 0.1;
 	bwa_fill_scmat(o->a, o->b, o->mat);
 	return o;
 }
