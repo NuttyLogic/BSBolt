@@ -83,7 +83,8 @@ bseq1_t *bseq_read(int64_t chunk_size, int *n_, void *ks1_, void *ks2_, int64_t 
 			fprintf(stderr, "[W::%s] the 2nd file has fewer sequences.\n", __func__);
 			break;
 		}
-		if (n >= m) {
+		// reallocate memory m -2 to account for undirectional library bseq read number uncertainty 
+		if (n >= m - 2) {
 			m = m? m<<1 : 256;
 			seqs = (bseq1_t*) realloc(seqs, m * sizeof(bseq1_t));
 		}
@@ -97,6 +98,7 @@ bseq1_t *bseq_read(int64_t chunk_size, int *n_, void *ks1_, void *ks2_, int64_t 
 			else un_type = assessConversion(ks->seq.s, ks->seq.s, 0, substitution_proportion);
 			if (un_type == 2) compare_reads = 1;
 			else  substitution_pattern = un_type;
+			if (substitution_pattern >1) fprintf(stderr, "conversion error\n");
 		}
 		kseq2bseq1(ks, &seqs[n], conversion, 0, 0, substitution_pattern);
 		seqs[n].id = n;
@@ -129,11 +131,11 @@ bseq1_t *bseq_read(int64_t chunk_size, int *n_, void *ks1_, void *ks2_, int64_t 
 				size += seqs[n++].l_seq;
 			}
 		}
-		if (size >= chunk_size - 4 && (n&1) == 0) break;
+		if (size >= chunk_size && (n&1) == 0) break;
 		// if (size >= chunk_size) {
 		//	break;
 		// }
-	}
+	}	
 	if (size == 0) { // test if the 2nd file is finished
 		if (ks2 && kseq_read(ks2) >= 0)
 			fprintf(stderr, "[W::%s] the 1st file has fewer sequences.\n", __func__);
