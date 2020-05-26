@@ -129,7 +129,7 @@ bseq1_t *bseq_read(int64_t chunk_size, int *n_, void *ks1_, void *ks2_, int64_t 
 				size += seqs[n++].l_seq;
 			}
 		}
-		if (size >= chunk_size && (n&1) == 0) break;
+		if (size >= chunk_size - 4 && (n&1) == 0) break;
 		// if (size >= chunk_size) {
 		//	break;
 		// }

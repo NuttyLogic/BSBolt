@@ -56,7 +56,7 @@ int assessConversion(char sequence1[], char sequence2[], int paired_end, float s
     if (c_g_difference < 0) c_g_difference = c_g_difference * -1.0;
     if (c_proportion > substitution_proportion && g_proportion > substitution_proportion) return 2;
     else if (c_proportion == g_proportion) return 2;
-    else if ((c_proportion - g_proportion) < 0.05) return 2;
+    else if (c_g_difference < 0.02) return 2;
     else if (c_proportion < g_proportion) return 0;
     else return 1;
 }
