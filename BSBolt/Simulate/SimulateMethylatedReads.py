@@ -138,6 +138,10 @@ class SimulateMethylatedReads:
         sim_data[1]['seq'] = sim_data[1]['seq'].replace(sub_pattern[0], sub_pattern[1]).upper()
         if self.paired_end:
             sim_data[2]['seq'] = sim_data[2]['seq'].replace(sub_pattern[0], sub_pattern[1]).upper()
+        if sub_pattern == 'G':
+            new_sim = {1: sim_data[2], 2: sim_data[1]}
+            # swap read 1 and read 2
+            sim_data = new_sim
         # switch subpattern randomly for output if undirectional
         ref_strand = 'W' if sub_pattern[0] == 'C' else 'C'
         if self.undirectional:
