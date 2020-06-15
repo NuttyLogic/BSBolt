@@ -9,8 +9,8 @@ from tests.TestHelpers import bsb_directory, z_test_of_proportion
 
 # generate simulated reads
 bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
-                         '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
-                         '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-PE', '-U',
+                         '-G', f'{bsb_directory}tests/TestData/BSB_test.fa', '-U',
+                         '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe', '-PE',
                          '-MR', '0.01', '-verbose', '-overwrite', '-RD', '20']
 subprocess.run(bsb_simulate_commands)
 print('Reads Simulated')

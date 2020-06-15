@@ -4,6 +4,20 @@ import sys
 import pysam
 
 
+def complement(sequence):
+    """
+    Params:
+
+    * *sequence(str) *: DNA sequence, non ATGC nucleotide will be returned unaltered
+
+    Returns:
+
+    * *sequence.translate(_rc_trans)(str) *: complement of input sequence
+    """
+    _rc_trans = str.maketrans('ACGTNacgtn', 'TGCANtgcan')
+    return sequence.translate(_rc_trans)
+
+
 def reverse_complement(sequence):
     """
     Params:
@@ -16,9 +30,7 @@ def reverse_complement(sequence):
     """
     # reverse string
     reversed_string = sequence[::-1]
-    # replace base with complement
-    _rc_trans = str.maketrans('ACGTNacgtn', 'TGCANtgcan')
-    return reversed_string.translate(_rc_trans)
+    return complement(reversed_string)
 
 
 def retrieve_iupac(nucleotide):
