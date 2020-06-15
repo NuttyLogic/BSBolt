@@ -138,23 +138,21 @@ class SimulateMethylatedReads:
         sim_data[1]['seq'] = sim_data[1]['seq'].replace(sub_pattern[0], sub_pattern[1]).upper()
         if self.paired_end:
             sim_data[2]['seq'] = sim_data[2]['seq'].replace(sub_pattern[0], sub_pattern[1]).upper()
-        if sub_pattern == 'G':
-            new_sim = {1: sim_data[2], 2: sim_data[1]}
-            # swap read 1 and read 2
-            sim_data = new_sim
         # switch subpattern randomly for output if undirectional
         ref_strand = 'W' if sub_pattern[0] == 'C' else 'C'
         if self.undirectional:
             sub_pattern = ('C', 'T') if self.random_roll(0.5) else ('G', 'A')
+        if sub_pattern[0] == 'G':
+            temp_sim = sim_data[1]
+            sim_data[1] = sim_data[2]
+            sim_data[2] = temp_sim
         self.output_sim_reads(sim_data, sub_pattern[0], ref_strand)
 
     def output_sim_reads(self, sim_data, sub_base, ref_strand):
         """Write simulated bisulfite reads"""
         # format reads
-        reverse_read = 2
-        if sub_base == 'G':
-            reverse_read = 1
         conversion_1, conversion_2 = ('C2T', 'G2A') if sim_data[1]['sub_base'] == sub_base else ('G2A', 'C2T')
+        reverse_read = 2 if sub_base == 'C' else 1
         sim_data[reverse_read]['seq'] = reverse_complement(sim_data[reverse_read]['seq'])
         sim_data[reverse_read]['qual'] = sim_data[reverse_read]['qual'][::-1]
         sim_data[reverse_read]['cigar'] = sim_data[reverse_read]['cigar'][::-1]
