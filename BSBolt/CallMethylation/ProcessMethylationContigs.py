@@ -98,7 +98,11 @@ class ProcessContigs:
         """
         get list of contigs in input file, threads set across contigs
         """
-        return [contig for contig in self.input_bam.references]
+        contigs = [contig[0] for contig in self.input_bam.get_index_statistics() if contig[1] > 0]
+        if not contigs:
+            print('No reads are mapped, exiting methylation calling\nPlease check alignment file\n')
+            raise MethylationCallingError
+        return contigs
 
     def process_contigs(self):
         """Launches a processing pool to call methylation values across the input file contigs
