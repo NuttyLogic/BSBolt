@@ -40,6 +40,8 @@ class BisulfiteAlignmentAndProcessing:
         sam_out = pysam.AlignmentFile(f'{self.output}.bam', 'wb', template=infile)
         for s in infile:
             sam_out.write(s)
+        infile.close()
+        sam_out.close()
         self.update_mapping_statistics(alignment_run.stderr)
 
     def update_mapping_statistics(self, log_pipe):
