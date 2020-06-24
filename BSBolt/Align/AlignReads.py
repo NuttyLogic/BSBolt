@@ -35,10 +35,13 @@ class BisulfiteAlignmentAndProcessing:
             infile = pysam.AlignmentFile(alignment_run.stdout, 'r')
         except ValueError as e:
             for line in iter(alignment_run.stderr.readline, ''):
+                if not line.strip():
+                    break
                 print(line)
             raise e
         sam_out = pysam.AlignmentFile(f'{self.output}.bam', 'wb', template=infile)
         for s in infile:
+            # s: pysam.AlignedSegment
             sam_out.write(s)
         infile.close()
         sam_out.close()
