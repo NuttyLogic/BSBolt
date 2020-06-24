@@ -23,7 +23,7 @@ out using a modified version of [wgsim](https://github.com/lh3/wgsim).
 Install through PyPi
 
 ```shell
-pip3 install BSBolt -v
+pip3 install BSBolt --user
 ```
 
 Install from source
