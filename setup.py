@@ -51,10 +51,14 @@ def compile_dependency(compilation_command, cwd):
 def make_external_dependencies():
     working_directory = os.path.dirname(os.path.realpath(__file__))
     bwa_directory = f'{working_directory}/BSBolt/External/BWA'
+    htslib_directory = f'{working_directory}/BSBolt/External/HTSLIB'
     wgsim_directory = f'{working_directory}/BSBolt/External/WGSIM'
     if not os.path.exists(f'{wgsim_directory}/wgsim'):
         print('Compiling wgsim')
         compile_dependency(['make'], wgsim_directory)
+    if not os.path.exists(f'{htslib_directory}/stream_bam'):
+        print('Compiling htslib')
+        compile_dependency(['make'], htslib_directory)
     if not os.path.exists(f'{bwa_directory}/bwa'):
         print('Compiling bwa')
         compile_dependency(['make'], bwa_directory)
@@ -86,7 +90,7 @@ class BuildCmd(build_py):
                            ('BSBolt.Align', 'BSBolt/Align', 'build/lib/BSBolt/Align', []),
                            ('BSBolt.CallMethylation', 'BSBolt/CallMethylation', 'build/lib/BSBolt/CallMethylation', []),
                            ('BSBolt.External', 'BSBolt/External', 'build/lib/BSBolt/External',
-                            ['WGSIM/wgsim', 'BWA/bwa']),
+                            ['WGSIM/wgsim', 'BWA/bwa', 'HTSLIB/stream_bam']),
                            ('BSBolt.Impute', 'BSBolt/Impute', 'build/lib/BSBolt/Impute', []),
                            ('BSBolt.Impute.Imputation', 'BSBolt/Impute/Imputation',
                             'build/lib/BSBolt/Impute/Imputation', []),
@@ -103,7 +107,7 @@ class BuildCmd(build_py):
 
 
 setup(name='BSBolt',
-      version='1.2.3',
+      version='1.3.0',
       description='Bisulfite Sequencing Processing Platform',
       long_description=long_description,
       long_description_content_type="text/markdown",
