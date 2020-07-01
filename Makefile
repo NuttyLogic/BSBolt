@@ -67,6 +67,7 @@ plugindir =
 BUILT_PROGRAMS = \
 	bgzip \
 	htsfile \
+	stream_bam \
 	tabix
 
 BUILT_TEST_PROGRAMS = \
@@ -157,6 +158,7 @@ LIBHTS_OBJS = \
 	regidx.o \
 	region.o \
 	sam.o \
+	stream_bam.o \
 	synced_bcf_reader.o \
 	vcf_sweep.o \
 	tbx.o \
@@ -370,6 +372,9 @@ bgzip: bgzip.o libhts.a
 
 htsfile: htsfile.o libhts.a
 	$(CC) $(LDFLAGS) -o $@ htsfile.o libhts.a $(LIBS) -lpthread
+
+stream_bam: stream_bam.o libhts.a
+	$(CC) $(LDFLAGS) -o $@ stream_bam.o libhts.a $(LIBS) -lpthread
 
 tabix: tabix.o libhts.a
 	$(CC) $(LDFLAGS) -o $@ tabix.o libhts.a $(LIBS) -lpthread
