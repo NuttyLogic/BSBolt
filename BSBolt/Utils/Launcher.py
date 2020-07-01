@@ -100,10 +100,10 @@ def launch_alignment(arguments):
         assert os.path.exists(f'{database}.opac'), f'-DB {arguments.DB} not complete, please re-index genome'
     bwa_cmd.append(database)
     bwa_cmd.append(bsb_command_dict['F1'])
-    assert os.path.exists(arguments.F1), f'-F1 {arguments.F1} does not exits, please check path'
+    assert os.path.exists(arguments.F1), f'-F1 {arguments.F1} does not exist, please check path'
     if bsb_command_dict['F2'] != 'None':
         bwa_cmd.append(bsb_command_dict['F2'])
-        assert os.path.exists(arguments.F2), f'-F2 {arguments.F2} does not exits, please check path'
+        assert os.path.exists(arguments.F2), f'-F2 {arguments.F2} does not exist, please check path'
     align_bisulfite(bwa_cmd, arguments.O)
 
 

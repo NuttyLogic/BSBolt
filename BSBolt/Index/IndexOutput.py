@@ -4,7 +4,7 @@ import pickle
 import gzip
 from typing import Dict, List, Union
 
-from BSBolt.Utils.UtilityFunctions import get_external_paths, reverse_complement
+from BSBolt.Utils.UtilityFunctions import get_external_paths
 
 
 class IndexOutput:

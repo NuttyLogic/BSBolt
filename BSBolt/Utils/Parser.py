@@ -5,7 +5,7 @@ from BSBolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impu
 
 bt2_path, art_path = get_external_paths()
 
-parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.1.2',
+parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.2.3',
                                  usage='BSBolt Module {Module Arguments}')
 
 subparsers = parser.add_subparsers(description='Please invoke BSBolt module for help,'
