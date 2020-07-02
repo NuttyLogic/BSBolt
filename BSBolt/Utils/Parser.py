@@ -1,9 +1,7 @@
 import argparse
 
-from BSBolt.Utils.UtilityFunctions import get_external_paths
 from BSBolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impute_help, index_help, meth_help, sim_help
 
-bt2_path, art_path = get_external_paths()
 
 parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.3.0',
                                  usage='BSBolt Module {Module Arguments}')

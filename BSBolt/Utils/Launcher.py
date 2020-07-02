@@ -10,7 +10,7 @@ from BSBolt.Matrix.MatrixAggregator import AggregateMatrix
 from BSBolt.Simulate import SimulateMethylatedReads
 from BSBolt.Utils.UtilityFunctions import index_bam, get_external_paths, sort_bam
 
-bwa_path, wgsim_path = get_external_paths()
+bwa_path, wgsim_path, stream_bam = get_external_paths()
 
 
 def launch_index(arguments):

@@ -7,7 +7,7 @@ from BSBolt.Utils.UtilityFunctions import get_external_paths
 from tests.TestHelpers import bsb_directory
 
 
-bwa_path, wgsim_path = get_external_paths()
+bwa_path, wgsim_path, stream_bam = get_external_paths()
 
 
 sim_out = f'{bsb_directory}tests/TestSimulations/sim_pe'

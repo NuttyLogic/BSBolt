@@ -94,9 +94,10 @@ def get_external_paths():
     external_directory = '/'.join(utility_directory.split('/')[:-1]) + '/External/'
     bwa = f'{external_directory}BWA/bwa'
     wgsim = f'{external_directory}WGSIM/wgsim'
+    stream_bam = f'{external_directory}HTSLIB/stream_bam'
     if not os.path.exists(bwa) or not os.path.exists(wgsim):
         print(f'Must compile external dependencies\n python3 setup.py build')
-    return bwa, wgsim
+    return bwa, wgsim, stream_bam
 
 
 def propagate_error(error):

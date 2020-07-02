@@ -5,7 +5,7 @@ from BSBolt.Utils.UtilityFunctions import reverse_complement, get_external_paths
 from tests.TestHelpers import test_directory
 
 
-bwa_path, wgsim_path = get_external_paths()
+bwa_path, wgsim_path, _ = get_external_paths()
 # hold read simulation data to test functions
 
 
