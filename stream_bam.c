@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     }
     
     if ((out = hts_open_format(fn_out, "wb", NULL)) == 0) {
-        fprintf(stderr, "failed to open \"%s\" for writing", fn_out);
+        fprintf(stderr, "failed to open \"%s\" for writing\n", fn_out);
         ret = 1;
         goto view_end;
     }
@@ -54,15 +54,17 @@ int main(int argc, char *argv[])
     view_end:
 
     // close files, free and return
-    if (hts_close(in)){
-       fprintf(stderr, "failed to close stdin\n"); 
+    if (in){
+        if (hts_close(in)){
+            fprintf(stderr, "failed to close stdin\n");
+            }
+        }
+    if (out){
+        if (hts_close(out)){
+            fprintf(stderr, "failed to close alignment output\n");
+        }
     }
-    if (hts_close(out)){
-        fprintf(stderr, "failed to close alignment output\n");
-    }
-
     free(fn_out);
     sam_hdr_destroy(header);
-
     return ret;
 }
