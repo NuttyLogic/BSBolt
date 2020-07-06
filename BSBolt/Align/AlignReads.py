@@ -1,3 +1,4 @@
+import os
 import subprocess
 from typing import List
 from BSBolt.Utils.UtilityFunctions import get_external_paths
@@ -33,9 +34,9 @@ class BisulfiteAlignmentAndProcessing:
                                          universal_newlines=True)
         bam_compression = subprocess.Popen([stream_bam, '-o', f'{self.output}.bam'],
                                            stdin=alignment_run.stdout,
-                                           stderr=subprocess.PIPE,
                                            universal_newlines=True)
         # if non sam file is returned print stderr
+        check_output = True
         while True:
             if bam_compression.returncode:
                 print('BAM compression error, please check options')
@@ -52,7 +53,14 @@ class BisulfiteAlignmentAndProcessing:
             alignment_info = alignment_run.stderr.readline().strip()
             if alignment_info:
                 if alignment_info[0:7] == 'BSStat ':
+                    if check_output:
+                        if os.path.exists(f'{self.output}.bam'):
+                            check_output = False
+                        else:
+                            print('BAM compression error, please check options')
+                            raise OSError
                     category, count = alignment_info.replace('BSStat ', '').split(': ')
+                    print(alignment_info)
                     self.mapping_statistics[category] += int(count)
                 else:
                     print(alignment_info)
