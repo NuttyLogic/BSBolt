@@ -28,39 +28,29 @@ class BisulfiteAlignmentAndProcessing:
         """ Launch bwa alignment. Pipe output to BAM file
         """
         _, _, stream_bam = get_external_paths()
+        if '/' in self.output:
+            assert os.path.exists('/'.join(self.output.split('/')[0:-1])), f"output path {self.output} not valid"
         alignment_run = subprocess.Popen(self.alignment_commands,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE,
                                          universal_newlines=True)
         bam_compression = subprocess.Popen([stream_bam, '-o', f'{self.output}.bam'],
-                                           stdin=alignment_run.stdout,
-                                           universal_newlines=True)
-        # if non sam file is returned print stderr
-        check_output = True
+                                           stdin=alignment_run.stdout)
+        # watch alignment progress, output stderr and collect alignment stats
         while True:
             if bam_compression.returncode:
-                print('BAM compression error, please check options')
-                for line in bam_compression.stderr.readlines():
-                    print(line)
                 break
-            if alignment_run.returncode:
-                print('Alignment error, please check options')
-                for line in alignment_run.stderr.readlines():
-                    print(line)
+            elif alignment_run.returncode:
                 break
-            if alignment_run.poll() is not None and bam_compression.poll() is not None:
+            elif alignment_run.poll() is not None and bam_compression.poll() is not None:
+                alignment_run.stdout.close()
+                alignment_run.stderr.close()
                 break
-            alignment_info = alignment_run.stderr.readline().strip()
-            if alignment_info:
-                if alignment_info[0:7] == 'BSStat ':
-                    if check_output:
-                        if os.path.exists(f'{self.output}.bam'):
-                            check_output = False
-                        else:
-                            print('BAM compression error, please check options')
-                            raise OSError
-                    category, count = alignment_info.replace('BSStat ', '').split(': ')
-                    print(alignment_info)
-                    self.mapping_statistics[category] += int(count)
-                else:
-                    print(alignment_info)
+            else:
+                alignment_info = alignment_run.stderr.readline().strip()
+                if alignment_info:
+                    if alignment_info[0:7] == 'BSStat ':
+                        category, count = alignment_info.replace('BSStat ', '').split(': ')
+                        self.mapping_statistics[category] += int(count)
+                    else:
+                        print(alignment_info)

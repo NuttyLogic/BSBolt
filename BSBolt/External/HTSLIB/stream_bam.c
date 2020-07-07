@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     }
 
     if (!fn_out){
-        fprintf(stderr, "No output file supplied, please specify output path\n");
+        fprintf(stderr, "No output file, please specify output path\n");
         return 1;
     }
 
@@ -25,14 +25,13 @@ int main(int argc, char *argv[])
         ret = 1;
         goto view_end;
     }
+    if ((out = hts_open_format(fn_out, "wb", NULL)) == 0) {
+        fprintf(stderr, "failed to open \"%s\" for writing output path not valid\n", fn_out);
+        hts_close(in);
+        return 1;
+    }
     if ((header = sam_hdr_read(in)) == 0) {
         fprintf(stderr, "alignment failed, check options\n");
-        ret = 1;
-        goto view_end;
-    }
-    
-    if ((out = hts_open_format(fn_out, "wb", NULL)) == 0) {
-        fprintf(stderr, "failed to open \"%s\" for writing\n", fn_out);
         ret = 1;
         goto view_end;
     }
