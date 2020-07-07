@@ -148,3 +148,5 @@ BSBolt/External/BWA/bwa-mem2
 BSBolt/External/BWA/libwa.a
 BSBolt/External/BWA/src/*.o
 >>>>>>> f2dcbc03251b16e1757838d7d685e04f9a5037bf
+
+libbwa.a

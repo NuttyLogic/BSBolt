@@ -59,7 +59,7 @@ class SimulateMethylatedReads:
                  pe_fragment_size: int = 400, insert_deviation: int = 25, mean_insert_size: int = 100,
                  collect_ch_sites: bool = True, collect_sim_stats: bool = False, verbose: bool = True,
                  overwrite_db: bool = False):
-        _, wgsim_path = get_external_paths()
+        _, wgsim_path, _ = get_external_paths()
         self.sim_command = [wgsim_path, '-1', str(read_length), '-2', str(read_length),
                             '-e', str(sequencing_error), '-d', str(pe_fragment_size),
                             '-s', str(insert_deviation),

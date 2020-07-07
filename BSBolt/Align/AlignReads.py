@@ -1,6 +1,7 @@
+import os
 import subprocess
 from typing import List
-import pysam
+from BSBolt.Utils.UtilityFunctions import get_external_paths
 
 
 class BisulfiteAlignmentAndProcessing:
@@ -17,7 +18,7 @@ class BisulfiteAlignmentAndProcessing:
     * self.mapping_statistics (dict)*: alignment run statistics
     """
 
-    def __init__(self,  alignment_commands: List[str], output=None):
+    def __init__(self, alignment_commands: List[str], output=None):
         self.alignment_commands = alignment_commands
         self.output = output
         self.mapping_statistics = dict(TotalReads=0, TotalAlignments=0, BSAmbiguous=0, C_C2T=0, C_G2A=0,
@@ -26,33 +27,40 @@ class BisulfiteAlignmentAndProcessing:
     def align_reads(self):
         """ Launch bwa alignment. Pipe output to BAM file
         """
+        _, _, stream_bam = get_external_paths()
         alignment_run = subprocess.Popen(self.alignment_commands,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE,
                                          universal_newlines=True)
+        bam_compression = subprocess.Popen([stream_bam, '-o', f'{self.output}.bam'],
+                                           stdin=alignment_run.stdout,
+                                           universal_newlines=True)
         # if non sam file is returned print stderr
-        try:
-            infile = pysam.AlignmentFile(alignment_run.stdout, 'r')
-        except ValueError as e:
-            for line in iter(alignment_run.stderr.readline, ''):
-                if not line.strip():
-                    break
-                print(line)
-            raise e
-        sam_out = pysam.AlignmentFile(f'{self.output}.bam', 'wb', template=infile)
-        for s in infile:
-            # s: pysam.AlignedSegment
-            sam_out.write(s)
-        infile.close()
-        sam_out.close()
-        self.update_mapping_statistics(alignment_run.stderr)
-
-    def update_mapping_statistics(self, log_pipe):
-        """Mapping statistics are updated per read group based on the mapping status"""
-        for line in iter(log_pipe.readline, ''):
-            if line[0:7] == 'BSStat ':
-                category, count = line.replace('BSStat ', '').split(': ')
-                self.mapping_statistics[category] += int(count)
-            else:
-                if line:
-                    print(line.strip())
+        check_output = True
+        while True:
+            if bam_compression.returncode:
+                print('BAM compression error, please check options')
+                for line in bam_compression.stderr.readlines():
+                    print(line)
+                break
+            if alignment_run.returncode:
+                print('Alignment error, please check options')
+                for line in alignment_run.stderr.readlines():
+                    print(line)
+                break
+            if alignment_run.poll() is not None and bam_compression.poll() is not None:
+                break
+            alignment_info = alignment_run.stderr.readline().strip()
+            if alignment_info:
+                if alignment_info[0:7] == 'BSStat ':
+                    if check_output:
+                        if os.path.exists(f'{self.output}.bam'):
+                            check_output = False
+                        else:
+                            print('BAM compression error, please check options')
+                            raise OSError
+                    category, count = alignment_info.replace('BSStat ', '').split(': ')
+                    print(alignment_info)
+                    self.mapping_statistics[category] += int(count)
+                else:
+                    print(alignment_info)

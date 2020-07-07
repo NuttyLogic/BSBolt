@@ -32,7 +32,7 @@ class RRBSBuild:
     def __init__(self, reference_file: str = None, genome_database: str = None,
                  lower_bound: int = 30, upper_bound: int = 500, cut_format: str = 'C-CGG',
                  block_size: int = None, ignore_alt: bool = False):
-        bwa_path, _ = get_external_paths()
+        bwa_path, _, _ = get_external_paths()
         self.reference_file = OpenFasta(fasta=reference_file)
         self.index_output = IndexOutput(genome_database=genome_database, block_size=block_size)
         self.lower_bound = lower_bound
