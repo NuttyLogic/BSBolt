@@ -58,6 +58,9 @@ def make_external_dependencies():
         compile_dependency(['make'], wgsim_directory)
     if not os.path.exists(f'{htslib_directory}/stream_bam'):
         print('Compiling htslib')
+        compile_dependency(['autoheader'], htslib_directory)
+        compile_dependency(['autoconf'], htslib_directory)
+        compile_dependency(['./configure', '--disable-bz2', '--disable-lzma'], htslib_directory)
         compile_dependency(['make'], htslib_directory)
     if not os.path.exists(f'{bwa_directory}/bwa'):
         print('Compiling bwa')
