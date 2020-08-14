@@ -42,7 +42,7 @@ Algorithm Options
   -S           skip mate rescue
   -P           skip pairing; mate rescue performed unless -S also in use
   -j           ignore ALT contigs
-  -T Int       minimum score to output [80], set based on read length
+  -T Int       minimum score to output [10]
   -M           mark shorter split hits as secondary
   -I Fl,Fl,Int,Int    specify the mean, standard deviation (10 percent of the mean if absent), 
                       max (4 sigma from the mean if absent) and min of the insert size distribution. 
