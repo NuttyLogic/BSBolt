@@ -3,7 +3,7 @@ import argparse
 from BSBolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impute_help, index_help, meth_help, sim_help
 
 
-parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.3.0',
+parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.3.1',
                                  usage='BSBolt Module {Module Arguments}')
 
 subparsers = parser.add_subparsers(description='Please invoke BSBolt module for help,'
@@ -87,8 +87,8 @@ align_parser.add_argument('-H', type=str, default=None,
 align_parser.add_argument('-j', action='store_true', default=False,
                           help='treat ALT contigs as part of the primary assembly (i.e. ignore <idxbase>.alt file)',
                           required=False)
-align_parser.add_argument('-T', type=int, default=80,
-                          help='minimum score to output [80], set based on read length',
+align_parser.add_argument('-T', type=int, default=10,
+                          help='minimum score to output [10], set based on read length',
                           required=False)
 align_parser.add_argument('-XA', type=lambda x: x.strip(), default='100,200',
                           help='if there are <INT hits with score >80 percent of the max score, '

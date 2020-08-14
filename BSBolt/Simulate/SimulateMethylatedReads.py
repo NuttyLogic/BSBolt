@@ -131,21 +131,21 @@ class SimulateMethylatedReads:
         """Set read methylation values, randomly assign reads to Watson or Crick strand"""
         # randomly select reference strand
         sub_pattern = ('C', 'T') if self.random_roll(0.5) else ('G', 'A')
-        # set read methylation
-        self.set_read_methylation(sim_data[1], sub_base=sub_pattern[0])
-        self.set_read_methylation(sim_data[2], sub_base=sub_pattern[0])
-        # in silico bisulfite conversion
-        sim_data[1]['seq'] = sim_data[1]['seq'].replace(sub_pattern[0], sub_pattern[1]).upper()
-        if self.paired_end:
-            sim_data[2]['seq'] = sim_data[2]['seq'].replace(sub_pattern[0], sub_pattern[1]).upper()
-        # switch subpattern randomly for output if undirectional
-        ref_strand = 'W' if sub_pattern[0] == 'C' else 'C'
         if self.undirectional:
             sub_pattern = ('C', 'T') if self.random_roll(0.5) else ('G', 'A')
         if sub_pattern[0] == 'G':
             temp_sim = sim_data[1]
             sim_data[1] = sim_data[2]
             sim_data[2] = temp_sim
+        # set read methylation
+        self.set_read_methylation(sim_data[1], sub_base=sub_pattern[0])
+        # in silico bisulfite conversion
+        sim_data[1]['seq'] = sim_data[1]['seq'].replace(sub_pattern[0], sub_pattern[1]).upper()
+        if self.paired_end:
+            self.set_read_methylation(sim_data[2], sub_base=sub_pattern[0])
+            sim_data[2]['seq'] = sim_data[2]['seq'].replace(sub_pattern[0], sub_pattern[1]).upper()
+        # switch subpattern randomly for output if undirectional
+        ref_strand = 'W' if sub_pattern[0] == 'C' else 'C'
         self.output_sim_reads(sim_data, sub_pattern[0], ref_strand)
 
     def output_sim_reads(self, sim_data, sub_base, ref_strand):
@@ -159,13 +159,13 @@ class SimulateMethylatedReads:
         read_label = f'@{sim_data[1]["read_id"]}_{sim_data[1]["chrom"]}/1'
         read_comment = f'+{sim_data[1]["chrom"]}:{sim_data[1]["start"]}:' \
                        f'{sim_data[1]["end"]}:{sim_data[1]["cigar"]}:{ref_strand}{conversion_1}'
-        read = f'{read_label}\n{sim_data[1]["seq"]}\n{read_comment}\n{sim_data[1]["qual"]}\n'
+        read = f'{read_label}\n{sim_data[1]["seq"].upper()}\n{read_comment}\n{sim_data[1]["qual"]}\n'
         self.output_objects[0].write(read)
         if self.paired_end:
             read_label = f'@{sim_data[2]["read_id"]}_{sim_data[2]["chrom"]}/2'
             read_comment = f'+{sim_data[1]["chrom"]}:{sim_data[2]["start"]}:' \
                            f'{sim_data[2]["end"]}:{sim_data[2]["cigar"]}:{ref_strand}{conversion_2}'
-            read = f'{read_label}\n{sim_data[2]["seq"]}\n{read_comment}\n{sim_data[2]["qual"]}\n'
+            read = f'{read_label}\n{sim_data[2]["seq"].upper()}\n{read_comment}\n{sim_data[2]["qual"]}\n'
             self.output_objects[1].write(read)
 
     def set_read_methylation(self, read, sub_base='C'):

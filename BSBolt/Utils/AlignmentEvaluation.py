@@ -66,7 +66,7 @@ class AlignmentEvaluator:
         for alignment in tqdm(open_alignment_file(alignment_file), disable=True if not self.verbose else False):
             # read shouldn't have read pair info but added for safety and tools that don't remove
             read_name = alignment.qname.split('/')[0]
-            if alignment.is_read1:
+            if alignment.is_read1 or not alignment.is_paired:
                 read_name = f'{read_name}/1'
             else:
                 read_name = f'{read_name}/2'
