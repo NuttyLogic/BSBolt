@@ -140,7 +140,7 @@ class TestBSBPipeline(unittest.TestCase):
     def test_on_target_read_alignments(self):
         # asses proportion of reads that mapped to simulated region
         on_target_alignments = read_stats['On_Prim_PropPair_NoDup'] + read_stats['On_Prim_Discord_NoDup']
-        self.assertGreater(on_target_alignments / read_stats['ObservedAlignments'],  0.97)
+        self.assertGreater(on_target_alignments / read_stats['ObservedAlignments'], 0.97)
 
     def test_off_target_reaad_alignments(self):
         off_target_alignments = read_stats['Off_Prim_PropPair_NoDup'] + read_stats['Off_Prim_Discord_NoDup']

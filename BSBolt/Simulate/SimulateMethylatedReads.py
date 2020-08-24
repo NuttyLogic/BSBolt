@@ -135,7 +135,6 @@ class SimulateMethylatedReads:
             temp_sim = sim_data[1]
             sim_data[1] = sim_data[2]
             sim_data[2] = temp_sim
-
         # set read methylation
         self.set_read_methylation(sim_data[1], sub_base=sub_pattern[0])
         # in silico bisulfite conversion
@@ -144,8 +143,12 @@ class SimulateMethylatedReads:
             self.set_read_methylation(sim_data[2], sub_base=sub_pattern[0])
             sim_data[2]['seq'] = sim_data[2]['seq'].replace(sub_pattern[0], sub_pattern[1]).upper()
         # switch subpattern randomly for output if undirectional
-        if self.undirectional:
-            sub_pattern = ('C', 'T') if self.random_roll(0.5) else ('G', 'A')
+        if self.undirectional and self.random_roll(0.5):
+            sub_pattern = ('C', 'T') if sub_pattern[0] == 'G' else ('G', 'A')
+            if self.paired_end:
+                temp_sim = sim_data[1]
+                sim_data[1] = sim_data[2]
+                sim_data[2] = temp_sim
         ref_strand = 'W' if sub_pattern[0] == 'C' else 'C'
         self.output_sim_reads(sim_data, sub_pattern[0], ref_strand)
 
