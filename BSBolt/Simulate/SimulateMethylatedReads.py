@@ -135,6 +135,7 @@ class SimulateMethylatedReads:
             temp_sim = sim_data[1]
             sim_data[1] = sim_data[2]
             sim_data[2] = temp_sim
+        ref_strand = 'W' if sub_pattern[0] == 'C' else 'C'
         # set read methylation
         self.set_read_methylation(sim_data[1], sub_base=sub_pattern[0])
         # in silico bisulfite conversion
@@ -149,7 +150,6 @@ class SimulateMethylatedReads:
                 temp_sim = sim_data[1]
                 sim_data[1] = sim_data[2]
                 sim_data[2] = temp_sim
-        ref_strand = 'W' if sub_pattern[0] == 'C' else 'C'
         self.output_sim_reads(sim_data, sub_pattern[0], ref_strand)
 
     def output_sim_reads(self, sim_data, sub_base, ref_strand):
