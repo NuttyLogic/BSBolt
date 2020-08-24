@@ -79,6 +79,7 @@ bsb_count_matrix_commands = ['python3', '-m', 'BSBolt', 'AggregateMatrix',
                              '-F', f'{test_cgmap_file[0]},{test_cgmap_file[1]},{test_cgmap_file[2]}',
                              '-S', f'S1,S2,S3', '-O', f'{test_matrix_output}_count', '-count', '-min-coverage',
                              '10', '-min-sample', '0.9', '-t', '4']
+
 subprocess.run(bsb_count_matrix_commands)
 
 
