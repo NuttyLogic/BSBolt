@@ -1,5 +1,6 @@
+from collections import Counter
 import multiprocessing as mp
-from typing import Deque, List
+from typing import List
 from BSBolt.Utils.CGmapIterator import OpenCGmap
 from BSBolt.Utils.UtilityFunctions import propagate_error
 from tqdm import tqdm
@@ -15,27 +16,30 @@ class CGmapSiteCollector:
            batch_size (int): chunk size for methylation observations to return
            verbose (bool): tqdm output
            threads (int): number of threads available
+           site_proportion_threshold (int): number of times a site must be observed to be included in matrix
     """
 
     def __init__(self, cgmap_files: List[str] = None,
                  min_site_coverage: int = 1,
                  cg_only: bool = False,
-                 batch_size: int = 40000,
+                 batch_size: int = 10000,
                  verbose: bool = False,
-                 threads: int = 8):
+                 threads: int = 8,
+                 site_proportion_threshold: int = 1):
         self.cgmap_files = cgmap_files
         self.min_site_coverage = min_site_coverage
         self.cg_only = cg_only
         self.batch_size = batch_size
         self.verbose = verbose
         self.threads = threads
-        self.observed_site_count = {}
+        self.site_proportion_threshold = site_proportion_threshold
+        self.observed_site_count = Counter()
 
-    def collect_consensus_sites(self):
+    def collect_consensus_sites(self) -> List[str]:
         # initialize collection_pool and manager queue
         collection_pool = mp.Pool(processes=self.threads)
         manager = mp.Manager()
-        collection_queue = manager.Queue(maxsize=50)
+        collection_queue = manager.Queue(maxsize=10)
         completed_samples = manager.list()
         for cgmap in self.cgmap_files:
             collection_pool.apply_async(self.collect_methylation_sites,
@@ -50,11 +54,7 @@ class CGmapSiteCollector:
             if len(completed_samples) == len(self.cgmap_files) and collection_queue.empty():
                 break
             sites = collection_queue.get(block=True)
-            for site in sites:
-                if site in self.observed_site_count:
-                    self.observed_site_count[site] += 1
-                else:
-                    self.observed_site_count[site] = 1
+            self.observed_site_count.update(sites)
             if pbar:
                 update_number = len(completed_samples) - update_count
                 pbar.update(update_number)
@@ -63,15 +63,9 @@ class CGmapSiteCollector:
             update_number = len(completed_samples) - update_count
             pbar.update(update_number)
             pbar.close()
+        return [site for site, count in self.observed_site_count.items() if count >= self.site_proportion_threshold]
 
-    def process_sites(self, sites: list):
-        for site in sites:
-            if site in self.observed_site_count:
-                self.observed_site_count[site] += 1
-            else:
-                self.observed_site_count[site] += 1
-
-    def collect_methylation_sites(self, cgmap_path: str = None, return_queue: Deque = None,
+    def collect_methylation_sites(self, cgmap_path: str = None, return_queue: mp.Queue = None,
                                   completed_samples: List = None):
         site_count, methylation_sites = 0, []
         for line_info in OpenCGmap(cgmap_path):
@@ -84,7 +78,7 @@ class CGmapSiteCollector:
                     if int(line_info[7]) >= self.min_site_coverage:
                         methylation_sites.append(f'{line_info[0]}:{line_info[2]}')
                         site_count += 1
-            if site_count == 10000:
+            if site_count == self.batch_size:
                 return_queue.put(tuple(methylation_sites), block=True)
                 site_count, methylation_sites = 0, []
         if methylation_sites:

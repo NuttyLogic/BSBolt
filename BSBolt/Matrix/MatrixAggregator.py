@@ -1,6 +1,6 @@
 import gzip
 import io
-from typing import Dict, List, TextIO, Union
+from typing import List, TextIO, Tuple, Union
 import numpy as np
 from BSBolt.Matrix.SiteCounter import CGmapSiteCollector
 from BSBolt.Matrix.SiteAggregator import CGmapSiteAggregator
@@ -80,39 +80,37 @@ class AggregateMatrix:
             self.meth_matrix = meth_matrix
             self.matrix_sites = matrix_sites
 
-    def collect_matrix_sites(self) -> Dict[str, int]:
+    def collect_matrix_sites(self) -> Tuple[str]:
         """Iterate through individual files to get consensus site counts"""
         site_collector = CGmapSiteCollector(cgmap_files=self.file_list,
                                             min_site_coverage=self.min_coverage,
                                             cg_only=self.cg_only,
                                             verbose=self.verbose,
-                                            threads=self.threads)
-        site_collector.collect_consensus_sites()
-        matrix_sites = []
-        site_count_threshold = int(self.site_proportion_threshold * len(self.sample_list))
-        for site, count in site_collector.observed_site_count.items():
-            if count >= site_count_threshold:
-                matrix_sites.append(site)
+                                            threads=self.threads,
+                                            site_proportion_threshold=int(self.site_proportion_threshold
+                                                                          * len(self.sample_list)))
+        matrix_sites = site_collector.collect_consensus_sites()
         matrix_sites.sort(key=lambda x: int(x.split(':')[1]))
         matrix_sites.sort(key=lambda x: x.split(':')[0])
-        return {site: count for count, site in enumerate(matrix_sites)}
+        return tuple(matrix_sites)
 
-    def assemble_matrix(self, matrix_sites: Dict[str, int]) -> np.ndarray:
+    def assemble_matrix(self, matrix_sites: List[str]) -> np.ndarray:
         """Append sites to site list"""
         site_aggregator = CGmapSiteAggregator(cgmap_files=self.file_list,
                                               min_site_coverage=self.min_coverage,
                                               verbose=self.verbose,
                                               threads=self.threads,
                                               count_matrix=self.count_matrix)
-        site_aggregator.assemble_matrix(matrix_sites=matrix_sites)
-        return site_aggregator.meth_matrix
+        matrix, matrix_order = site_aggregator.assemble_matrix(matrix_sites=matrix_sites)
+        self.sample_list = [self.sample_list[pos] for pos in matrix_order]
+        return matrix
 
     def get_output_object(self) -> Union[TextIO, io.BufferedWriter]:
         if self.output_path.endswith('gz'):
             return io.BufferedWriter(gzip.open(self.output_path, 'wb'))
         return open(self.output_path, 'w')
 
-    def output_matrix(self, meth_matrix: np.ndarray, matrix_sites: Dict[str, int]):
+    def output_matrix(self, meth_matrix: np.ndarray, matrix_sites: List[str]):
         """Output sorted aggregated matrix"""
         out = self.get_output_object()
         with out as matrix:
