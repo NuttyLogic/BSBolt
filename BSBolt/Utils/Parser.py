@@ -3,7 +3,7 @@ import argparse
 from BSBolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impute_help, index_help, meth_help, sim_help
 
 
-parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.3.1',
+parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.3.2',
                                  usage='BSBolt Module {Module Arguments}')
 
 subparsers = parser.add_subparsers(description='Please invoke BSBolt module for help,'
