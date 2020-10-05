@@ -80,12 +80,12 @@ Algorithm Options
 
 ```shell
 # Paired End Alignment Using Default Commands
-python3 -m BSBolt Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/Tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/Tests/BSB_pe_test
+python3 -m BSBolt Align -DB ~/tests/TestData/BSB_Test_DB -F1 ~/tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/tests/BSB_pe_test
 ```
 
 #### **Single End Alignment**
 
 ```shell
 # Single End Alignment Using Default Commands
-python3 -m BSBolt Align -DB ~/Tests/TestData/BSB_Test_DB -F1 ~/Tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/Tests/BSB_pe_test
+python3 -m BSBolt Align -DB ~/tests/TestData/BSB_Test_DB -F1 ~/tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/tests/BSB_pe_test
 ```

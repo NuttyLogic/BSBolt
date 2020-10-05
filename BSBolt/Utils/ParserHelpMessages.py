@@ -81,6 +81,7 @@ Input / Output Options:
   -DB File        path to index directory
   -O File         output prefix
   -text           output plain text files [False]
+  -BG             output calls in bedGraph format [False]
   -CG             only output CpG sites in CGmap file [False]
 Algorithm Options:
   -remove-ccgg    remove methylation calls in ccgg sites [False]

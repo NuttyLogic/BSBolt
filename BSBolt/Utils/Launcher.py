@@ -130,7 +130,8 @@ def launch_methylation_call(arguments):
                                       min_mapping_quality=arguments.MQ,
                                       cg_only=arguments.CG,
                                       ATCGmap=arguments.ATCG,
-                                      ignore_orphans=arguments.IO)
+                                      ignore_orphans=arguments.IO,
+                                      bedgraph_output=arguments.BG)
     methylation_call.process_contigs()
     methylation_call.watch_pool()
 

@@ -25,9 +25,8 @@ samtools index BSB_pe_test.dup.bam
 
 ### BSBolt CallMethylation
 
-Methylation calling outputs a .CGmap file by default. To maintain compatibility with downstream analysis tools
-ATCGmap files can by output, but this feature will be deprecation in a future update. Methylation values are called for
-all mapped reads at a position by default.
+Methylation calling outputs a .CGmap file by default, and makes calls using
+all mapped reads not flagged as duplicate at a position by default. 
 
 #### **BSB CallMethylation Commands**
 
@@ -41,6 +40,7 @@ Input / Output Options:
   -DB File        path to index directory
   -O File         output prefix
   -text           output plain text files [False]
+  -BG             output calls in bedGraph format [False]
   -CG             only output CpG sites in CGmap file [False]
 Algorithm Options:
   -remove-ccgg    remove methylation calls in ccgg sites [False]
@@ -62,10 +62,12 @@ can only be called using reads mapped to Watson and Crick strands respectively.
 
 ```shell
 # Methylation Calling with 2 threads, 
-python3 -m BSBolt CallMethylation -I ~/Tests/BSB_pe_test.sorted.bam -O ~/Tests/BSB_pe_test -DB ~/Tests/TestData/BSB_Test_DB -t 2 -verbose > methylation_stats.txt
+python3 -m BSBolt CallMethylation -I ~/tests/BSB_pe_test.sorted.bam -O ~/tests/BSB_pe_test -DB ~/tests/TestData/BSB_Test_DB -t 2 -verbose > methylation_stats.txt
 ```
 
-### **Output Files**
+### **Output File**
+
+**CGmap**
 
 CGmap is a tab separated text format describing the methylation status of observed cyotsines
 
@@ -74,8 +76,8 @@ CGmap is a tab separated text format describing the methylation status of observ
   3. Position, base-pairs from start
   4. Context, three base pair methylation context
   5. Sub-Context, two base pair methylation context
-  6. Methylation Value, proportion of methylation reads to total reads
-  7. Methylation Bases, methylated nucleotides observed
+  6. Methylation Value, proportion of methylated bases to total bases
+  7. Methylated Bases, methylated nucleotides observed
   8. All Bases, total number of nucleotides observed at the mapping position
 
 ```text
@@ -85,3 +87,15 @@ chr12	G	389290	CHH	CT	0.0	0	10
 chr13	G	200552	CHH	CT	0.0	0	10
 chr11	C	142826	CG	CG	0.0	0	10
 ```
+
+**Bedgraph**
+
+BedGraph is functionally similar to CGmap format without cytosine context information and zero indexed positions.
+
+  1. Chromosome
+  2. Start Position
+  4. End Position
+  6. Methylation Percentage, percentage of methylated bases to total observed bases
+  7. Methylated Bases, methylated nucleotides observed
+  8. Unmethylated Bases, total unmethylated bases
+
