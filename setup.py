@@ -27,7 +27,6 @@ External dependencies compiled for linux using quay.io/pypa/manylinux2010_x86_64
 """
 
 
-
 class BuildError(Exception):
     """Build error"""
     pass
@@ -110,7 +109,7 @@ class BuildCmd(build_py):
 
 
 setup(name='BSBolt',
-      version='1.3.4',
+      version='1.3.5',
       description='Bisulfite Sequencing Processing Platform',
       long_description=long_description,
       long_description_content_type="text/markdown",

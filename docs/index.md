@@ -1,6 +1,6 @@
 # **BSBolt (BiSulfite Bolt)**
 
-## A fast and safe bisulfite sequencing processing platform
+## A fast and safe bisulfite sequencing analysis platform
 
 [BiSuflite Bolt (BSBolt)](https://github.com/NuttyLogic/BSBolt); a fast and scalable bisulfite sequencing
 analysis platform. BSBolt is an integrated analysis platform that offers support for bisulfite sequencing

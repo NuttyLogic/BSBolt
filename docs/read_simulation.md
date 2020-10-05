@@ -64,5 +64,5 @@ Algorithm Options:
 #### **Simulate Paired End, Undirectional Bisulfite Reads**
 
 ```shell
-python3 -m BSBolt Simulate -G ~/Tests/TestData/BSB_test.fa -O ~/Tests/TestSimulations/BSB_pe -U -PE
+python3 -m BSBolt Simulate -G ~/tests/TestData/BSB_test.fa -O ~/tests/TestSimulations/BSB_pe -U -PE
 ```

@@ -48,6 +48,13 @@ bs_call_methylation_args = ['python3', '-m', 'BSBolt', 'CallMethylation', '-I',
 subprocess.run(bs_call_methylation_args)
 print('Methylation Values Called')
 
+bs_call_methylation_args = ['python3', '-m', 'BSBolt', 'CallMethylation', '-I',
+                            f'{bsb_directory}tests/BSB_pe_test.sorted.bam',
+                            '-O', f'{bsb_directory}tests/BSB_pe_test',
+                            '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB',
+                            '-t', '6', '-verbose', '-BQ', '10', '-MQ', '20', '-BG']
+subprocess.run(bs_call_methylation_args)
+
 # retrieve reference and test alignments
 test_alignments = f'{bsb_directory}tests/BSB_pe_test.sorted.bam'
 test_fastqs = [f'{bsb_directory}tests/TestSimulations/BSB_pe_1.fq',

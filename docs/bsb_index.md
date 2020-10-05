@@ -39,18 +39,18 @@ Index Options:
 #### **WGBS Index Generation Example**
 
 ```shell
-python3 -m BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB 
+python3 -m BSBolt Index -G ~/tests/TestData/BSB_test.fa -DB ~/tests/TestData/BSB_Test_DB 
 ```
 
 #### **Masked Alignment Index Generation Example**
 
 ```shell
-python3 -m BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -MR /Tests/TestData/test_wgbs_madking.bed
+python3 -m BSBolt Index -G ~/tests/TestData/BSB_test.fa -DB ~/tests/TestData/BSB_Test_DB -MR /tests/TestData/test_wgbs_madking.bed
 ```
 
 #### **RRBS Index Generation Example**
 
 ```shell
 # RRBS Index, MSPI Cut Format, 40bp Lower Fragment Bound, and 400bp Upper Fragment Bound
-python3 -m BSBolt Index -G ~/Tests/TestData/BSB_test.fa -DB ~/Tests/TestData/BSB_Test_DB -rrbs -rrbs-cut-format C-CGG -rrbs-lower 40 -rrbs-upper 400
+python3 -m BSBolt Index -G ~/tests/TestData/BSB_test.fa -DB ~/tests/TestData/BSB_Test_DB -rrbs -rrbs-cut-format C-CGG -rrbs-lower 40 -rrbs-upper 400
 ```

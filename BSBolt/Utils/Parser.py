@@ -3,7 +3,7 @@ import argparse
 from BSBolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impute_help, index_help, meth_help, sim_help
 
 
-parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.3.4',
+parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.3.5',
                                  usage='BSBolt Module {Module Arguments}')
 
 subparsers = parser.add_subparsers(description='Please invoke BSBolt module for help,'
@@ -155,6 +155,7 @@ call_meth_parser.add_argument('-BQ', type=int, default=10, help='Minimum base qu
 call_meth_parser.add_argument('-MQ', type=int, default=20, help='Minimum alignment quality for an alignment to be '
                                                                 'considered for methylation calling, default=20')
 call_meth_parser.add_argument('-CG', action="store_true", default=False, help='Only output CpG sites in CGmap file')
+call_meth_parser.add_argument('-BG', action="store_true", default=False, help='Output call in bedGraph format')
 call_meth_parser.add_argument('-ATCG', action="store_true", default=False, help='Output ATCGmap file')
 call_meth_parser.add_argument('-IO', action="store_true", default=False, help='Ignore orphans during methylation call')
 

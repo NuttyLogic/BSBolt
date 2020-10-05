@@ -44,6 +44,7 @@ class ProcessContigs:
    * *verbose (bool)*: Verbose processing, [False]
    * *cg_only (bool)*: only return CG sites to queue, [False]
    * *ignore_oprhans (bool)*: ignore orphaned reads (not properly paired), [True]
+   * *bedgraph_output* (bool)*: output bedgraph format inplace of CGmap, [False]
 
     Usage:
 
@@ -57,7 +58,8 @@ class ProcessContigs:
                  ignore_overlap: bool = True, text_output: bool = False, remove_ccgg: bool = False,
                  min_read_depth: int = 10, max_read_depth: int = 8000, threads: int = 1, verbose: bool = True,
                  min_base_quality: int = 10, min_mapping_quality: int = 10,
-                 ATCGmap: bool = False, cg_only: bool = True, ignore_orphans: bool = False):
+                 ATCGmap: bool = False, cg_only: bool = True, ignore_orphans: bool = False,
+                 bedgraph_output: bool = False):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(text_output, bool), 'Not valid bool'
         assert isinstance(threads, int), 'Threads must be specified with integer'
@@ -84,6 +86,7 @@ class ProcessContigs:
                                             cg_only=cg_only)
         self.min_read_depth = min_read_depth
         self.ATCGmap = ATCGmap
+        self.bedgraph_output = bedgraph_output
         self.methylation_calling = True
         self.contigs = self.get_contigs
         self.completed_contigs = None
@@ -173,7 +176,10 @@ class ProcessContigs:
                     self.write_line(self.output_objects['ATCGmap'], self.format_atcg(meth_line))
                 # if methylation level greater than or equal to min_read_depth output CGmap and wig lines
                 if meth_line['all_cytosines'] >= self.min_read_depth:
-                    self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
+                    if self.bedgraph_output:
+                        self.write_line(self.output_objects['CGmap'], self.format_bedgraph(meth_line))
+                    else:
+                        self.write_line(self.output_objects['CGmap'], self.format_cgmap(meth_line))
 
     @staticmethod
     def unpack_meth_line(meth_line: Tuple[Union[int, float, str]]) -> Dict[str, Union[int, float, str]]:
@@ -199,18 +205,27 @@ class ProcessContigs:
                      f'\t{meth_line["meth_cytosines"]}\t{meth_line["all_cytosines"]}\n'
         return CGmap_line
 
+    @staticmethod
+    def format_bedgraph(meth_line: Dict[str, Union[int, float, str]]) -> str:
+        """Bedgraph line formatting"""
+        bedgraph_line = f'{meth_line["chrom"]}\t{meth_line["pos"] - 1}\t{meth_line["pos"]}' \
+                        f'\t{meth_line["meth_level"] * 100:.3f}\t{meth_line["meth_cytosines"]}' \
+                        f'\t{meth_line["unmeth_cytosines"]}\n'
+        return bedgraph_line
+
     @property
     def get_output_objects(self):
         output_objects = {}
         output_path = self.input_file
+        output_suffix = '.CGmap' if not self.bedgraph_output else '.bg'
         if self.output_prefix:
             output_path = self.output_prefix
         if self.text_output:
-            output_objects['CGmap'] = open(f'{output_path}.CGmap', 'w')
+            output_objects['CGmap'] = open(f'{output_path}{output_suffix}', 'w')
             if self.ATCGmap:
                 output_objects['ATCGmap'] = open(f'{output_path}.ATCGmap', 'w')
         else:
-            output_objects['CGmap'] = io.BufferedWriter(gzip.open(f'{output_path}.CGmap.gz', 'wb'))
+            output_objects['CGmap'] = io.BufferedWriter(gzip.open(f'{output_path}{output_suffix}.gz', 'wb'))
             if self.ATCGmap:
                 output_objects['ATCGmap'] = io.BufferedWriter(gzip.open(f'{output_path}.ATCGmap.gz', 'wb'))
         return output_objects
