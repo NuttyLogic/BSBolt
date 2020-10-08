@@ -14,22 +14,55 @@ BSBolt is released under the MIT license.
 
 BSBolt documentation can be found at [bsbolt.readthedocs.io](https://bsbolt.readthedocs.io).
 
-### Installation
+## Installation
 
-BSBolt alignment is performed using a modified version of [BWA](https://github.com/lh3/bwa). Read simulation is carried 
-out using a modified version of [wgsim](https://github.com/lh3/wgsim). 
+### **PyPi Installation**
 
-
-Install through PyPi
+The easiest installation method is installing pre-compiled binaries using PyPi. Binaries are provided for python >=3.6
+on unix like systems (macOS >=10.15 and linux).
 
 ```shell
 pip3 install BSBolt --user
 ```
 
-Install from source
+### **Installing from Source**
+
+Dependencies
+
+* zlib-devel >= 1.2.3-29
+* GCC >= 8.3.1
+
 ```shell
-git clone git@github.com:NuttyLogic/BSBolt.git
-cd BSBolt-master
-python3 setup.py install .
+# clone the repository
+git clone https://github.com/NuttyLogic/BSBolt.git
+cd BSBolt
+# compile and install package
+pip3 install .
 ```
+
+### **Installing from Source on macOS**
+
+Dependencies 
+* autoconf
+* homebrew
+* xcode
+
+Installation from source requires xcode command line utilities, [homebrew](https://brew.sh/) macOS package manager, 
+and autoconf are installed. Xcode through the mac App Store, running the xcode installation command listed below, 
+or as part of the [homebrew](https://brew.sh/) macOS package manager installation. The full installation process
+can be completed as outlined below.
+
+```shell script
+# install xcode utilities
+xcode-select --install
+# install homebrew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+# install autoconf
+brew install autoconf
+# optionally install python
+brew install python3.8
+# install BSBolt
+pip3 install BSBolt
+```
+
 
