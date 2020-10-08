@@ -45,6 +45,9 @@ def compile_dependency(compilation_command, cwd):
     for line in iter(comp.stdout.readline, ''):
         formatted_line = line.strip()
         print(formatted_line)
+    for line in iter(comp.stderr.readline, ''):
+        formatted_line = line.strip()
+        print(formatted_line)
 
 
 def make_external_dependencies():
