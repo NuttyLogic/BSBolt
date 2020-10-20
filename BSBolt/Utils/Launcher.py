@@ -52,7 +52,10 @@ def process_mapping_statistics(mapping_dict):
     dict(TotalReads=0, TotalAlignments=0, BSAmbiguous=0, C_C2T=0, C_G2A=0,
          W_C2T=0, W_G2A=0, Unaligned=0)
     processed_list = []
-    mappability = (mapping_dict['TotalAlignments'] - mapping_dict['Unaligned']) / mapping_dict['TotalAlignments']
+    try:
+        mappability = (mapping_dict['TotalAlignments'] - mapping_dict['Unaligned']) / mapping_dict['TotalAlignments']
+    except ZeroDivisionError:
+        mappability = '0.000%'
     processed_list.append(f'Total Reads: {mapping_dict["TotalReads"]}')
     processed_list.append(f'Mappability: {mappability * 100:.3f} %')
     processed_list.append('------------------------------')
