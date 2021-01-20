@@ -77,5 +77,6 @@ int main(int argc, char *argv[])
     }
     free(fn_out);
     sam_hdr_destroy(header);
+    if (p.pool) hts_tpool_destroy(p.pool);
     return ret;
 }
