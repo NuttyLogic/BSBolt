@@ -1,0 +1,61 @@
+{% set name = "BSBolt" %}
+{% set version = "1.3.6" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
+  sha256: 01f8f99784cdda271c0fbe213b643f6ee2ab85fb414a3d433492294e1fcfce60
+
+build:
+  number: 0
+  entry_points:
+    - BSBolt = BSBolt.__main__:launch_bsb
+  script: "{{ PYTHON }} -m pip install . -vv"
+
+requirements:
+  host:
+    - numpy >=1.16.3
+    - pip
+    - pysam >=0.16.0.1
+    - python
+    - setuptools >=46.0.0
+    - tqdm >=4.31.1
+  run:
+    - numpy >=1.16.3
+    - pysam >=0.16.0.1
+    - python
+    - setuptools >=46.0.0
+    - tqdm >=4.31.1
+
+test:
+  imports:
+    - BSBolt
+    - BSBolt.Align
+    - BSBolt.CallMethylation
+    - BSBolt.Impute
+    - BSBolt.Impute.Imputation
+    - BSBolt.Impute.Impute_Utils
+    - BSBolt.Impute.Validation
+    - BSBolt.Index
+    - BSBolt.Matrix
+    - BSBolt.Simulate
+    - BSBolt.Utils
+    - BSBolt.Variant
+  commands:
+    - BSBolt --help
+
+about:
+  home: "https://github.com/NuttyLogic/BSBolt"
+  license: MIT
+  license_family: MIT
+  license_file: 
+  summary: "Bisulfite Sequencing Processing Platform"
+  doc_url: https://bsbolt.readthedocs.io/en/latest/
+  dev_url: https://github.com/NuttyLogic/BSBolt/
+
+extra:
+  recipe-maintainers:
+    - NuttyLogic
