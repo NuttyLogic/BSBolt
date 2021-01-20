@@ -2,6 +2,7 @@
 #include <getopt.h>
 #include <string.h>
 #include "htslib/sam.h"
+#include "htslib/thread_pool.h"
 
 
 int main(int argc, char *argv[])
@@ -10,9 +11,12 @@ int main(int argc, char *argv[])
     samFile *in = 0, *out = 0;
     sam_hdr_t *header = NULL;
     char *fn_out = 0;
+    int threads = 1;
+    htsThreadPool p = {NULL, 0};
 
-    while ((c = getopt(argc, argv, "o:")) >= 1){
+    while ((c = getopt(argc, argv, "o:@:")) >= 1){
         if (c=='o') fn_out = strdup(optarg);
+        if (c=='@') threads =  atoi(optarg);
     }
 
     if (!fn_out){
@@ -40,6 +44,15 @@ int main(int argc, char *argv[])
         ret = 1;
         goto view_end;
     }
+    if (threads > 1) {
+        if (!(p.pool = hts_tpool_init(threads))) {
+            fprintf(stderr, "Error creating thread pool\n");
+            ret = 1;
+            goto view_end;
+        }
+        hts_set_opt(in,  HTS_OPT_THREAD_POOL, &p);
+        if (out) hts_set_opt(out, HTS_OPT_THREAD_POOL, &p);
+    } 
     bam1_t *b = bam_init1();
     int r;
     while ((r = sam_read1(in, header, b)) >= 0) { // read one alignment from `in'
@@ -49,7 +62,6 @@ int main(int argc, char *argv[])
         ret = 1;
     }
     bam_destroy1(b);
-
     view_end:
 
     // close files, free and return
