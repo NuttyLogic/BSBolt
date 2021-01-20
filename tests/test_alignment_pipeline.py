@@ -27,7 +27,7 @@ bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_1.fq', '-F2',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_2.fq', '-O',
-                      f'{bsb_directory}tests/BSB_pe_test', '-t', '10', '-UN', '-SP', '0.1']
+                      f'{bsb_directory}tests/BSB_pe_test', '-t', '10', '-UN', '-SP', '0.1', '-OT', '2']
 subprocess.run(bsb_align_commands)
 
 sorted_output = f'{bsb_directory}tests/BSB_pe_test.sorted.bam'

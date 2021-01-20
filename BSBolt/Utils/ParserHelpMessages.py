@@ -7,6 +7,7 @@ Input / Output Options:
   -F1 File     path to fastq 1
   -F2 File     path to fastq 2 [null]
   -O File      output Prefix
+  -OT Int      number of bam output threads [1]
   -DB File     path to BSBolt database
   -R Str       read group header line such as '@RG ID:foo SM:bar' [null]
   -H Str       insert STR to header if it starts with @; or insert lines in FILE [null]

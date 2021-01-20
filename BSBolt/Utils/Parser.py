@@ -3,7 +3,7 @@ import argparse
 from BSBolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impute_help, index_help, meth_help, sim_help
 
 
-parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.3.6',
+parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.4.0',
                                  usage='BSBolt Module {Module Arguments}')
 
 subparsers = parser.add_subparsers(description='Please invoke BSBolt module for help,'
@@ -105,6 +105,7 @@ align_parser.add_argument('-I', type=lambda x: x.strip(), default=None,
                                '(4 sigma from the mean if absent) and min of the insert size distribution.  '
                                'FR orientation only. [inferred], Float,Float,Int,Int',
                           required=False)
+align_parser.add_argument('-OT', type=int, default=1, help='number of threads of bam output threads[1]')
 
 
 # Add Index Parser Commands

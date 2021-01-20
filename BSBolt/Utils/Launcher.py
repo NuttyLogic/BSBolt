@@ -36,10 +36,10 @@ def launch_index(arguments):
         index.generate_bsb_database()
 
 
-def align_bisulfite(bwa_cmd, output_path):
+def align_bisulfite(bwa_cmd, output_path, output_threads):
     start = time.time()
     print(' '.join(bwa_cmd))
-    bs_alignment = BisulfiteAlignmentAndProcessing(bwa_cmd, output_path)
+    bs_alignment = BisulfiteAlignmentAndProcessing(bwa_cmd, output_path, output_threads)
     bs_alignment.align_reads()
     alignment_time = datetime.timedelta(seconds=round(time.time() - start))
     print(f'Alignment Complete: Time {alignment_time}')
@@ -107,7 +107,7 @@ def launch_alignment(arguments):
     if bsb_command_dict['F2'] != 'None':
         bwa_cmd.append(bsb_command_dict['F2'])
         assert os.path.exists(arguments.F2), f'-F2 {arguments.F2} does not exist, please check path'
-    align_bisulfite(bwa_cmd, arguments.O)
+    align_bisulfite(bwa_cmd, arguments.O, arguments.OT)
 
 
 def launch_sort_bam(arguments):

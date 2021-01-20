@@ -12,15 +12,17 @@ class BisulfiteAlignmentAndProcessing:
 
     * *alignment_commands (list)*: bwa alignment commands
     * *output (str)*: output prefix
+    * *output_threads (int)*: number of threads available for bam output
 
     Attributes:
 
     * self.mapping_statistics (dict)*: alignment run statistics
     """
 
-    def __init__(self, alignment_commands: List[str], output=None):
+    def __init__(self, alignment_commands: List[str], output: str = None, output_threads: int = 1):
         self.alignment_commands = alignment_commands
         self.output = output
+        self.output_threads = output_threads
         self.mapping_statistics = dict(TotalReads=0, TotalAlignments=0, BSAmbiguous=0, C_C2T=0, C_G2A=0,
                                        W_C2T=0, W_G2A=0, Unaligned=0)
 
@@ -34,7 +36,7 @@ class BisulfiteAlignmentAndProcessing:
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE,
                                          universal_newlines=True)
-        bam_compression = subprocess.Popen([stream_bam, '-o', f'{self.output}.bam'],
+        bam_compression = subprocess.Popen([stream_bam, '-@', str(self.output_threads), '-o', f'{self.output}.bam'],
                                            stdin=alignment_run.stdout)
         # watch alignment progress, output stderr and collect alignment stats
         while True:
