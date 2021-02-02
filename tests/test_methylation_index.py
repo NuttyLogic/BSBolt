@@ -2,25 +2,25 @@ import gzip
 import os
 import subprocess
 import unittest
-from BSBolt.Index.RRBSCutSites import ProcessCutSites
+from bsbolt.Index.RRBSCutSites import ProcessCutSites
 from tests.TestHelpers import bsb_directory
 
 
 # generate methylation indices for rrbs, wgbs, and wgbs masked
 
-bsb_wgbs_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
+bsb_wgbs_index_commands = ['python3', '-m', 'bsbolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                            '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs']
 
 subprocess.run(bsb_wgbs_index_commands)
 
-bsb_wgbs_masked_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
+bsb_wgbs_masked_index_commands = ['python3', '-m', 'bsbolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                                   '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked', '-MR',
                                   f'{bsb_directory}tests/TestData/test_wgbs_masking.bed']
 
 subprocess.run(bsb_wgbs_masked_index_commands)
 
 
-bsb_rrbs_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
+bsb_rrbs_index_commands = ['python3', '-m', 'bsbolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                            '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_rrbs', '-rrbs', '-MR',
                            f'{bsb_directory}tests/TestData/test_wgbs_masking.bed', '-rrbs-cut-format', 'CAG-G']
 

@@ -6,12 +6,12 @@ To efficiently scale the algorithm, imputation can be performed in batches.
 ![kNN Window](img/kNN_graphic.png)
 
 ```shell
-BSBolt Impute -M {BSBolt_matrix.txt} -O {imputed_matrix.txt}
+bsbolt Impute -M {BSBolt_matrix.txt} -O {imputed_matrix.txt}
 
 -h, --help  show this help message and exit
 
 Options:
-  -M File     path to BSBolt matrix file
+  -M File     path to bsbolt matrix file
   -B Int      imputation sample batch size kNN imputation, by default the all of the samples will be processed as a single batch
   -W Int      sliding window size for imputation [3000000]
   -k Int      number of neighbors to use for imputation [5]
@@ -24,11 +24,11 @@ Options:
 #### **Impute No Batches**
 
 ```shell
-python3 -m BSBolt Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt
+python3 -m bsbolt Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt
 ```
 
 ### **Batch Imputation**
 
 ```shell
-python3 -m BSBolt Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt -B 10 -R
+python3 -m bsbolt Impute -M ~/test_matrix.txt -W 100000 -k 3 -t 4 -O ~/test_matrix.impute.txt -B 10 -R
 ```

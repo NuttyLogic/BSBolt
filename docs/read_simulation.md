@@ -31,7 +31,7 @@ error simulation.
 #### **BSB Simulate Commands**
 
 ```shell
-BSBolt Simulate -G {genome.fa} -O {output_directory}
+bsbolt Simulate -G {genome.fa} -O {output_directory}
 
 -h, --help  show this help message and exit
 
@@ -40,7 +40,7 @@ Input / Output Options:
   -O File     output prefix
   -CG File    path to CGmap file reference profile [Null]
   -overwrite  overwrite previously generated simulation database
-  -BR File    Path to previously generated BSBolt methylation reference (directory)
+  -BR File    Path to previously generated bsbolt methylation reference (directory)
   -NS         don't output simulated methylation counts
   -verbose    verbose read simulation
 Algorithm Options:
@@ -64,5 +64,5 @@ Algorithm Options:
 #### **Simulate Paired End, Undirectional Bisulfite Reads**
 
 ```shell
-python3 -m BSBolt Simulate -G ~/tests/TestData/BSB_test.fa -O ~/tests/TestSimulations/BSB_pe -U -PE
+python3 -m bsbolt Simulate -G ~/tests/TestData/BSB_test.fa -O ~/tests/TestSimulations/BSB_pe -U -PE
 ```

@@ -17,7 +17,7 @@ Pre-compiled binaries can be installed through the python package index. Please 
 for instructions about installing from source and package dependency information.
 
 ```shell
-pip3 install BSBolt -v
+pip3 install bsbolt -v
 ```
 
 ### Usage
@@ -25,17 +25,17 @@ pip3 install BSBolt -v
 Following installation BSBolt can be called by invoking the BSBolt module.
 
 ```shell
-python3 -m BSBolt
+python3 -m bsbolt
 ```
 
 ```shell
-BSBolt Module
+bsbolt Module
 
 Align               Alignment
 Index               Index Generation
 CallMethylation     Methylation Calling
 AggregateMatrix     CGmap Matrix Aggregation
-Simulate            BSBolt Illumina Read Simulation
+Simulate            bsbolt Illumina Read Simulation
 Impute              kNN Imputation
 Sort                Sort BAM File
 BamIndex            Index BAM file

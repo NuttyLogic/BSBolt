@@ -22,7 +22,7 @@ The easiest installation method is installing pre-compiled binaries using PyPi. 
 on unix like systems (macOS >=10.15 and linux).
 
 ```shell
-pip3 install BSBolt --user
+pip3 install bsbolt --user
 ```
 
 ### **Installing from Source**
@@ -35,7 +35,7 @@ Dependencies
 ```shell
 # clone the repository
 git clone https://github.com/NuttyLogic/BSBolt.git
-cd BSBolt
+cd bsbolt
 # compile and install package
 pip3 install .
 ```
@@ -61,8 +61,8 @@ xcode-select --install
 brew install autoconf
 # optionally install python
 brew install python3.8
-# install BSBolt
-pip3 install BSBolt
+# install bsbolt
+pip3 install bsbolt
 ```
 
 

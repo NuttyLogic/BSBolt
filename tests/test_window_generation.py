@@ -1,4 +1,4 @@
-from BSBolt.Impute.Imputation.GenomeImputationWindows import GenomeImputationWindows, chrom_site_split
+from bsbolt.Impute.Imputation.GenomeImputationWindows import GenomeImputationWindows, chrom_site_split
 import unittest
 
 test_labels = [f'chr1:{x + 1}' for x in range(1000)]

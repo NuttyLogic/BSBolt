@@ -1,6 +1,6 @@
 import unittest
-from BSBolt.Impute.Validation.ImputationAssessment import ImputationAssessment
-from BSBolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
+from bsbolt.Impute.Validation.ImputationAssessment import ImputationAssessment
+from bsbolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
 from tests.TestHelpers import test_directory
 
 

@@ -25,7 +25,7 @@ sequencing data, that follows the general workflow below.
 ### **BSB Align Commands**
 
 ```shell
-BSBolt Align -F1 {fastq1} -DB {BSBolt db} -O {output}
+bsbolt Align -F1 {fastq1} -DB {bsbolt db} -O {output}
 
 -h, --help    show this help message and exit
 
@@ -34,7 +34,7 @@ Input / Output Options:
   -F2 File     path to fastq 2 [null]
   -O File      output Prefix
   -OT Int      number of bam output threads [1]
-  -DB File     path to BSBolt database
+  -DB File     path to bsbolt database
   -R Str       read group header line such as '@RG ID:foo SM:bar' [null]
   -H Str       insert STR to header if it starts with @; or insert lines in FILE [null]
   -XA Int,Int  if there are <INT hits with score >80 percent of the max score, output all in XA [100,200]
@@ -81,12 +81,12 @@ Algorithm Options
 
 ```shell
 # Paired End Alignment Using Default Commands
-python3 -m BSBolt Align -DB ~/tests/TestData/BSB_Test_DB -F1 ~/tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/tests/BSB_pe_test
+python3 -m bsbolt Align -DB ~/tests/TestData/BSB_Test_DB -F1 ~/tests/TestSimulations/BSB_pe_meth_1.fastq -F2 ~/tests/TestSimulations/BSB_pe_meth_2.fastq -O ~/tests/BSB_pe_test
 ```
 
 #### **Single End Alignment**
 
 ```shell
 # Single End Alignment Using Default Commands
-python3 -m BSBolt Align -DB ~/tests/TestData/BSB_Test_DB -F1 ~/tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/tests/BSB_pe_test
+python3 -m bsbolt Align -DB ~/tests/TestData/BSB_Test_DB -F1 ~/tests/TestSimulations/BSB_pe_meth_1.fastq -O ~/tests/BSB_pe_test
 ```

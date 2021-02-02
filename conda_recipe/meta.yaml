@@ -1,0 +1,75 @@
+{% set name = "bsbolt" %}
+{% set version = "1.4.3" %}
+
+package:
+  name: bsbolt
+  version: "{{ version }}"
+
+source:
+  url: "file:///home/colin/Documents/BSBoltDev/BSBolt/dist/{{ name }}-{{ version }}.tar.gz"
+
+build:
+  number: 0
+  entry_points:
+    - bsbolt = bsbolt.__main__:launch_bsb
+    - BSBolt = bsbolt.__main__:launch_bsb
+  script: "{{ PYTHON }} -m pip install ."
+  binary_relocation: false
+  always_include_files:
+    - bsbolt/External/HTSLIB/stream_bam
+    - bsbolt/External/BWA/bwa
+    - bsbolt/External/WGSIM/wgsim
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - zlib
+    - bzip2
+    - python >=3.6
+    - pip
+  host:
+    - {{ compiler('cxx') }}
+    - python >=3.6
+    - tqdm >=4.31.1
+    - pysam
+    - numpy
+    - zlib
+    - bzip2
+  run:
+    - python >=3.6
+    - tqdm >=4.31.1
+    - numpy
+    - pysam
+    - zlib
+    - bzip2
+
+
+test:
+  imports:
+    - bsbolt
+    - bsbolt.Align
+    - bsbolt.CallMethylation
+    - bsbolt.Impute
+    - bsbolt.Impute.Imputation
+    - bsbolt.Impute.Impute_Utils
+    - bsbolt.Impute.Validation
+    - bsbolt.Index
+    - bsbolt.Matrix
+    - bsbolt.Simulate
+    - bsbolt.Utils
+    - bsbolt.Variant
+  commands:
+    - bsbolt --help
+
+about:
+  home: "https://github.com/NuttyLogic/bsbolt"
+  license: MIT
+  license_family: MIT
+  license_file: LICENSE
+  summary: "Bisulfite Sequencing Processing Platform"
+  doc_url: "https://bsbolt.readthedocs.io/en/latest/"
+  dev_url: "https://github.com/NuttyLogic/bsbolt"
+
+extra:
+  recipe-maintainers:
+    - NuttyLogic

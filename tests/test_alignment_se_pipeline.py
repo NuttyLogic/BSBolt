@@ -4,11 +4,11 @@ import pickle
 import subprocess
 import unittest
 
-from BSBolt.Utils.AlignmentEvaluation import AlignmentEvaluator
+from bsbolt.Utils.AlignmentEvaluation import AlignmentEvaluator
 from tests.TestHelpers import bsb_directory, z_test_of_proportion
 
 # generate simulated reads
-bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
+bsb_simulate_commands = ['python3', '-m', 'bsbolt', 'Simulate',
                          '-G', f'{bsb_directory}tests/TestData/BSB_test.fa', '-U',
                          '-O', f'{bsb_directory}tests/TestSimulations/BSB_se',
                          '-MR', '0.01', '-verbose', '-overwrite', '-RD', '20']
@@ -17,13 +17,13 @@ print('Reads Simulated')
 # map simulated reads
 
 print('Building Methylation Index')
-bsb_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
+bsb_index_commands = ['python3', '-m', 'bsbolt', 'Index', '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB']
 subprocess.run(bsb_index_commands)
-print('BSBolt Index Built')
+print('bsbolt Index Built')
 
 
-bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
+bsb_align_commands = ['python3', '-m', 'bsbolt', 'Align',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_se_1.fq', '-O',
                       f'{bsb_directory}tests/BSB_se_test', '-t', '10', '-UN', '-SP', '0.1']
@@ -35,12 +35,12 @@ if os.path.exists(sorted_output):
     subprocess.run(['rm', sorted_output])
     subprocess.run(['rm', f'{sorted_output}.bai'])
 
-subprocess.run(['python3', '-m', 'BSBolt', 'Sort', '-I', f'{bsb_directory}tests/BSB_se_test.bam',
+subprocess.run(['python3', '-m', 'bsbolt', 'Sort', '-I', f'{bsb_directory}tests/BSB_se_test.bam',
                 '-O', f'{bsb_directory}tests/BSB_se_test.sorted.bam'])
 
 print('Calling Methylation')
 
-bs_call_methylation_args = ['python3', '-m', 'BSBolt', 'CallMethylation', '-I',
+bs_call_methylation_args = ['python3', '-m', 'bsbolt', 'CallMethylation', '-I',
                             f'{bsb_directory}tests/BSB_se_test.sorted.bam',
                             '-O', f'{bsb_directory}tests/BSB_se_test',
                             '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB',
