@@ -1,7 +1,7 @@
 import copy
 import unittest
-from BSBolt.Simulate.SimulateMethylatedReads import SimulateMethylatedReads
-from BSBolt.Utils.UtilityFunctions import reverse_complement, get_external_paths
+from bsbolt.Simulate.SimulateMethylatedReads import SimulateMethylatedReads
+from bsbolt.Utils.UtilityFunctions import reverse_complement, get_external_paths
 from tests.TestHelpers import test_directory
 
 

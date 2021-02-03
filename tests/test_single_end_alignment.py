@@ -4,7 +4,7 @@ import unittest
 from tests.TestHelpers import bsb_directory
 
 
-bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
+bsb_align_commands = ['python3', '-m', 'bsbolt', 'Align',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_1.fq', '-O',
                       f'{bsb_directory}tests/BSB_se_test', '-t', '10', '-UN']

@@ -4,9 +4,9 @@ import unittest
 
 import numpy as np
 
-from BSBolt.Matrix.MatrixAggregator import AggregateMatrix
-from BSBolt.Utils.CGmapIterator import OpenCGmap
-from BSBolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
+from bsbolt.Matrix.MatrixAggregator import AggregateMatrix
+from bsbolt.Utils.CGmapIterator import OpenCGmap
+from bsbolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
 from tests.TestHelpers import test_directory
 
 
@@ -67,7 +67,7 @@ cg_only_test_high.aggregate_matrix()
 # test_command line
 test_matrix_output = f'{test_directory}/TestData/test_cgmap_files/matrix_test.txt'
 
-bsb_matrix_commands = ['python3', '-m', 'BSBolt', 'AggregateMatrix',
+bsb_matrix_commands = ['python3', '-m', 'bsbolt', 'AggregateMatrix',
                        '-F', f'{test_cgmap_file[0]},{test_cgmap_file[1]},{test_cgmap_file[2]}',
                        '-S', f'S1,S2,S3', '-O', test_matrix_output,
                        '-verbose', '-min-coverage', '10', '-min-sample', '0.9', '-t', '4']
@@ -75,7 +75,7 @@ subprocess.run(bsb_matrix_commands)
 
 test_matrix, test_site_order, test_samples = get_bsb_matrix(test_matrix_output)
 
-bsb_count_matrix_commands = ['python3', '-m', 'BSBolt', 'AggregateMatrix',
+bsb_count_matrix_commands = ['python3', '-m', 'bsbolt', 'AggregateMatrix',
                              '-F', f'{test_cgmap_file[0]},{test_cgmap_file[1]},{test_cgmap_file[2]}',
                              '-S', f'S1,S2,S3', '-O', f'{test_matrix_output}_count', '-count', '-min-coverage',
                              '10', '-min-sample', '0.9', '-t', '4']

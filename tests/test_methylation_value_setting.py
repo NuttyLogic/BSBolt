@@ -1,6 +1,6 @@
 import unittest
-from BSBolt.Simulate.SetCyotsineMethylation import SetCytosineMethylation
-from BSBolt.Utils.UtilityFunctions import get_external_paths
+from bsbolt.Simulate.SetCyotsineMethylation import SetCytosineMethylation
+from bsbolt.Utils.UtilityFunctions import get_external_paths
 from tests.TestHelpers import test_directory
 
 

@@ -56,7 +56,7 @@ error simulation.
   -RD         Simulated Read Depth
   -U          Simulate Undirectional Reads, default=Directional
   -CG         Path to CGmap file to generate simulation reference profile
-  -BR         Path to previously generated BSBolt methylation reference
+  -BR         Path to previously generated bsbolt methylation reference
   -MR         Mutation rate
   -MI         Mutation indel fraction
   -ME         Mutation indel extension probability
@@ -76,5 +76,5 @@ error simulation.
 
 **Simulate Paired End, Undirectional Bisulfite Reads**
 ```shell
-python3 -m BSBolt Simulate -G ~/tests/TestData/BSB_test.fa -O ~/tests/TestSimulations/BSB_pe -U -PE
+python3 -m bsbolt Simulate -G ~/tests/TestData/BSB_test.fa -O ~/tests/TestSimulations/BSB_pe -U -PE
 ```

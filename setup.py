@@ -33,40 +33,22 @@ class BuildError(Exception):
 
 
 def compile_dependency(compilation_command, cwd):
-    comp = subprocess.Popen(compilation_command, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            universal_newlines=True, cwd=cwd)
+    comp = subprocess.Popen(compilation_command, cwd=cwd)
     comp.wait()
     if comp.returncode:
-        print('Please compile with GCC >= 8.3.1 / zlib-devel >= 1.2.3')
-        for line in iter(comp.stderr.readline, ''):
-            print(line)
         raise BuildError
-    for line in iter(comp.stdout.readline, ''):
-        formatted_line = line.strip()
-        print(formatted_line)
-    for line in iter(comp.stderr.readline, ''):
-        formatted_line = line.strip()
-        print(formatted_line)
 
 
 def make_external_dependencies():
-    working_directory = os.path.dirname(os.path.realpath(__file__))
-    bwa_directory = f'{working_directory}/BSBolt/External/BWA'
-    htslib_directory = f'{working_directory}/BSBolt/External/HTSLIB'
-    wgsim_directory = f'{working_directory}/BSBolt/External/WGSIM'
-    if not os.path.exists(f'{wgsim_directory}/wgsim'):
-        print('Compiling wgsim')
-        compile_dependency(['make'], wgsim_directory)
-    if not os.path.exists(f'{htslib_directory}/stream_bam'):
-        print('Compiling htslib')
-        compile_dependency(['autoheader'], htslib_directory)
-        compile_dependency(['autoconf'], htslib_directory)
-        compile_dependency(['./configure', '--disable-bz2', '--disable-lzma'], htslib_directory)
-        compile_dependency(['make'], htslib_directory)
-    if not os.path.exists(f'{bwa_directory}/bwa'):
-        print('Compiling bwa')
-        compile_dependency(['make'], bwa_directory)
+    print('building bsb wgsim')
+    compile_dependency(['make'], 'bsbolt/External/WGSIM')
+    print('building bsb htslib')
+    compile_dependency(['autoheader'], 'bsbolt/External/HTSLIB')
+    compile_dependency(['autoconf'], 'bsbolt/External/HTSLIB')
+    compile_dependency(['./configure', '--disable-bz2', '--disable-lzma'], 'bsbolt/External/HTSLIB')
+    compile_dependency(['make'], 'bsbolt/External/HTSLIB')
+    print('building bsb bwa')
+    compile_dependency(['make'], 'bsbolt/External/BWA')
 
 
 try:
@@ -91,28 +73,28 @@ class BuildCmd(build_py):
 
     def run(self):
         make_external_dependencies()
-        self.data_files = [('BSBolt', 'BSBolt', 'build/lib/BSBolt', []),
-                           ('BSBolt.Align', 'BSBolt/Align', 'build/lib/BSBolt/Align', []),
-                           ('BSBolt.CallMethylation', 'BSBolt/CallMethylation', 'build/lib/BSBolt/CallMethylation', []),
-                           ('BSBolt.External', 'BSBolt/External', 'build/lib/BSBolt/External',
+        self.data_files = [('bsbolt', 'bsbolt', 'build/lib/bsbolt', []),
+                           ('bsbolt.Align', 'bsbolt/Align', 'build/lib/bsbolt/Align', []),
+                           ('bsbolt.CallMethylation', 'bsbolt/CallMethylation', 'build/lib/bsbolt/CallMethylation', []),
+                           ('bsbolt.External', 'bsbolt/External', 'build/lib/bsbolt/External',
                             ['WGSIM/wgsim', 'BWA/bwa', 'HTSLIB/stream_bam']),
-                           ('BSBolt.Impute', 'BSBolt/Impute', 'build/lib/BSBolt/Impute', []),
-                           ('BSBolt.Impute.Imputation', 'BSBolt/Impute/Imputation',
-                            'build/lib/BSBolt/Impute/Imputation', []),
-                           ('BSBolt.Impute.Impute_Utils', 'BSBolt/Impute/Impute_Utils',
-                            'build/lib/BSBolt/Impute/Impute_Utils', []), (
-                           'BSBolt.Impute.Validation', 'BSBolt/Impute/Validation', 'build/lib/BSBolt/Impute/Validation',
+                           ('bsbolt.Impute', 'bsbolt/Impute', 'build/lib/bsbolt/Impute', []),
+                           ('bsbolt.Impute.Imputation', 'bsbolt/Impute/Imputation',
+                            'build/lib/bsbolt/Impute/Imputation', []),
+                           ('bsbolt.Impute.Impute_Utils', 'bsbolt/Impute/Impute_Utils',
+                            'build/lib/bsbolt/Impute/Impute_Utils', []), (
+                           'bsbolt.Impute.Validation', 'bsbolt/Impute/Validation', 'build/lib/bsbolt/Impute/Validation',
                            []),
-                           ('BSBolt.Index', 'BSBolt/Index', 'build/lib/BSBolt/Index', []),
-                           ('BSBolt.Matrix', 'BSBolt/Matrix', 'build/lib/BSBolt/Matrix', []),
-                           ('BSBolt.Simulate', 'BSBolt/Simulate', 'build/lib/BSBolt/Simulate', []),
-                           ('BSBolt.Utils', 'BSBolt/Utils', 'build/lib/BSBolt/Utils', []),
-                           ('BSBolt.Variant', 'BSBolt/Variant', 'build/lib/BSBolt/Variant', [])]
+                           ('bsbolt.Index', 'bsbolt/Index', 'build/lib/bsbolt/Index', []),
+                           ('bsbolt.Matrix', 'bsbolt/Matrix', 'build/lib/bsbolt/Matrix', []),
+                           ('bsbolt.Simulate', 'bsbolt/Simulate', 'build/lib/bsbolt/Simulate', []),
+                           ('bsbolt.Utils', 'bsbolt/Utils', 'build/lib/bsbolt/Utils', []),
+                           ('bsbolt.Variant', 'bsbolt/Variant', 'build/lib/bsbolt/Variant', [])]
         super().run()
 
 
-setup(name='BSBolt',
-      version='1.3.6',
+setup(name='bsbolt',
+      version='1.4.4',
       description='Bisulfite Sequencing Processing Platform',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -121,25 +103,26 @@ setup(name='BSBolt',
       author='Colin P. Farrell',
       author_email='colinpfarrell@gmail.com',
       license='MIT',
-      packages=['BSBolt',
-                'BSBolt.Align',
-                'BSBolt.CallMethylation',
-                'BSBolt.Impute',
-                'BSBolt.Impute.Imputation',
-                'BSBolt.Impute.Impute_Utils',
-                'BSBolt.Impute.Validation',
-                'BSBolt.Index',
-                'BSBolt.Matrix',
-                'BSBolt.Simulate',
-                'BSBolt.Utils',
-                'BSBolt.Variant'],
+      packages=['bsbolt',
+                'bsbolt.Align',
+                'bsbolt.CallMethylation',
+                'bsbolt.Impute',
+                'bsbolt.Impute.Imputation',
+                'bsbolt.Impute.Impute_Utils',
+                'bsbolt.Impute.Validation',
+                'bsbolt.Index',
+                'bsbolt.Matrix',
+                'bsbolt.Simulate',
+                'bsbolt.Utils',
+                'bsbolt.Variant'],
       classifiers=['Programming Language :: Python :: 3.6',
                    'Programming Language :: Python :: 3.7',
                    'Programming Language :: Python :: 3.8'],
       platforms=["Linux", "Mac OS-X", "Unix"],
       requires=['pysam', 'numpy', 'tqdm'],
-      install_requires=['pysam>=0.16.0.1', 'numpy>=1.16.3', 'tqdm>=4.31.1', 'setuptools>=46.0.0'],
-      entry_points={'console_scripts': ['BSBolt = BSBolt.__main__:launch_bsb']},
+      install_requires=['pysam>=0.15.3', 'numpy>=1.16.3', 'tqdm>=4.31.1', 'setuptools>=46.0.0'],
+      entry_points={'console_scripts': ['bsbolt = bsbolt.__main__:launch_bsb',
+                                        'BSBolt = bsbolt.__main__:launch_bsb']},
       python_requires='>=3.6',
       test_suite='tests',
       include_package_data=True,

@@ -137,8 +137,8 @@ scratch*
 
 # compiled binaries
 BSBolt/External/WGSIM/wgsim
-/BSBolt/External/WGSIM/wgsim.dSYM/Contents/Info.plist
-/BSBolt/External/WGSIM/wgsim.dSYM/Contents/Resources/DWARF/wgsim
+/bsbolt/External/WGSIM/wgsim.dSYM/Contents/Info.plist
+/bsbolt/External/WGSIM/wgsim.dSYM/Contents/Resources/DWARF/wgsim
 <<<<<<< HEAD
 BSBolt/External/BWA/bwa
 BSBolt/External/BWA/libwa.a

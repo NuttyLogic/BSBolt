@@ -1,9 +1,9 @@
 from collections import defaultdict
 import unittest
-from BSBolt.Simulate import SimulateMethylatedReads
-from BSBolt.Utils.AlignmentEvaluation import get_read_reference_info
-from BSBolt.Utils.FastqIterator import OpenFastq
-from BSBolt.Utils.UtilityFunctions import get_external_paths
+from bsbolt.Simulate import SimulateMethylatedReads
+from bsbolt.Utils.AlignmentEvaluation import get_read_reference_info
+from bsbolt.Utils.FastqIterator import OpenFastq
+from bsbolt.Utils.UtilityFunctions import get_external_paths
 from tests.TestHelpers import bsb_directory
 
 

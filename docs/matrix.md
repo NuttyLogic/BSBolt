@@ -6,7 +6,7 @@ samples are included in the matrix.
 #### **BSBolt AggregateMatrix Commands**
 
 ```shell
-BSBolt AggregateMatrix -F {file1.CGmap,file2.CGmap,...} -O {output_matrix.txt}
+bsbolt AggregateMatrix -F {file1.CGmap,file2.CGmap,...} -O {output_matrix.txt}
 
 -h, --help              show this help message and exit
 
@@ -27,17 +27,17 @@ Options:
 #### **Aggregate Matrix Default Settings**
 
 ```shell
-python3 -m BSBolt AggregateMatrix -F cgmap_1,cgmap_2,cgmap_3 -O ~/test_matrix.txt
+python3 -m bsbolt AggregateMatrix -F cgmap_1,cgmap_2,cgmap_3 -O ~/test_matrix.txt
 ```
 
 #### **Aggregate Matrix Default Settings - File List**
 
 ```shell
-python3 -m BSBolt AggregateMatrix -F cgmap_file_list.txt -O ~/test_matrix.txt
+python3 -m bsbolt AggregateMatrix -F cgmap_file_list.txt -O ~/test_matrix.txt
 ```
 
 #### **Aggregate Matrix Default Settings - File List, Sample Labels, Verbose**
 
 ```shell
-python3 -m BSBolt AggregateMatrix -F cgmap_file_list.txt -S sample1,sample2,sample3 -O ~/test_matrix.txt -verbose
+python3 -m bsbolt AggregateMatrix -F cgmap_file_list.txt -S sample1,sample2,sample3 -O ~/test_matrix.txt -verbose
 ```

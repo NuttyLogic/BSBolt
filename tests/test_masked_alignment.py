@@ -3,11 +3,11 @@ import subprocess
 import unittest
 import pysam
 
-from BSBolt.Utils.AlignmentEvaluation import get_read_reference_info
+from bsbolt.Utils.AlignmentEvaluation import get_read_reference_info
 from tests.TestHelpers import bsb_directory
 
 
-bsb_wgbs_masked_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G',
+bsb_wgbs_masked_index_commands = ['python3', '-m', 'bsbolt', 'Index', '-G',
                                   f'{bsb_directory}tests/TestData/BSB_test.fa',
                                   '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked', '-MR',
                                   f'{bsb_directory}tests/TestData/test_wgbs_masking.bed']
@@ -15,14 +15,14 @@ bsb_wgbs_masked_index_commands = ['python3', '-m', 'BSBolt', 'Index', '-G',
 subprocess.run(bsb_wgbs_masked_index_commands)
 
 
-bsb_simulate_commands = ['python3', '-m', 'BSBolt', 'Simulate',
+bsb_simulate_commands = ['python3', '-m', 'bsbolt', 'Simulate',
                          '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
                          '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe_masked', '-U', '-PE', '-RD', '2',
                          '-verbose']
 subprocess.run(bsb_simulate_commands)
 
 
-bsb_align_commands = ['python3', '-m', 'BSBolt', 'Align',
+bsb_align_commands = ['python3', '-m', 'bsbolt', 'Align',
                       '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked', '-F1',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_masked_1.fq', '-F2',
                       f'{bsb_directory}tests/TestSimulations/BSB_pe_masked_2.fq', '-O',
@@ -33,13 +33,13 @@ sorted_output = f'{bsb_directory}tests/BSB_pe_test_masked.sorted.bam'
 if os.path.exists(sorted_output):
     subprocess.run(['rm', sorted_output])
 
-subprocess.run(['python3', '-m', 'BSBolt', 'Sort', '-I', f'{bsb_directory}tests/BSB_pe_test_masked.bam',
+subprocess.run(['python3', '-m', 'bsbolt', 'Sort', '-I', f'{bsb_directory}tests/BSB_pe_test_masked.bam',
                 '-O', f'{bsb_directory}tests/BSB_pe_test_masked.sorted.bam'])
 
 if os.path.exists(f'{sorted_output}.bai'):
     subprocess.run(['rm', f'{sorted_output}.bai'])
 
-subprocess.run(['python3', '-m', 'BSBolt', 'BamIndex', '-I', sorted_output])
+subprocess.run(['python3', '-m', 'bsbolt', 'BamIndex', '-I', sorted_output])
 
 # import alignment regions
 

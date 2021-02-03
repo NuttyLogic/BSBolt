@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-from BSBolt.Impute.Validation.MaskValues import MaskImputationValues
-from BSBolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
+from bsbolt.Impute.Validation.MaskValues import MaskImputationValues
+from bsbolt.Impute.Impute_Utils.ImputationFunctions import get_bsb_matrix
 from tests.TestHelpers import test_directory
 
 

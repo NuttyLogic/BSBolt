@@ -31,7 +31,7 @@ all mapped reads not flagged as duplicate at a position by default.
 #### **BSB CallMethylation Commands**
 
 ```shell
-BSBolt Module CallMethylation -I {input.bam} -DB {BSBolt DB} -O {output prefix}
+bsbolt Module CallMethylation -I {input.bam} -DB {bsbolt DB} -O {output prefix}
 
 -h, --help     show this help message and exit
 
@@ -62,7 +62,7 @@ can only be called using reads mapped to Watson and Crick strands respectively.
 
 ```shell
 # Methylation Calling with 2 threads, 
-python3 -m BSBolt CallMethylation -I ~/tests/BSB_pe_test.sorted.bam -O ~/tests/BSB_pe_test -DB ~/tests/TestData/BSB_Test_DB -t 2 -verbose > methylation_stats.txt
+python3 -m bsbolt CallMethylation -I ~/tests/BSB_pe_test.sorted.bam -O ~/tests/BSB_pe_test -DB ~/tests/TestData/BSB_Test_DB -t 2 -verbose > methylation_stats.txt
 ```
 
 ### **Output File**
