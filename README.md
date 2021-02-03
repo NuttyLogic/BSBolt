@@ -14,15 +14,29 @@ BSBolt is released under the MIT license.
 
 BSBolt documentation can be found at [bsbolt.readthedocs.io](https://bsbolt.readthedocs.io).
 
+## Release Notes
+- BSBolt v1.4.4
+    - The default entry point for BSBolt has changed from **BSBolt** to **bsbolt** for conda compatibility 
+
 ## Installation
 
 ### **PyPi Installation**
 
-The easiest installation method is installing pre-compiled binaries using PyPi. Binaries are provided for python >=3.6
+Pre-compiled binaries can be installed using PyPi. Binaries are provided for python >=3.6
 on unix like systems (macOS >=10.15 and linux).
 
 ```shell
 pip3 install bsbolt --user
+```
+
+### **Conda Installation**
+
+BSBolt can be installed using the conda package manager using the installation instructions below. 
+
+```shell
+conda config --add channels bioconda
+conda config --add channels conda-forge
+conda install -c cpfarrell bsbolt
 ```
 
 ### **Installing from Source**

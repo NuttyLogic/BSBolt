@@ -94,7 +94,7 @@ class BuildCmd(build_py):
 
 
 setup(name='bsbolt',
-      version='1.4.3',
+      version='1.4.4',
       description='Bisulfite Sequencing Processing Platform',
       long_description=long_description,
       long_description_content_type="text/markdown",
@@ -120,7 +120,7 @@ setup(name='bsbolt',
                    'Programming Language :: Python :: 3.8'],
       platforms=["Linux", "Mac OS-X", "Unix"],
       requires=['pysam', 'numpy', 'tqdm'],
-      install_requires=['pysam>=0.15.2', 'numpy>=1.16.3', 'tqdm>=4.31.1', 'setuptools>=46.0.0'],
+      install_requires=['pysam>=0.15.3', 'numpy>=1.16.3', 'tqdm>=4.31.1', 'setuptools>=46.0.0'],
       entry_points={'console_scripts': ['bsbolt = bsbolt.__main__:launch_bsb',
                                         'BSBolt = bsbolt.__main__:launch_bsb']},
       python_requires='>=3.6',

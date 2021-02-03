@@ -1,12 +1,14 @@
 {% set name = "bsbolt" %}
-{% set version = "1.4.3" %}
+{% set version = "1.4.4" %}
 
 package:
   name: bsbolt
   version: "{{ version }}"
 
 source:
-  url: "file:///home/colin/Documents/BSBoltDev/BSBolt/dist/{{ name }}-{{ version }}.tar.gz"
+  url: "https://github.com/NuttyLogic/BSBolt/releases/download/{{ version }}/{{ name}}-{{ version }}.tar.gz"
+  sha256: "7b6be41d84887db1f3b87a9c0ec8e53b9077bfe9b0c07772fabd9b11bc48fcf9"
+
 
 build:
   number: 0
@@ -25,21 +27,22 @@ requirements:
     - {{ compiler('cxx') }}
     - zlib
     - bzip2
-    - python >=3.6
+    - python {{ python }}
     - pip
+    - numpy >=1.16
   host:
     - {{ compiler('cxx') }}
-    - python >=3.6
+    - python {{ python }}
     - tqdm >=4.31.1
-    - pysam
+    - pysam >=0.16.0.1
     - numpy
     - zlib
     - bzip2
   run:
-    - python >=3.6
+    - python
     - tqdm >=4.31.1
     - numpy
-    - pysam
+    - pysam >=0.16.0.1
     - zlib
     - bzip2
 
