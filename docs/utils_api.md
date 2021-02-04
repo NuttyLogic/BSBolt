@@ -1,18 +1,18 @@
-::: BSBolt.Utils.get_external_paths
+::: bsbolt.Utils.get_external_paths
     :docstring:
     
-::: BSBolt.Utils.index_bam
+::: bsbolt.Utils.index_bam
     :docstring:
     
-::: BSBolt.Utils.reverse_complement
+::: bsbolt.Utils.reverse_complement
     :docstring:
     
-::: BSBolt.Utils.retrieve_iupac
+::: bsbolt.Utils.retrieve_iupac
     :docstring:
     
-::: BSBolt.Utils.sort_bam
+::: bsbolt.Utils.sort_bam
     :docstring:
     
-::: BSBolt.Utils.AlignmentEvaluator
+::: bsbolt.Utils.AlignmentEvaluator
     :docstring:
     :members:

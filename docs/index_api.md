@@ -1,12 +1,12 @@
-::: BSBolt.Index.ProcessCutSites
+::: bsbolt.Index.ProcessCutSites
     :docstring:
     :members:
     
-::: BSBolt.Index.RRBSBuild
+::: bsbolt.Index.RRBSBuild
     :docstring:
     :members:
     
-::: BSBolt.Index.WholeGenomeBuild
+::: bsbolt.Index.WholeGenomeBuild
     :docstring:
     :members:
     
