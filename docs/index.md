@@ -54,16 +54,17 @@ pip3 install .
 ### **Installing from Source on macOS**
 
 Dependencies 
-* autoconf
-* homebrew
-* xcode
+
+- autoconf
+- homebrew
+- xcode
 
 Installation from source requires xcode command line utilities, [homebrew](https://brew.sh/) macOS package manager, 
 and autoconf are installed. Xcode through the mac App Store, running the xcode installation command listed below, 
 or as part of the [homebrew](https://brew.sh/) macOS package manager installation. The full installation process
 can be completed as outlined below.
 
-```shell script
+```shell
 # install xcode utilities
 xcode-select --install
 # install homebrew

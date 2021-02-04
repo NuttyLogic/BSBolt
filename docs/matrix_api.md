@@ -1,4 +1,4 @@
-::: BSBolt.Matrix.AggregateMatrix
+::: bsbolt.Matrix.AggregateMatrix
     :docstring:
     :members:
     

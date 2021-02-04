@@ -1,5 +1,5 @@
 
-::: BSBolt.Simulate.SimulateMethylatedReads
+::: bsbolt.Simulate.SimulateMethylatedReads
     :docstring:
     :members:
     

@@ -1,3 +1,3 @@
-::: BSBolt.Align.BisulfiteAlignmentAndProcessing
+::: bsbolt.Align.BisulfiteAlignmentAndProcessing
     :docstring:
     :members:

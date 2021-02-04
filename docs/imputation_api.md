@@ -1,4 +1,4 @@
-::: BSBolt.Impute.ImputeMissingValues
+::: bsbolt.Impute.ImputeMissingValues
     :docstring:
     :members:
     

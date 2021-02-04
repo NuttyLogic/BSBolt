@@ -1,11 +1,11 @@
-:::BSBolt.CallMethylation.CallMethylationValues
+:::bsbolt.CallMethylation.CallMethylationValues
     :docstring:
     :members:
     
-::: BSBolt.CallMethylation.CallMethylationVector
+::: bsbolt.CallMethylation.CallMethylationVector
     :docstring:
     :members:
     
-::: BSBolt.CallMethylation.ProcessContigs
+::: bsbolt.CallMethylation.ProcessContigs
     :docstring:
     :members:

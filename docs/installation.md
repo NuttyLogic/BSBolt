@@ -1,8 +1,7 @@
 BSBolt and dependencies need to be compiled during the installation process. Pre-compiled binaries are available for 
 macOS >= 10.15 and linux distributions released after 2010 according to the 
 [manylinux2010](https://www.python.org/dev/peps/pep-0571/) python enhancement proposal. If a precompiled binary is 
-unavailable for the target OS binaries will be built from source. If working on a linux distribution zlib-devel should 
-be installed prior to compilation. Compilation on macOS requires xcode-command line utilities and autoconf be installed 
+unavailable for the target OS binaries will be built from source. Compilation on macOS requires xcode-command line utilities and autoconf be installed 
 as described below.  
 
 ### **PyPi Installation**
@@ -12,6 +11,16 @@ on unix like systems (macOS and linux).
 
 ```shell
 pip3 install bsbolt --user
+```
+
+### **Conda Installation**
+
+BSBolt can be installed using the conda package manager using the installation instructions below. 
+
+```shell
+conda config --add channels bioconda
+conda config --add channels conda-forge
+conda install -c cpfarrell bsbolt
 ```
 
 ### **Installing from Source**
@@ -41,7 +50,7 @@ and autoconf are installed. Xcode through the mac App Store, running the xcode i
 or as part of the [homebrew](https://brew.sh/) macOS package manager installation. The full installation process
 can be completed as outlined below.
 
-```shell script
+```shell
 # install xcode utilities
 xcode-select --install
 # install homebrew
