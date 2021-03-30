@@ -129,6 +129,7 @@ def launch_methylation_call(arguments):
                                       min_read_depth=arguments.min,
                                       threads=arguments.t,
                                       verbose=arguments.verbose,
+                                      max_read_depth=arguments.max,
                                       min_base_quality=arguments.BQ,
                                       min_mapping_quality=arguments.MQ,
                                       cg_only=arguments.CG,

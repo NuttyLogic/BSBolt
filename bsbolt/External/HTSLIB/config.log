@@ -266,7 +266,7 @@ configure:4398: $? = 0
 configure:4398: result: yes
 configure:4398: checking for srand48_deterministic
 configure:4398: gcc -o conftest  -Wall -g -O2 -fvisibility=hidden   -fvisibility=hidden conftest.c  >&5
-/usr/bin/ld: /tmp/ccKRiYWC.o: in function `main':
+/usr/bin/ld: /tmp/ccow2Qrt.o: in function `main':
 /home/colin/Documents/BSBoltDev/BSBolt/bsbolt/External/HTSLIB/conftest.c:61: undefined reference to `srand48_deterministic'
 collect2: error: ld returned 1 exit status
 configure:4398: $? = 1
@@ -351,7 +351,7 @@ conftest.c:35:6: warning: conflicting types for built-in function 'log'; expecte
       |      ^~~
 conftest.c:1:1: note: 'log' is declared in header '<math.h>'
     1 | /* confdefs.h */
-/usr/bin/ld: /tmp/ccyDK3LO.o: in function `main':
+/usr/bin/ld: /tmp/ccPtDqyE.o: in function `main':
 /home/colin/Documents/BSBoltDev/BSBolt/bsbolt/External/HTSLIB/conftest.c:39: undefined reference to `log'
 collect2: error: ld returned 1 exit status
 configure:4580: $? = 1
@@ -514,7 +514,7 @@ configure:5039: $? = 0
 configure:5048: result: yes
 configure:5179: checking for CCHmac
 configure:5179: gcc -o conftest  -Wall -g -O2 -fvisibility=hidden   -fvisibility=hidden conftest.c -lz -lm  >&5
-/usr/bin/ld: /tmp/cc0lfQFB.o: in function `main':
+/usr/bin/ld: /tmp/ccds9Frq.o: in function `main':
 /home/colin/Documents/BSBoltDev/BSBolt/bsbolt/External/HTSLIB/conftest.c:65: undefined reference to `CCHmac'
 collect2: error: ld returned 1 exit status
 configure:5179: $? = 1
@@ -590,7 +590,7 @@ configure: failed program was:
 configure:5179: result: no
 configure:5186: checking for library containing HMAC
 configure:5217: gcc -o conftest  -Wall -g -O2 -fvisibility=hidden   -fvisibility=hidden conftest.c -lz -lm  >&5
-/usr/bin/ld: /tmp/ccfRKnMI.o: in function `main':
+/usr/bin/ld: /tmp/cc9Tf9Ix.o: in function `main':
 /home/colin/Documents/BSBoltDev/BSBolt/bsbolt/External/HTSLIB/conftest.c:42: undefined reference to `HMAC'
 collect2: error: ld returned 1 exit status
 configure:5217: $? = 1
