@@ -12,8 +12,11 @@ and [WGSIM](https://github.com/lh3/wgsim) for read alignment and read simulation
 BSBolt is released under the MIT license.
 
 ## Release Notes
+- BSBolt v1.4.5
+  - Fixed maximum read depth bug that prevented methylation call on site covered by greater than 8000 reads
+  - Refactored build script, with experimental support for M1 Macs
 - BSBolt v1.4.4
-    - The default entry point for BSBolt has changed from **BSBolt** to **bsbolt** for conda compatibility
+  - The default entry point for BSBolt has changed from **BSBolt** to **bsbolt** for conda compatibility
 
 ## **Installation**
 
@@ -56,6 +59,7 @@ pip3 install .
 Dependencies 
 
 - autoconf
+- automake
 - homebrew
 - xcode
 
@@ -71,6 +75,8 @@ xcode-select --install
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 # install autoconf
 brew install autoconf
+# install automake
+brew installa automake
 # optionally install python
 brew install python3.8
 # install bsbolt
