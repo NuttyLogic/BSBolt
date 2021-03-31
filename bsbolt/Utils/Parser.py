@@ -152,7 +152,7 @@ call_meth_parser.add_argument('-min', type=int, default=10,
 call_meth_parser.add_argument('-t', type=int, default=1,
                               help='Number of threads to use when calling methylation values')
 call_meth_parser.add_argument('-BQ', type=int, default=10, help='Minimum base quality for a base to considered for'
-                                                               'methylation calling, default=0')
+                                                                'methylation calling, default=0')
 call_meth_parser.add_argument('-MQ', type=int, default=20, help='Minimum alignment quality for an alignment to be '
                                                                 'considered for methylation calling, default=20')
 call_meth_parser.add_argument('-CG', action="store_true", default=False, help='Only output CpG sites in CGmap file')

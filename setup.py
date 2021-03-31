@@ -1,6 +1,6 @@
 #! /usr/bin/env python3
 
-import os
+import platform
 import subprocess
 import sys
 
@@ -39,13 +39,22 @@ def compile_dependency(compilation_command, cwd):
         raise BuildError
 
 
+def get_platform_cmd():
+    system = platform.system()
+    if system == 'Darwin':
+        cpu = 'x86_64' if 'x86' in platform.platform() else 'arm64'
+        return [f'--host={cpu}-apple-darwin']
+    return []
+
+
 def make_external_dependencies():
     print('building bsb wgsim')
     compile_dependency(['make'], 'bsbolt/External/WGSIM')
     print('building bsb htslib')
     compile_dependency(['autoheader'], 'bsbolt/External/HTSLIB')
-    compile_dependency(['autoconf'], 'bsbolt/External/HTSLIB')
-    compile_dependency(['./configure', '--disable-bz2', '--disable-lzma'], 'bsbolt/External/HTSLIB')
+    compile_dependency(['autoreconf', '-i'], 'bsbolt/External/HTSLIB')
+    compile_dependency(['./configure', '--disable-bz2', '--disable-lzma'] + get_platform_cmd(),
+                       'bsbolt/External/HTSLIB')
     compile_dependency(['make'], 'bsbolt/External/HTSLIB')
     print('building bsb bwa')
     compile_dependency(['make'], 'bsbolt/External/BWA')
@@ -53,6 +62,7 @@ def make_external_dependencies():
 
 try:
     from wheel.bdist_wheel import bdist_wheel as _bdist_wheel
+
 
     class bdist_wheel(_bdist_wheel):
         def finalize_options(self):
@@ -83,8 +93,9 @@ class BuildCmd(build_py):
                             'build/lib/bsbolt/Impute/Imputation', []),
                            ('bsbolt.Impute.Impute_Utils', 'bsbolt/Impute/Impute_Utils',
                             'build/lib/bsbolt/Impute/Impute_Utils', []), (
-                           'bsbolt.Impute.Validation', 'bsbolt/Impute/Validation', 'build/lib/bsbolt/Impute/Validation',
-                           []),
+                               'bsbolt.Impute.Validation', 'bsbolt/Impute/Validation',
+                               'build/lib/bsbolt/Impute/Validation',
+                               []),
                            ('bsbolt.Index', 'bsbolt/Index', 'build/lib/bsbolt/Index', []),
                            ('bsbolt.Matrix', 'bsbolt/Matrix', 'build/lib/bsbolt/Matrix', []),
                            ('bsbolt.Simulate', 'bsbolt/Simulate', 'build/lib/bsbolt/Simulate', []),
