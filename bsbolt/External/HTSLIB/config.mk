@@ -43,10 +43,10 @@ RANLIB = ranlib
 CPPFLAGS = 
 CFLAGS   =  -Wall -g -O2 -fvisibility=hidden
 LDFLAGS  =  -fvisibility=hidden
-LIBS     = -lz -lm 
+LIBS     = -lz 
 
-PLATFORM   = default
-PLUGIN_EXT = .so
+PLATFORM   = Darwin
+PLUGIN_EXT = .bundle
 
 # The default Makefile enables some of the optional files, but we blank
 # them so they can be controlled by configure instead.
@@ -80,7 +80,7 @@ ifeq "s3-enabled" "s3-enabled"
 plugin_OBJS += hfile_s3.o
 plugin_OBJS += hfile_s3_write.o
 
-CRYPTO_LIBS = -lcrypto
+CRYPTO_LIBS = 
 noplugin_LIBS += $(CRYPTO_LIBS)
 hfile_s3$(PLUGIN_EXT): LIBS += $(CRYPTO_LIBS)
 hfile_s3_write$(PLUGIN_EXT): LIBS += $(CRYPTO_LIBS) $(LIBCURL_LIBS)

@@ -1,10 +1,10 @@
-includedir=/home/colin/Documents/BSBoltDev/BSBolt/bsbolt/External/HTSLIB
-libdir=/home/colin/Documents/BSBoltDev/BSBolt/bsbolt/External/HTSLIB
+includedir=/Users/HarryZhang/Documents/GitHub/BSBolt/bsbolt/External/HTSLIB
+libdir=/Users/HarryZhang/Documents/GitHub/BSBolt/bsbolt/External/HTSLIB
 
 # Flags and libraries needed when linking against a static libhts.a
 # (used by manual and semi-manual pkg-config(1)-style enquiries).
 static_ldflags=
-static_libs=-lpthread -lz -lm -lcurl -lcrypto
+static_libs=-lpthread -lz -lm -lcurl 
 
 Name: htslib
 Description: C library for high-throughput sequencing data formats

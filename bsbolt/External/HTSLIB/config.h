@@ -21,13 +21,13 @@
 #define ENABLE_S3 1
 
 /* Define if you have the Common Crypto library. */
-/* #undef HAVE_COMMONCRYPTO */
+#define HAVE_COMMONCRYPTO 1
 
 /* Define to 1 if you have the `drand48' function. */
 #define HAVE_DRAND48 1
 
 /* Define to 1 if you have the `fdatasync' function. */
-#define HAVE_FDATASYNC 1
+/* #undef HAVE_FDATASYNC */
 
 /* Define to 1 if you have the `fsync' function. */
 #define HAVE_FSYNC 1
@@ -39,7 +39,7 @@
 #define HAVE_GMTIME_R 1
 
 /* Define if you have libcrypto-style HMAC(). */
-#define HAVE_HMAC 1
+/* #undef HAVE_HMAC */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
@@ -62,9 +62,6 @@
 /* Define to 1 if you have the <lzma.h> header file. */
 /* #undef HAVE_LZMA_H */
 
-/* Define to 1 if you have the <memory.h> header file. */
-#define HAVE_MEMORY_H 1
-
 /* Define to 1 if you have a working `mmap' system call. */
 #define HAVE_MMAP 1
 
@@ -73,6 +70,9 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
+
+/* Define to 1 if you have the <stdio.h> header file. */
+#define HAVE_STDIO_H 1
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
@@ -116,13 +116,10 @@
 /* Platform-dependent plugin filename extension. */
 /* #undef PLUGIN_EXT */
 
-/* Define to 1 if you have the ANSI C header files. */
+/* Define to 1 if all of the C90 standard headers exist (not just the ones
+   required in a freestanding environment). This macro is provided for
+   backward compatibility; new code need not use it. */
 #define STDC_HEADERS 1
-
-/* Enable large inode numbers on Mac OS X 10.5.  */
-#ifndef _DARWIN_USE_64_BIT_INODE
-# define _DARWIN_USE_64_BIT_INODE 1
-#endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 /* #undef _FILE_OFFSET_BITS */
