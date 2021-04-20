@@ -15,8 +15,11 @@ BSBolt is released under the MIT license.
 BSBolt documentation can be found at [bsbolt.readthedocs.io](https://bsbolt.readthedocs.io).
 
 ## Release Notes
+- BSBolt v1.4.5
+    - Fixed maximum read depth bug that prevented methylation call on site covered by greater than 8000 reads
+    - Refactored build script, with experimental support for M1 Macs
 - BSBolt v1.4.4
-    - The default entry point for BSBolt has changed from **BSBolt** to **bsbolt** for conda compatibility 
+    - The default entry point for BSBolt has changed from BSBolt to bsbolt for conda compatibility
 
 ## Installation
 
@@ -58,6 +61,7 @@ pip3 install .
 
 Dependencies 
 * autoconf
+* automake
 * homebrew
 * xcode
 
@@ -70,9 +74,11 @@ can be completed as outlined below.
 # install xcode utilities
 xcode-select --install
 # install homebrew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 # install autoconf
 brew install autoconf
+# install automake
+brew install automake
 # optionally install python
 brew install python3.8
 # install bsbolt
