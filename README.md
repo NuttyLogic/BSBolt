@@ -65,8 +65,7 @@ Dependencies
 * homebrew
 * xcode
 
-Installation from source requires xcode command line utilities, [homebrew](https://brew.sh/) macOS package manager, 
-and autoconf are installed. Xcode through the mac App Store, running the xcode installation command listed below, 
+Installation from source requires xcode command line utilities, [homebrew](https://brew.sh/) macOS package manager, autoconf, and automake are installed. Xcode through the mac App Store, running the xcode installation command listed below, 
 or as part of the [homebrew](https://brew.sh/) macOS package manager installation. The full installation process
 can be completed as outlined below.
 
