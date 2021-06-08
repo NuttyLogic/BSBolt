@@ -15,9 +15,9 @@ bsb_wgbs_masked_index_commands = ['python3', '-m', 'bsbolt', 'Index', '-G',
 subprocess.run(bsb_wgbs_masked_index_commands)
 
 
-bsb_simulate_commands = ['python3', '-m', 'bsbolt', 'Simulate',
-                         '-G', f'{bsb_directory}tests/TestData/BSB_test.fa',
-                         '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe_masked', '-U', '-PE', '-RD', '2',
+bsb_simulate_commands = ['python3', '-m', 'bsbolt', 'Simulate', '-CH', '-NF', '0.001',
+                         '-G', f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa',
+                         '-O', f'{bsb_directory}tests/TestSimulations/BSB_pe_masked', '-PE', '-RD', '1',
                          '-verbose']
 subprocess.run(bsb_simulate_commands)
 

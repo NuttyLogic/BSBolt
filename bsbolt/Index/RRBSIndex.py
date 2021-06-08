@@ -39,6 +39,7 @@ class RRBSBuild:
         self.upper_bound = upper_bound
         self.ignore_alt = ignore_alt
         self.cut_sites = ProcessCutSites(cut_format=cut_format)
+        print(self.cut_sites.restriction_site_dict)
         self.mappable_regions = []
         self.contig_size_dict = {}
 
@@ -78,7 +79,7 @@ class RRBSBuild:
         """
         if self.ignore_alt and 'alt' in contig_id.lower():
             return
-        # join contig_squence to get ease downstream processing
+        # join contig_sequence to get ease downstream processing
         contig_str: str = ''.join(contig_sequence)
         # save contig size to dict
         self.contig_size_dict[contig_id] = len(contig_str)
@@ -91,6 +92,7 @@ class RRBSBuild:
             mappable_regions.append((1, 80))
         # get masked contig sequence
         masked_contig_sequence: str = self.mask_contig(contig_str, mappable_regions)
+        self.mappable_regions.extend([f'{contig_id}\t{region[0]}\t{region[1]}\n' for region in mappable_regions])
         # perform sanity check, if AssertionError the region designation process is bad
         assert len(contig_str) == len(masked_contig_sequence), 'Contig Length != Masked Contig Length'
         # write contig sequence to output files
@@ -115,7 +117,7 @@ class RRBSBuild:
         for restrication_site, offset in self.cut_sites.restriction_site_dict.items():
             restriction_site_locations.extend([(m.start(), offset, restrication_site) for m in
                                                re.finditer(restrication_site, contig_str)])
-        # sort list so fragments are in order or start position
+        # sort list so fragments are in ordered by start position
         restriction_site_locations.sort(key=lambda x: x[0])
         mappable_regions = []
         # iterate through list to get the cut site plus upstream cut site, will terminate at the second to last site
