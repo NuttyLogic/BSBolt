@@ -40,6 +40,10 @@ class BisulfiteAlignmentAndProcessing:
                                            stdin=alignment_run.stdout)
         # watch alignment progress, output stderr and collect alignment stats
         while True:
+            # Show intermediate steps of alignment
+            line = alignment_run.stderr.readline()
+            if line:
+                print(line.strip())
             if bam_compression.returncode:
                 break
             elif alignment_run.returncode:

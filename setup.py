@@ -105,7 +105,7 @@ class BuildCmd(build_py):
 
 
 setup(name='bsbolt',
-      version='1.4.5',
+      version='1.4.6',
       description='Bisulfite Sequencing Processing Platform',
       long_description=long_description,
       long_description_content_type="text/markdown",

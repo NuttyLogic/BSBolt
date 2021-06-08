@@ -1,5 +1,4 @@
 import gzip
-import os
 import subprocess
 import unittest
 from bsbolt.Index.RRBSCutSites import ProcessCutSites
@@ -31,9 +30,7 @@ subprocess.run(bsb_rrbs_index_commands)
 mappable_test_regions = []
 
 with open(f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa', 'r') as bsb_ref:
-    chrome: str = None
-    start: int = None
-    end: int = None
+    chrome, start, end = None, None, None
     for line in bsb_ref:
         if '>' in line:
             chrome = line.replace('\n', '').replace('>', '')
@@ -47,8 +44,7 @@ with open(f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa', '
                 else:
                     if start:
                         mappable_test_regions.append(f'{chrome}:{start}-{end}')
-                        start = None
-                        end = None
+                        start, end = None, None
 
 regions = []
 
@@ -71,27 +67,37 @@ mappable_bed.sort()
 # get mappable rrbs regions:
 mappable_rrbs_regions = []
 
-with gzip.open(f'{bsb_directory}tests/TestData/BSB_Test_DB_rrbs/mappable_regions.txt.gz') as mappable_rrbs:
+with gzip.open(f'{bsb_directory}tests/TestData/BSB_Test_DB_rrbs/mappable_regions.bed.gz') as mappable_rrbs:
     for line in mappable_rrbs:
         line = line.decode('UTF-8')
-        chrom, start, end, seq = line.split('\t')
-        mappable_rrbs_regions.append([chrom, int(start) - 2, int(end) + 2])
-
+        chrom, start, end = line.strip().split('\t')
+        mappable_rrbs_regions.append([chrom, int(start), int(end)])
 
 reference_sequences = {}
 # retrieve contig sequences
 with open(f'{bsb_directory}tests/TestData/BSB_Test_DB_rrbs/BSB_ref.fa', 'r') as bsb_ref:
-    chrome: str = None
+    chrome = None
     for line in bsb_ref:
         if '>' in line:
             chrome = line.replace('\n', '').replace('>', '')
         else:
             reference_sequences[chrome] = line.replace('\n', '')
 
+val_reference_sequences = {}
+# retrieve contig sequences
+with open(f'{bsb_directory}tests/TestData/BSB_Test_DB/BSB_ref.fa', 'r') as bsb_ref:
+    chrome = None
+    for line in bsb_ref:
+        if '>' in line:
+            chrome = line.replace('\n', '').replace('>', '')
+        else:
+            val_reference_sequences[chrome] = line.replace('\n', '')
+
 reference_sequences_restricted_mapping = {}
+
 # retrieve contig sequences
 with open(f'{bsb_directory}tests/TestData/BSB_Test_DB_wgbs_masked/BSB_ref.fa', 'r') as bsb_ref:
-    chrome: str = None
+    chrome = None
     for line in bsb_ref:
         if '>' in line:
             chrome = line.replace('\n', '').replace('>', '')
@@ -130,14 +136,20 @@ class TestReadSimulation(unittest.TestCase):
             self.assertTrue('-' not in sequence)
 
     def test_rrbs_mappable_sites(self):
-        for region in mappable_rrbs_regions:
-            sequence = reference_sequences[region[0]][region[1]:region[2] + 1]
+        for reg in mappable_rrbs_regions:
+            if reg[1] < 81:
+                continue
+            sequence = reference_sequences[reg[0]][reg[1] + 2:reg[2] - 2]
             seq_start = sequence[0:3]
             seq_end = sequence[-3:]
-            if seq_start[0] != 'G':
-                self.assertEqual(seq_start, 'TTG')
-            if seq_end[-1] != 'T':
-                self.assertEqual(seq_end, 'TAG')
+            if seq_start[0] == 'C':
+                self.assertEqual(seq_start, 'CTG')
+            else:
+                self.assertEqual(seq_start[0], 'G')
+            if seq_end[-1] == 'G':
+                self.assertEqual(seq_end, 'CAG')
+            else:
+                self.assertEqual(seq_end[-1], 'C')
 
 
 if __name__ == '__main__':

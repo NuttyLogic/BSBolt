@@ -51,9 +51,9 @@ class IndexOutput:
         # format output and input
         ref_file = f'{self.genome_database}BSB_ref.fa'
         # collect external command
-        indx_command = [f'{self.bwa_path}', 'index', '-a', 'bwtsw', '-b', f'{self.block_size}', ref_file]
+        index_command = [f'{self.bwa_path}', 'index', '-a', 'bwtsw', '-b', f'{self.block_size}', ref_file]
         # run external command
-        subprocess.run(args=indx_command)
+        subprocess.run(args=index_command)
 
     def output_contig_sequence(self, contig_id: str, contig_sequence: Union[str, Dict[str, int]]):
         """Outputs serialized version of contig sequence
@@ -69,6 +69,6 @@ class IndexOutput:
         Arguments:
             mappable_regions (list): list of bed formatted strings
                 """
-        with gzip.open(f'{self.genome_database}mappable_regions.txt.gz', 'wb') as mappable_regions_output:
+        with gzip.open(f'{self.genome_database}mappable_regions.bed.gz', 'wb') as mappable_regions_output:
             for line in mappable_regions:
                 mappable_regions_output.write(line.encode('UTF-8'))

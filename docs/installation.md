@@ -1,12 +1,12 @@
 BSBolt and dependencies need to be compiled during the installation process. Pre-compiled binaries are available for 
 macOS >= 10.15 and linux distributions released after 2010 according to the 
 [manylinux2010](https://www.python.org/dev/peps/pep-0571/) python enhancement proposal. If a precompiled binary is 
-unavailable for the target OS binaries will be built from source. Compilation on macOS requires xcode-command line utilities and autoconf be installed 
-as described below.  
+unavailable for the target OS, binaries will be built from source. Compilation on macOS requires xcode-command line 
+utilities and autoconf.  
 
 ### **PyPi Installation**
 
-The easiest installation method is installing pre-compiled binaries using PyPi. Binaries are provided for python >=3.6
+The easiest installation method is installing pre-compiled binaries using PyPi. Binaries are available for python >=3.6
 on unix like systems (macOS and linux).
 
 ```shell
@@ -15,7 +15,7 @@ pip3 install bsbolt --user
 
 ### **Conda Installation**
 
-BSBolt can be installed using the conda package manager using the installation instructions below. 
+BSBolt can be installed using the conda package manager using the instructions below. 
 
 ```shell
 conda config --add channels bioconda
@@ -46,19 +46,22 @@ Dependencies
 * xcode
 
 Installation from source requires xcode command line utilities, [homebrew](https://brew.sh/) macOS package manager, 
-and autoconf are installed. Xcode through the mac App Store, running the xcode installation command listed below, 
-or as part of the [homebrew](https://brew.sh/) macOS package manager installation. The full installation process
-can be completed as outlined below.
+autoconf, python (>=3.6), and automake.The full installation process is outlined below.
 
 ```shell
 # install xcode utilities
 xcode-select --install
 # install homebrew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 # install autoconf
 brew install autoconf
-# optionally install python
+# install automake
+brew installa automake
+# optionally install python >= 3.6
 brew install python3.8
-# install bsbolt
-pip3 install bsbolt
+# clone the repository
+git clone https://github.com/NuttyLogic/BSBolt.git
+cd bsbolt
+# compile and install package
+pip3 install .
 ```
