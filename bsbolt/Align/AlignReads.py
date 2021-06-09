@@ -4,6 +4,16 @@ from typing import List
 from bsbolt.Utils.UtilityFunctions import get_external_paths
 
 
+class BisulfiteAlignmentError(Exception):
+    """Error in alignment"""
+    pass
+
+
+class AlignmentCompressionError(Exception):
+    """Error in read compression"""
+    pass
+
+
 class BisulfiteAlignmentAndProcessing:
     """ Read alignment as processing. Handles reads from BWA-MEM2 and outputs to BAM file. Also aggregates alignment
     stats.
@@ -41,22 +51,21 @@ class BisulfiteAlignmentAndProcessing:
         # watch alignment progress, output stderr and collect alignment stats
         while True:
             # Show intermediate steps of alignment
-            line = alignment_run.stderr.readline()
-            if line:
-                print(line.strip())
+            alignment_info = alignment_run.stderr.readline()
+            if alignment_info:
+                if alignment_info[0:7] == 'BSStat ':
+                    category, count = alignment_info.replace('BSStat ', '').split(': ')
+                    self.mapping_statistics[category] += int(count)
+                    print(alignment_info.replace('BSStat ', '').strip())
+                else:
+                    print(alignment_info.strip())
             if bam_compression.returncode:
-                break
+                print(bam_compression.returncode)
+                raise AlignmentCompressionError
             elif alignment_run.returncode:
-                break
+                print(alignment_run.returncode)
+                raise BisulfiteAlignmentError
             elif alignment_run.poll() is not None and bam_compression.poll() is not None:
                 alignment_run.stdout.close()
                 alignment_run.stderr.close()
                 break
-            else:
-                alignment_info = alignment_run.stderr.readline().strip()
-                if alignment_info:
-                    if alignment_info[0:7] == 'BSStat ':
-                        category, count = alignment_info.replace('BSStat ', '').split(': ')
-                        self.mapping_statistics[category] += int(count)
-                    else:
-                        print(alignment_info)

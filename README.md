@@ -18,6 +18,8 @@ BSBolt is released under the MIT license.
 doi:10.1101/2020.10.06.328559](https://academic.oup.com/gigascience/article/10/5/giab033/6272610)
 
 ## Release Notes
+- v1.4.7
+  - hotfix 
 - v1.4.6
   - Alignment statistics now output as generated. 
   - Fixed bug where alignment would stop when observed mappability was low.
