@@ -18,16 +18,18 @@ BSBolt is released under the MIT license.
 doi:10.1101/2020.10.06.328559](https://academic.oup.com/gigascience/article/10/5/giab033/6272610)
 
 ## Release Notes
+- v1.4.8
+    - Fixed bug causing seg fault on certain systems when the first read position was a deletion.
 - v1.4.7
-  - hotfix 
+    - Alignment stats fix.  
 - v1.4.6
-  - Alignment statistics now output as generated. 
-  - Fixed bug where alignment would stop when observed mappability was low.
+    - Alignment statistics now output as generated. 
+    - Fixed bug where alignment would stop when observed mappability was low.
 - v1.4.5
-  - Fixed maximum read depth bug that prevented methylation call on site covered by greater than 8000 reads
-  - Refactored build script, with experimental support for M1 Macs
+    - Fixed maximum read depth bug that prevented methylation call on site covered by greater than 8000 reads
+    - Refactored build script, with experimental support for M1 Macs
 - v1.4.4
-  - The default entry point for BSBolt has changed from **BSBolt** to **bsbolt** for conda compatibility
+    - The default entry point for BSBolt has changed from **BSBolt** to **bsbolt** for conda compatibility
 
 ## **Installation**
 
