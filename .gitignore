@@ -109,11 +109,8 @@ ENV/
 env.bak/
 venv.bak/
 
-<<<<<<< HEAD
 *.ipynb
 
-=======
->>>>>>> f2dcbc03251b16e1757838d7d685e04f9a5037bf
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -136,17 +133,15 @@ venv.bak/
 scratch*
 
 # compiled binaries
-BSBolt/External/WGSIM/wgsim
+/bsbolt/External/WGSIM/wgsim
+/bsbolt/External/WGSIM/autom4te.cache
 /bsbolt/External/WGSIM/wgsim.dSYM/Contents/Info.plist
 /bsbolt/External/WGSIM/wgsim.dSYM/Contents/Resources/DWARF/wgsim
-<<<<<<< HEAD
-BSBolt/External/BWA/bwa
-BSBolt/External/BWA/libwa.a
-BSBolt/External/BWA/*.o
-=======
-BSBolt/External/BWA/bwa-mem2
-BSBolt/External/BWA/libwa.a
-BSBolt/External/BWA/src/*.o
->>>>>>> f2dcbc03251b16e1757838d7d685e04f9a5037bf
+/bsbolt/External/BWA/bwa
+/bsbolt/External/BWA/libwa.a
+/bsbolt/External/BWA/*.o
+/bsbolt/External/BWA/bwa-mem2
+/bsbolt/External/BWA/src/*.o
 
-libbwa.a
+/bsbolt/External/HTSLIB/config.log
+/bsbolt/External/HTSLIB/config.status
