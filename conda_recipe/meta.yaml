@@ -7,7 +7,7 @@ package:
 
 source:
   url: "https://github.com/NuttyLogic/BSBolt/releases/download/{{ version }}/{{ name}}-{{ version }}.tar.gz"
-  sha256: "148b58908b2d5f86b78de842d879767acb7554dda0b14f0e86d284496ce36056"
+  sha256: "c8576c5d91d0a4a50772e771a27d7176b0d62518cb7541692d00973e9b0aba21"
 
 
 build:
