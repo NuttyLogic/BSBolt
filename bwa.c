@@ -263,6 +263,7 @@ uint32_t *bwa_gen_cigar2(const int8_t mat[25], int o_del, int e_del, int o_ins, 
 
 		if (rb > re) cseq = bns_get_seq(l_pac, opac, rb + 2, re - 2, &clen);
 		else cseq = bns_get_seq(l_pac, opac, rb - 2, re + 2, &clen);
+		if (!clen) goto ret_gen_cigar; // if the template overlaps the boundary don't gen cigar, possible due to 2 base meth assessment
 		if (rb >= l_pac) { // then reverse both query and rseq; this is to ensure indels to be placed at the leftmost position
 			for (i = 0; i < clen>>1; ++i)
 				tmp = cseq[i], cseq[i] = cseq[clen - 1 - i], cseq[clen - 1 - i] = tmp;
