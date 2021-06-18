@@ -19,7 +19,7 @@ doi:10.1101/2020.10.06.328559](https://academic.oup.com/gigascience/article/10/5
 
 ## Release Notes
 - v1.4.8
-  - Fixed bug causing seg fault on certain systems when the first read position was a deletion.
+  - Fixed bug ending alignment when the reference template end greater than reference boundary.
 - v1.4.7
   - Alignment stats fix. 
 - v1.4.6
