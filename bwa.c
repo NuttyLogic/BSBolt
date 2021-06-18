@@ -283,8 +283,8 @@ uint32_t *bwa_gen_cigar2(const int8_t mat[25], int o_del, int e_del, int o_ins, 
 			op  = cigar[k]&0xf, len = cigar[k]>>4;
 			if (op == 0) { // match
 				for (i = 0; i < len; ++i) {
-					if (!cseq) break;
-					if (cseq[y + i + 2] == ref_base){
+					if (!cseq);
+					else if (cseq[y + i + 2] == ref_base){
 						// select bases to get relative methylation context
 						if (!reverse && !is_crick) base1 = cseq[y + i + 2], base2 = cseq[y +i + 3], base3 = cseq[y + i + 4]; // wc2t
 						else if (!reverse && is_crick) base1 = cseq[y + i + 1], base2 = cseq[y + i + 2], base3 = cseq[y + i + 3]; // cg2a
