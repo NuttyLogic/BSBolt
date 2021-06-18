@@ -263,7 +263,6 @@ uint32_t *bwa_gen_cigar2(const int8_t mat[25], int o_del, int e_del, int o_ins, 
 
 		if (rb > re) cseq = bns_get_seq(l_pac, opac, rb + 2, re - 2, &clen);
 		else cseq = bns_get_seq(l_pac, opac, rb - 2, re + 2, &clen);
-		if (!clen) goto ret_gen_cigar; // if the template overlaps the boundary don't gen cigar, possible due to 2 base meth assessment
 		if (rb >= l_pac) { // then reverse both query and rseq; this is to ensure indels to be placed at the leftmost position
 			for (i = 0; i < clen>>1; ++i)
 				tmp = cseq[i], cseq[i] = cseq[clen - 1 - i], cseq[clen - 1 - i] = tmp;
@@ -284,7 +283,11 @@ uint32_t *bwa_gen_cigar2(const int8_t mat[25], int o_del, int e_del, int o_ins, 
 			op  = cigar[k]&0xf, len = cigar[k]>>4;
 			if (op == 0) { // match
 				for (i = 0; i < len; ++i) {
-					if (!cseq);
+					if (!clen) {
+                		kputw(u, &str); kputc('^', &str);
+						for (i = 0; i < len; ++i)
+							kputc(int2base[rseq[y+i]], &str);
+  		            }
 					else if (cseq[y + i + 2] == ref_base){
 						// select bases to get relative methylation context
 						if (!reverse && !is_crick) base1 = cseq[y + i + 2], base2 = cseq[y +i + 3], base3 = cseq[y + i + 4]; // wc2t
