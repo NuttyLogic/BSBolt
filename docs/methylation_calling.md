@@ -2,7 +2,7 @@ Methylation values, the proportion of methylated bases to the total number of ob
 BSBolt CallMethylation module. Methylation values for guanine nucleotides are made for reads aligned to the Crick
 (anti-sense) strands and calls for cytosine nucleotides are made for reads aligned to the Watson (sense) strand.
 Methylation calls for WGBS and targeted bisulfite sequencing can be improved by removing PCR duplicate reads before
-calling methylation. It is not recommend to remove duplicated for RRBS as the sequencing reads will often share
+calling methylation. Marking duplicate alignments with RRBS data is not recommended as the sequencing reads will often share
 the same mapping coordinates due to enzymatic digestion.
 
 ### Methylation Calling Pre-Processing
@@ -14,11 +14,11 @@ used on bisulfite sequencing data and should be performed on a case by case basi
 
 ```shell
 # fixmates to prepare for duplicate removal, use -p to disable proper pair check
-samtools samtools fixmate -p -m BSB_pe_test.bam BSB_pe_test.fixmates.bam
+samtools fixmate -p -m BSB_pe_test.bam BSB_pe_test.fixmates.bam
 # sort bam by coordinates for duplicate calling
 samtools sort -@ 2 -o BSB_pe_test.sorted.bam BSB_pe_test.fixmates.bam
 # remove duplicate reads
-samtools markdup -r BSB_pe_test.sorted.bam BSB_pe_test.dup.bam
+samtools markdup BSB_pe_test.sorted.bam BSB_pe_test.dup.bam
 # index bam file for methylation calling
 samtools index BSB_pe_test.dup.bam
 ```
@@ -31,7 +31,7 @@ all mapped reads not flagged as duplicate at a position by default.
 #### **BSB CallMethylation Commands**
 
 ```shell
-bsbolt Module CallMethylation -I {input.bam} -DB {bsbolt DB} -O {output prefix}
+bsbolt CallMethylation -I {input.bam} -DB {bsbolt DB} -O {output prefix}
 
 -h, --help     show this help message and exit
 
