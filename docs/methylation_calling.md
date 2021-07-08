@@ -18,7 +18,7 @@ samtools fixmate -p -m BSB_pe_test.bam BSB_pe_test.fixmates.bam
 # sort bam by coordinates for duplicate calling
 samtools sort -@ 2 -o BSB_pe_test.sorted.bam BSB_pe_test.fixmates.bam
 # remove duplicate reads
-samtools markdup -r BSB_pe_test.sorted.bam BSB_pe_test.dup.bam
+samtools markdup BSB_pe_test.sorted.bam BSB_pe_test.dup.bam
 # index bam file for methylation calling
 samtools index BSB_pe_test.dup.bam
 ```
