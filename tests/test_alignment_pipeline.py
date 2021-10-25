@@ -53,7 +53,7 @@ bs_call_methylation_args = ['python3', '-m', 'bsbolt', 'CallMethylation', '-I',
                             '-O', f'{bsb_directory}tests/BSB_pe_test',
                             '-DB', f'{bsb_directory}tests/TestData/BSB_Test_DB',
                             '-t', '6', '-verbose', '-BQ', '10', '-MQ', '20', '-BG',
-                            '-max', '8000']
+                            '-max', '8000', '-text']
 subprocess.run(bs_call_methylation_args)
 
 # retrieve reference and test alignments
