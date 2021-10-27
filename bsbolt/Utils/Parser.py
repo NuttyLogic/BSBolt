@@ -95,7 +95,7 @@ align_parser.add_argument('-XA', type=lambda x: x.strip(), default='100,200',
                                'output all in XA [100,200]',
                           required=False)
 align_parser.add_argument('-DR', type=float, default=0.95, help='drop ratio for alternative hits reported in XA tag, '
-                                                                'for best bisulifte alignment performance set at or '
+                                                                'for best bisulfite alignment performance set at or '
                                                                 'above default [0.95]')
 align_parser.add_argument('-M', action='store_true', default=False,
                           help='mark shorter split hits as secondary',
@@ -210,7 +210,7 @@ sim_parser.add_argument('-CH', default=True, action='store_false', help='Skip si
 sim_parser.add_argument('-NS', default=True, action='store_false', help='By default observed methylation counts are '
                                                                         'saved, disable this behavior')
 sim_parser.add_argument('-SE', type=float, default=0.001, help='Sequencing Error [0.001]')
-sim_parser.add_argument('-NF', type=float, default=0.05, help='Cutoff threshold for amibiguous bases, simulated reads '
+sim_parser.add_argument('-NF', type=float, default=0.05, help='Cutoff threshold for ambiguous bases, simulated reads '
                                                               'with a proportion of ambiguous bases above this '
                                                               'threshold will not be output [0.05]')
 sim_parser.add_argument('-FM', type=int, default=400, help='Max fragment size [400]')

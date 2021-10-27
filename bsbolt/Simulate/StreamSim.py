@@ -66,6 +66,7 @@ class StreamSim:
     @staticmethod
     def process_variant_line(formatted_line):
         chrom, pos, reference, alt, heterozygous = formatted_line.split('\t')
+        het = True if heterozygous == '+' else False
         pos = int(pos)
         indel = 0
         iupac = None
@@ -75,7 +76,7 @@ class StreamSim:
             indel = -1
         else:
             iupac = retrieve_iupac(alt)
-        return dict(chrom=chrom, pos=pos, reference=reference, alt=alt, heterozygous=heterozygous,
+        return dict(chrom=chrom, pos=pos, reference=reference, alt=alt, heterozygous=het,
                     indel=indel, iupac=iupac)
 
     @staticmethod
