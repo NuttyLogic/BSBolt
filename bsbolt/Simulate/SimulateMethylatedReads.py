@@ -68,6 +68,8 @@ class SimulateMethylatedReads:
                             '-A', str(ambiguous_base_cutoff), '-I', str(mean_insert_size)]
         if haplotype_mode:
             self.sim_command.extend(['-h', '1'])
+        else:
+            self.sim_command.extend(['-h', '0'])
         self.sim_db = SetCytosineMethylation(reference_file=reference_file,
                                              sim_dir=sim_output,
                                              methylation_reference=methylation_reference,
