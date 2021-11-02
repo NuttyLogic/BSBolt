@@ -284,7 +284,7 @@ void wgsim_core(const char *fn, int is_hap, uint64_t N, int dist, int std_dev, i
 			s[0] = size[0]; s[1] = size[1];
 
 			// generate the read sequences
-			target = rseq[0].s; // haplotype from which the reads are generated
+			target = rseq[drand48()<0.5?0:1].s; // haplotype from which the reads are generated
 			n_sub[0] = n_sub[1] = n_indel[0] = n_indel[1] = n_err[0] = n_err[1] = 0;
 			int start[2] = {pos, pos + insert_size + size_l};
 			int end[2] = {start[0], start[1]};
