@@ -129,10 +129,11 @@ class SimulateMethylatedReads:
             self.sim_db.sim_db.output_contig(self.contig_values, self.current_contig, values=True)
             self.contig_values = {}
 
-    def process_read_group(self, sim_data):
+    def process_read_group(self, sim_data, stranded_capture=False):
         """Set read methylation values, randomly assign reads to Watson or Crick strand"""
         # randomly select reference strand
-        sub_pattern = ('C', 'T') if self.random_roll(0.5) else ('G', 'A')
+        random_roll = self.random_roll(0.5) if not stranded_capture else True
+        sub_pattern = ('C', 'T') if random_roll else ('G', 'A')
         if sub_pattern[0] == 'G':
             temp_sim = sim_data[1]
             sim_data[1] = sim_data[2]

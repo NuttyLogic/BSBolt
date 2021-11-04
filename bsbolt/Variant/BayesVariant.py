@@ -22,7 +22,7 @@ def generate_log_likelihood_matrix(error_rates: np.ndarray = np.array([0.005]), 
                             bisulfite converted reads. *Rows (+A, +T, +C, +G, -A, -T, -C, -G), 
                             Columns (AA, AT, AC, AG, TT, TC, TG, CC, CG, GG)  
     """
-    # use median error rate for likelihood construction 
+    # use median error rate for likelihood construction
     er = np.median(error_rates) / 3
     cr = conversion_rate
     mr = methylation_rate
@@ -36,7 +36,7 @@ def generate_log_likelihood_matrix(error_rates: np.ndarray = np.array([0.005]), 
     # set ref base probability
     rbp = 1 - er * 3
 
-    # set values for genotype combinations 
+    # set values for genotype combinations
     cbp_er = (cbp + er) / 2
     ctp_er = (ctp + er) / 2
     ctp_rbp = (ctp + rbp) / 2
@@ -57,20 +57,20 @@ def predict_bayes_genotype(base_calls: np.ndarray, log_likelihood_matrix: np.nda
                            priors: np.ndarray = np.ones((10))) -> Tuple[float, float, float, str]:
     """
     Provides genotype calls given an array of base counts at a site of interest and a generated log likelihood matrix.
-    Weighted priors may also be provided, defaults to 1.0 for all genotypes. The genotype with the maximum probability 
-    is returned. Genotype calls are scored by the likelihood fo 
+    Weighted priors may also be provided, defaults to 1.0 for all genotypes. The genotype with the maximum probability
+    is returned.
 
     Params:
 
     * *base_calls (np.ndarray)*: counts of base calls in order (+A, +T, +C, +G, -A, -T, -C, -G)
-    * *log_likelihood_matrix (np.ndarray)*: $8\\times10$matrix of read base log likelihoods for sense and anti-sense 
-                            bisulfite converted reads. *Rows (+A, +T, +C, +G, -A, -T, -C, -G), 
+    * *log_likelihood_matrix (np.ndarray)*: $8\\times10$matrix of read base log likelihoods for sense and anti-sense
+                            bisulfite converted reads. *Rows (+A, +T, +C, +G, -A, -T, -C, -G),
                             Columns (AA, AT, AC, AG, TT, TC, TG, CC, CG, GG)
-    * *priors (np.ndarray)*: expected diploid genotype frequency, defaults to 1.0 for all genotypes  
+    * *priors (np.ndarray)*: expected diploid genotype frequency, defaults to 1.0 for all genotypes
 
     Returns:
 
-    * *genotype call: Tuple[float, float, float, str]*: genotype probability, 1 - genotype probability, 
+    * *genotype call: Tuple[float, float, float, str]*: genotype probability, 1 - genotype probability,
         genotype score (log_{10}(Max(genotype probability)/ Max -1(genotype probability )), genotype
     """
     # order of likelihood matrix

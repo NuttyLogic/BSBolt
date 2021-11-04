@@ -73,7 +73,7 @@ Index Options:
 '''
 
 meth_help = '''
-bsbolt Module CallMethylation -I {input.bam} -DB {bsbolt DB} -O {output prefix}
+bsbolt CallMethylation -I {input.bam} -DB {bsbolt DB} -O {output prefix}
 
 -h, --help     show this help message and exit
 
@@ -162,4 +162,27 @@ Options:
   -verbose    verbose imputation
   -O File     output path for imputed matrix
   -R          randomize batches
+'''
+
+variant_help = '''
+bsbolt CallVariation -I {input.bam} -DB {bsbolt DB} -O {output prefix}
+
+-h, --help  show this help message and exit
+
+Options
+  -I File      Input BAM, input file must be in BAM format with index file
+  -DB File     Path to index directory
+  -O File      Output prefix
+  -verbose     Verbose Output
+  -text        Output plain text files, default=False
+  -ignore-ov   Only consider higher quality base when paired end reads overlap, default=True
+  -max Int     Max read depth to call variation, default=8000
+  -min Int     Minimum read depth required to call variation, default=10
+  -t Int       Number of threads to use when calling variation, default=1
+  -BQ Int      Minimum base quality for a base to considered forvariant calling, default=0
+  -MQ Int      Minimum alignment quality for an alignment to be considered for variant calling, default=20
+  -BED         Do not output calls in bed format, default=True
+  -VCF         Output VCF file, default=False
+  -IO          Ignore orphans during variation call
+  -BR File     Regions to call variation in bed format
 '''

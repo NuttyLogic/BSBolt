@@ -1,6 +1,7 @@
 import argparse
 
-from bsbolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impute_help, index_help, meth_help, sim_help
+from bsbolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impute_help 
+from bsbolt.Utils.ParserHelpMessages import index_help, meth_help, sim_help, variant_help
 
 
 parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.5.0',
@@ -21,6 +22,8 @@ sim_parser = subparsers.add_parser('Simulate', help='Read Simulation', add_help=
 imputation_parser = subparsers.add_parser('Impute', help='kNN Imputation', add_help=False, usage=impute_help)
 sort_parser = subparsers.add_parser('Sort', help='BAM Sort')
 bam_index = subparsers.add_parser('BamIndex', help='BAM Index')
+variant_parser = subparsers.add_parser('CallVariation', help="Genetic Variation Calling", 
+                                        add_help=False, usage=variant_help)
 # Add Alignment Parser Commands
 
 align_parser.add_argument('-F1', type=str, default=None, help='path to fastq 1', required=True)
@@ -242,3 +245,30 @@ sort_parser.add_argument('-I', type=str, required=True, help='Input bam')
 # add bam indexing args
 
 bam_index.add_argument('-I', type=str, required=True, help='BAM input path')
+
+# variant parser args
+
+variant_parser.add_argument('-I', type=str, required=True,
+              help='Input BAM, input file must be in BAM format with index file')
+variant_parser.add_argument('-DB', type=str, required=True, help='Path to index directory')
+variant_parser.add_argument('-O', type=str, required=True, help='Output prefix')
+variant_parser.add_argument('-verbose', action="store_true", default=False, help='Verbose Output')
+variant_parser.add_argument('-text', action="store_true", default=False,
+                             help='Output plain text files, default=False')
+variant_parser.add_argument('-ignore-ov', action="store_true", default=True,
+              help='Only consider higher quality base '
+                   'when paired end reads overlap, default=True')
+variant_parser.add_argument('-max', type=int, default=8000, help='Max read depth to call variation, default=8000')
+variant_parser.add_argument('-min', type=int, default=10,
+              help='Minimum read depth required to call variation, default=10')
+variant_parser.add_argument('-t', type=int, default=1,
+              help='Number of threads to use when calling variation, default=1')
+variant_parser.add_argument('-BQ', type=int, default=10, help='Minimum base quality for a base to considered for'
+                                                'variant calling, default=0')
+variant_parser.add_argument('-MQ', type=int, default=20, help='Minimum alignment quality for an alignment to be '
+                                               'considered for variant calling, default=20')
+variant_parser.add_argument('-BED', action="store_false", default=True, help='Do not output calls in bed format, default=True')
+variant_parser.add_argument('-VCF', action="store_true", default=False, help='Output VCF file, default=False')
+variant_parser.add_argument('-IO', action="store_true", default=False, help='Ignore orphans during variation call')
+variant_parser.add_argument('-BR', type=str, default=None, help='Regions to call variation in bed format')
+variant_parser.add_argument('-OR', action='store_true', help='Output calls for bases without observed variation')
