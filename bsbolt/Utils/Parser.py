@@ -255,20 +255,22 @@ variant_parser.add_argument('-O', type=str, required=True, help='Output prefix')
 variant_parser.add_argument('-verbose', action="store_true", default=False, help='Verbose Output')
 variant_parser.add_argument('-text', action="store_true", default=False,
                              help='Output plain text files, default=False')
-variant_parser.add_argument('-ignore-ov', action="store_true", default=True,
-              help='Only consider higher quality base '
-                   'when paired end reads overlap, default=True')
+variant_parser.add_argument('-ignore-ov', action="store_true", default=True, help='Only consider higher quality base '
+                                                                                  'when paired end reads overlap, '
+                                                                                  'default=True')
 variant_parser.add_argument('-max', type=int, default=8000, help='Max read depth to call variation, default=8000')
-variant_parser.add_argument('-min', type=int, default=10,
-              help='Minimum read depth required to call variation, default=10')
-variant_parser.add_argument('-t', type=int, default=1,
-              help='Number of threads to use when calling variation, default=1')
+variant_parser.add_argument('-min', type=int, default=10, help='Minimum read depth required to '
+                                                               'call variation, default=10')
+variant_parser.add_argument('-t', type=int, default=1, help='Number of threads to use when calling variation, default=1')
 variant_parser.add_argument('-BQ', type=int, default=10, help='Minimum base quality for a base to considered for'
-                                                'variant calling, default=0')
+                                                              'variant calling, default=0')
 variant_parser.add_argument('-MQ', type=int, default=20, help='Minimum alignment quality for an alignment to be '
-                                               'considered for variant calling, default=20')
-variant_parser.add_argument('-BED', action="store_false", default=True, help='Do not output calls in bed format, default=True')
+                                                              'considered for variant calling, default=20')
+variant_parser.add_argument('-BED', action="store_false", default=True, help='Do not output calls in bed format, '
+                                                                             'default=True')
 variant_parser.add_argument('-VCF', action="store_true", default=False, help='Output VCF file, default=False')
 variant_parser.add_argument('-IO', action="store_true", default=False, help='Ignore orphans during variation call')
 variant_parser.add_argument('-BR', type=str, default=None, help='Regions to call variation in bed format')
 variant_parser.add_argument('-OR', action='store_true', help='Output calls for bases without observed variation')
+variant_parser.add_argument('-MP', type=float, default=0.001, help='Minimum genotype call p value '
+                                                                   'to output, default 0.001')

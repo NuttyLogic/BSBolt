@@ -1,6 +1,7 @@
 from typing import Tuple
 import numpy as np
 
+
 def generate_log_likelihood_matrix(error_rates: np.ndarray = np.array([0.005]), methylation_rate: float = 0.01, 
                                    conversion_rate: float = 0.99) -> np.ndarray:
     """
@@ -43,18 +44,18 @@ def generate_log_likelihood_matrix(error_rates: np.ndarray = np.array([0.005]), 
     er_rbp = (er + rbp) / 2
 
     llm = np.log(np.array([[rbp, er_rbp, er_rbp, er_rbp, er, er, er, er, er, er],
-                            [er, er_rbp,ctp_er, er, rbp,ctp_rbp,er_rbp,ctp, ctp_er, er],
+                            [er, er_rbp, ctp_er, er, rbp, ctp_rbp, er_rbp, ctp, ctp_er, er],
                             [er, er, cbp_er, er, er, cbp_er, er, cbp, cbp_er, er],
                             [er, er, er, er_rbp, er, er, er_rbp, er, er_rbp, rbp],
                             [rbp, er_rbp, er_rbp, ctp_rbp, er, er, ctp_er, er, ctp_er, ctp],
                             [er, er_rbp, er, er, rbp, er_rbp, er_rbp, er, er, er],
                             [er, er, er_rbp, er, er, er_rbp, er, rbp, er_rbp, er],
                             [er, er, er, cbp_er, er, er, cbp_er, er, cbp_er, cbp]]))
-    return(llm)
+    return llm
 
 
 def predict_bayes_genotype(base_calls: np.ndarray, log_likelihood_matrix: np.ndarray, 
-                           priors: np.ndarray = np.ones((10))) -> Tuple[float, float, float, str]:
+                           priors: np.ndarray = np.ones(10)) -> Tuple[float, float, float, str]:
     """
     Provides genotype calls given an array of base counts at a site of interest and a generated log likelihood matrix.
     Weighted priors may also be provided, defaults to 1.0 for all genotypes. The genotype with the maximum probability

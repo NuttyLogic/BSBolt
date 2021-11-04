@@ -179,10 +179,12 @@ Options
   -max Int     Max read depth to call variation, default=8000
   -min Int     Minimum read depth required to call variation, default=10
   -t Int       Number of threads to use when calling variation, default=1
-  -BQ Int      Minimum base quality for a base to considered forvariant calling, default=0
+  -BQ Int      Minimum base quality for a base to considered for variant calling, default=0
   -MQ Int      Minimum alignment quality for an alignment to be considered for variant calling, default=20
   -BED         Do not output calls in bed format, default=True
   -VCF         Output VCF file, default=False
   -IO          Ignore orphans during variation call
+  -OR          Output reference calls, default=False
   -BR File     Regions to call variation in bed format
+  -MR Float    Minimum genotype call p value to output, default 0.00
 '''

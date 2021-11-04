@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple, Union
 import pysam
 from tqdm import tqdm
 from bsbolt.Variant.CallVariants import CallRegionVariation
+from bsbolt.Utils.CGmapIterator import OpenCGmap
 
 
 class VariantCallingError(Exception):
@@ -57,7 +58,7 @@ class ProcessVarContigs:
                  min_read_depth: int = 10, max_read_depth: int = 8000, threads: int = 1, verbose: bool = True,
                  min_base_quality: int = 10, min_mapping_quality: int = 10, ignore_orphans: bool = False,
                  bed_output: bool = True, vcf_output: bool = False, output_reference_calls: bool = False,
-                 call_region_bed: str = None):
+                 call_region_bed: str = None, min_pval: float = 0.001):
         assert isinstance(input_file, str), 'Path to input file not valid'
         assert isinstance(text_output, bool), 'Not valid bool'
         assert isinstance(threads, int), 'Threads must be specified with integer'
@@ -83,6 +84,7 @@ class ProcessVarContigs:
                                 min_mapping_quality=min_mapping_quality,
                                 min_read_depth=min_read_depth)
         self.min_read_depth = min_read_depth
+        self.min_pval = min_pval
         self.bed_output = bed_output
         self.vcf_output = vcf_output
         self.output_ref = output_reference_calls
@@ -102,7 +104,7 @@ class ProcessVarContigs:
         """
         contigs = []
         if self.call_region_bed:
-            for line in self.call_region_bed:
+            for line in OpenCGmap(self.call_region_bed):
                 contigs.append((line[0], int(line[1]), int(line[2])))
         else:
             contigs = [[contig[0]] for contig in self.input_bam.get_index_statistics() if contig[1] > 0]
@@ -176,6 +178,8 @@ class ProcessVarContigs:
                 # unpack call data
                 var_call = self.unpack_var_call(call)
                 # ToDo: collect variant call stats 
+                if var_call['call_p'] > self.min_pval:
+                    continue
                 if not self.output_ref:
                     if var_call['genotype'] == var_call['ref_base']:
                         continue

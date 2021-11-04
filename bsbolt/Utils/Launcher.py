@@ -199,6 +199,7 @@ def launch_imputation(arguments):
     impute.impute_values()
     impute.output_imputed_matrix()
 
+
 def launch_variant_call(arguments):
     var_call = ProcessVarContigs(input_file=arguments.I, genome_database=arguments.DB, output_prefix=arguments.O,
                                  ignore_overlap=arguments.ignore_ov, text_output=arguments.text,
@@ -206,7 +207,8 @@ def launch_variant_call(arguments):
                                  verbose=arguments.verbose, min_base_quality=arguments.BQ,
                                  min_mapping_quality=arguments.MQ, ignore_orphans=arguments.IO,
                                  bed_output=arguments.BED, vcf_output=arguments.VCF,
-                                 output_reference_calls=arguments.OR, call_region_bed=arguments.BR)
+                                 output_reference_calls=arguments.OR, call_region_bed=arguments.BR,
+                                 min_pval=arguments.MP)
     var_call.process_contigs()
     var_call.watch_pool()
 

@@ -4,7 +4,6 @@ from typing import Dict, Tuple, Union
 import numpy as np
 import pysam
 from bsbolt.Variant.VariantCall import CallVariant
-from bsbolt.Utils.CGmapIterator import OpenCGmap
 
 
 class CallRegionVariation:
@@ -49,8 +48,8 @@ class CallRegionVariation:
         self.min_base_quality = min_base_quality
         self.chunk_size = 10000
         self.min_mapping_quality = min_mapping_quality
-        self.start = start
-        self.stop = stop
+        self.start = start - 1 if start else None
+        self.stop = stop + 1 if start else None
         self.return_queue = return_queue
         self.counting_dict = {}
 
@@ -89,13 +88,16 @@ class CallRegionVariation:
                                                 min_mapping_quality=self.min_mapping_quality,
                                                 flag_require=0,
                                                 flag_filter=1540):
+            if self.start:
+                if not self.start < pileup_col.reference_pos < self.stop:
+                    continue
             # get sequence around pileup site
             reference_seq = chrom_seq[(pileup_col.reference_pos - 3):(pileup_col.reference_pos + 4)].upper()
             # get nucleotide context
             fivemer = reference_seq[1:-1]
             if len(fivemer) == 5:
                 nucleotide = fivemer[2]
-                cg_site = self.check_cg(nucleotide, fivemer)
+                #cg_site = self.check_cg(nucleotide, fivemer)
                 # count the pileup read bases, Uppercase watson strand, lowercase crick strand
                 try:
                     base_counts = Counter(pileup_col.get_query_sequences(mark_matches=False,
@@ -107,7 +109,7 @@ class CallRegionVariation:
                 base_counts = np.array([base_counts.get(key, 0) for key in ['A', 'T', 'C', 'G', 'a', 't', 'c', 'g']])
                 if sum(base_counts) < self.min_read_depth:
                     continue
-                call = caller.call_variant(base_counts, cg_site=cg_site)
+                call = caller.call_variant(base_counts)
                 variant_call = dict(chrom=self.contig, pos=pileup_col.reference_pos,
                                     call_prob=call[0], call_p=call[1],
                                     call_score=call[2], ref_base=nucleotide, genotype=call[3])
