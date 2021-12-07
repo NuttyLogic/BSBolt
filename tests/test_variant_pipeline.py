@@ -111,7 +111,7 @@ for var in uncalled_variants:
     false_negatives += 1
 
 
-class TestBSBPipeline(unittest.TestCase):
+class TestVarPipeline(unittest.TestCase):
     """ The first 5000bp for chr10 are duplicated as chr15 in the simulation reference."""
 
     def setUp(self):
