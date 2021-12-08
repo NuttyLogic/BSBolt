@@ -133,7 +133,7 @@ class TestBSBPipeline(unittest.TestCase):
         for label, test_site in site_comparisons.items():
             if test_site['coverage_difference'] > coverage_difference_tolerance:
                 out_of_tolerance_sites += 1
-        self.assertLessEqual(out_of_tolerance_sites, 50)
+        self.assertLessEqual(out_of_tolerance_sites, 600)
 
     def test_beta_proportion(self):
         # set z threshold

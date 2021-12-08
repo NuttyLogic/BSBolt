@@ -58,7 +58,7 @@ class CallRegionVariation:
         try:
             chrom_seq = self.get_reference_sequence(f'{self.genome_database}{self.contig}.pkl')
         except FileNotFoundError:
-            print(f'{self.contig} not found in BSBolt DB, Methylation Calls for {self.contig} skipped. Methylation '
+            print(f'{self.contig} not found in BSBolt DB, Variant Calls for {self.contig} skipped. Methylation '
                   f'values should be called using the same DB used for alignment.')
             self.return_queue.put([])
         else:

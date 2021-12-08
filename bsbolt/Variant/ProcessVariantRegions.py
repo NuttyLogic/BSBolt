@@ -21,7 +21,6 @@ def call_variation(completed_contigs, variant_call_kwargs):
     """
     contig_call = CallRegionVariation(**variant_call_kwargs)
     contig_call.call_variation()
-    assert isinstance(contig_call, CallRegionVariation)
     completed_contigs.append(variant_call_kwargs['contig'])
 
 
@@ -150,15 +149,16 @@ class ProcessVarContigs:
         if self.verbose:
             pbar = tqdm(total=len(self.contigs), desc='Processing Contigs')
         while self.calling:
-            variant_calls: list = self.return_queue.get(block=True)
             if self.verbose:
                 if len(self.completed_contigs) != contigs_complete:
                     update_number = len(self.completed_contigs) - contigs_complete
                     contigs_complete = len(self.completed_contigs)
                     pbar.update(update_number)
-            self.write_output(variant_calls)
             if len(self.completed_contigs) == len(self.contigs) and self.return_queue.empty():
                 self.calling = False
+            elif not self.return_queue.empty():
+                variant_calls: list = self.return_queue.get(block=True)
+                self.write_output(variant_calls)
         if self.verbose:
             pbar.close()
         for out in self.output_objects.values():
@@ -173,20 +173,19 @@ class ProcessVarContigs:
         * *methylation_lines (list)*: list of dict containing methylation call information
         """
         # write wig contig designation
-        if variant_calls:
-            for call in variant_calls:
-                # unpack call data
-                var_call = self.unpack_var_call(call)
-                # ToDo: collect variant call stats 
-                if var_call['call_p'] > self.min_pval:
+        for call in variant_calls:
+            # unpack call data
+            var_call = self.unpack_var_call(call)
+            # ToDo: collect variant call stats
+            if var_call['call_p'] > self.min_pval:
+                continue
+            if not self.output_ref:
+                if var_call['genotype'] == var_call['ref_base']:
                     continue
-                if not self.output_ref:
-                    if var_call['genotype'] == var_call['ref_base']:
-                        continue
-                if self.bed_output:
-                    self.write_line(self.output_objects['bed'], self.format_bed(var_call))
-                if self.vcf_output:
-                    self.write_line(self.output_objects['vcf'], self.format_vcf(var_call))
+            if self.bed_output:
+                self.write_line(self.output_objects['bed'], self.format_bed(var_call))
+            if self.vcf_output:
+                self.write_line(self.output_objects['vcf'], self.format_vcf(var_call))
 
     @staticmethod
     def unpack_var_call(variant_call):
