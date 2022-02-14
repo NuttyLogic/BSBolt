@@ -41,10 +41,11 @@ def compile_dependency(compilation_command, cwd):
 
 def get_platform_cmd():
     system = platform.system()
+    cpu = 'x86_64'
     if system == 'Darwin':
         cpu = 'x86_64' if 'x86' in platform.platform() else 'arm64'
         return [f'--host={cpu}-apple-darwin']
-    return []
+    return [f'--host={cpu}-linux-gnu']
 
 
 def make_external_dependencies():
