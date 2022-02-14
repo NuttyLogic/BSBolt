@@ -22,12 +22,15 @@ doi:10.1101/2020.10.06.328559](https://academic.oup.com/gigascience/article/10/5
 Documentation can be found at [https://bsbolt.readthedocs.io](https://bsbolt.readthedocs.io/en/latest/).
 
 ## Release Notes
+- v1.5.0
+  - Improved thread handling for methylation / variant calling.
+  - Experimental bisulfite aware SNP caller. 
 - v1.4.8
   - Fixed bug ending alignment when the reference template end greater than reference boundary.
 - v1.4.7
-  - Alignment stats fix. 
+  - Alignment stats fix.
 - v1.4.6
-  - Alignment statistics now output as generated. 
+  - Alignment statistics now output as generated.
   - Fixed bug where alignment would stop when observed mappability was low.
 - v1.4.5
   - Fixed maximum read depth bug that prevented methylation call on site covered by greater than 8000 reads
@@ -48,7 +51,7 @@ pip3 install bsbolt --user
 
 ### **Conda Installation**
 
-BSBolt can be installed using the conda package manager using the instructions below. 
+BSBolt can be installed using the conda package manager using the instructions below.
 
 ```shell
 conda config --add channels bioconda
@@ -91,14 +94,14 @@ xcode-select --install
 # install autoconf
 brew install autoconf
 # install automake
-brew installa automake
+brew install automake
 # optionally install python > 3.5
 brew install python3.8
 # clone the repository
 git clone https://github.com/NuttyLogic/BSBolt.git
-cd bsbolt
+cd BSBolt
 # compile and install package
-pip3 install .
+pip3 install -e .
 ```
 ## Usage
 
@@ -120,6 +123,3 @@ Impute              kNN Imputation
 Sort                Sort BAM File
 BamIndex            Index BAM file
 ```
-
-
-

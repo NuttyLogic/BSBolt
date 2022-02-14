@@ -5,6 +5,14 @@ __pycache__/
 
 # C extensions
 *.so
+config*
+*.cache
+*.dylib
+
+#htslib external
+bsbolt/External/HTSLIB/config.h
+
+working.py
 
 # Distribution / packaging
 .Python
@@ -145,3 +153,8 @@ scratch*
 
 /bsbolt/External/HTSLIB/config.log
 /bsbolt/External/HTSLIB/config.status
+bsbolt/External/HTSLIB/config.h
+bsbolt/External/HTSLIB/config.mk
+bsbolt/External/HTSLIB/htslib_static.mk
+bsbolt/External/HTSLIB/htslib-uninstalled.pc
+bsbolt/External/HTSLIB/htslib.pc.tmp

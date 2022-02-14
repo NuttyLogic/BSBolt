@@ -142,15 +142,16 @@ class ProcessContigs:
         if self.verbose:
             pbar = tqdm(total=len(self.contigs), desc='Processing Contigs')
         while self.methylation_calling:
-            methylation_lines: list = self.return_queue.get(block=True)
             if self.verbose:
                 if len(self.completed_contigs) != contigs_complete:
                     update_number = len(self.completed_contigs) - contigs_complete
                     contigs_complete = len(self.completed_contigs)
                     pbar.update(update_number)
-            self.write_output(methylation_lines)
             if len(self.completed_contigs) == len(self.contigs) and self.return_queue.empty():
                 self.methylation_calling = False
+            elif not self.return_queue.empty():
+                methylation_lines: list = self.return_queue.get(block=True)
+                self.write_output(methylation_lines)
         if self.verbose:
             pbar.close()
         for out in self.output_objects.values():

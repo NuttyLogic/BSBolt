@@ -3,6 +3,7 @@ import os
 import time
 from bsbolt.Align.AlignReads import BisulfiteAlignmentAndProcessing
 from bsbolt.CallMethylation.ProcessMethylationContigs import ProcessContigs
+from bsbolt.Variant.ProcessVariantRegions import ProcessVarContigs
 from bsbolt.Impute.kNN_Impute import ImputeMissingValues
 from bsbolt.Index.RRBSIndex import RRBSBuild
 from bsbolt.Index.WholeGenomeIndex import WholeGenomeBuild
@@ -125,6 +126,7 @@ def launch_methylation_call(arguments):
                                       genome_database=arguments.DB,
                                       output_prefix=arguments.O,
                                       remove_ccgg=arguments.remove_ccgg,
+                                      ignore_overlap=arguments.ignore_ov,
                                       text_output=arguments.text,
                                       min_read_depth=arguments.min,
                                       threads=arguments.t,
@@ -198,6 +200,19 @@ def launch_imputation(arguments):
     impute.output_imputed_matrix()
 
 
+def launch_variant_call(arguments):
+    var_call = ProcessVarContigs(input_file=arguments.I, genome_database=arguments.DB, output_prefix=arguments.O,
+                                 ignore_overlap=arguments.ignore_ov, text_output=arguments.text,
+                                 min_read_depth=arguments.min, max_read_depth=arguments.max, threads=arguments.t,
+                                 verbose=arguments.verbose, min_base_quality=arguments.BQ,
+                                 min_mapping_quality=arguments.MQ, ignore_orphans=arguments.IO,
+                                 bed_output=arguments.BED, vcf_output=arguments.VCF,
+                                 output_reference_calls=arguments.OR, call_region_bed=arguments.BR,
+                                 min_pval=arguments.MP)
+    var_call.process_contigs()
+    var_call.watch_pool()
+
+
 bsb_launch = {'Index': launch_index,
               'Align': launch_alignment,
               'CallMethylation': launch_methylation_call,
@@ -205,4 +220,5 @@ bsb_launch = {'Index': launch_index,
               'Simulate': launch_simulation,
               'Impute': launch_imputation,
               'Sort': launch_sort_bam,
-              'BamIndex': launch_index_bam}
+              'BamIndex': launch_index_bam,
+              'CallVariation':launch_variant_call}

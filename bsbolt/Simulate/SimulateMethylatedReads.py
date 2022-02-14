@@ -67,7 +67,9 @@ class SimulateMethylatedReads:
                             '-X', str(indel_extension_probability), '-S', str(random_seed),
                             '-A', str(ambiguous_base_cutoff), '-I', str(mean_insert_size)]
         if haplotype_mode:
-            self.sim_command.append('-h')
+            self.sim_command.extend(['-h', '1'])
+        else:
+            self.sim_command.extend(['-h', '0'])
         self.sim_db = SetCytosineMethylation(reference_file=reference_file,
                                              sim_dir=sim_output,
                                              methylation_reference=methylation_reference,
@@ -127,10 +129,11 @@ class SimulateMethylatedReads:
             self.sim_db.sim_db.output_contig(self.contig_values, self.current_contig, values=True)
             self.contig_values = {}
 
-    def process_read_group(self, sim_data):
+    def process_read_group(self, sim_data, stranded_capture=False):
         """Set read methylation values, randomly assign reads to Watson or Crick strand"""
         # randomly select reference strand
-        sub_pattern = ('C', 'T') if self.random_roll(0.5) else ('G', 'A')
+        random_roll = self.random_roll(0.5) if not stranded_capture else True
+        sub_pattern = ('C', 'T') if random_roll else ('G', 'A')
         if sub_pattern[0] == 'G':
             temp_sim = sim_data[1]
             sim_data[1] = sim_data[2]
@@ -217,8 +220,7 @@ class SimulateMethylatedReads:
         methyl_status, context = self.set_base_methylation(meth_pos)
         if methyl_status:
             return seq_base.lower(), cigar_type
-        else:
-            return seq_base, cigar_type.lower()
+        return seq_base, cigar_type.lower()
 
     def handle_match(self, seq_base, ref_base, pos):
         if seq_base != ref_base:
@@ -227,8 +229,7 @@ class SimulateMethylatedReads:
             methyl_status, context = self.set_base_methylation(pos)
             if methyl_status:
                 return seq_base.lower(), 'C' if context else 'Y'
-            else:
-                return seq_base, 'c' if context else 'y'
+            return seq_base, 'c' if context else 'y'
 
     def set_base_methylation(self, methyl_position):
         """Perform random roll to set methylated bases. Update reference values if *self.collect_sim_stats=True*"""
@@ -263,8 +264,7 @@ class SimulateMethylatedReads:
             contig_profile = self.sim_db.get_contig_methylation(contig)
             self.sim_db.set_variant_methylation(variant_data, contig_profile, self.current_contig)
             return contig_profile
-        else:
-            return self.sim_db.get_contig_methylation(contig)
+        return self.sim_db.get_contig_methylation(contig)
 
     @property
     def get_output_objects(self):
