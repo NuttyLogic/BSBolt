@@ -22,6 +22,9 @@ doi:10.1101/2020.10.06.328559](https://academic.oup.com/gigascience/article/10/5
 Documentation can be found at [https://bsbolt.readthedocs.io](https://bsbolt.readthedocs.io/en/latest/).
 
 ## Release Notes
+- v1.5.0
+  - Improved thread handling for methylation / variant calling.
+  - Experimental bisulfite aware SNP caller. 
 - v1.4.8
   - Fixed bug ending alignment when the reference template end greater than reference boundary.
 - v1.4.7
