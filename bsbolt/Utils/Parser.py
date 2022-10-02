@@ -1,7 +1,7 @@
 import argparse
 
 from bsbolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impute_help 
-from bsbolt.Utils.ParserHelpMessages import index_help, meth_help, sim_help, variant_help
+from bsbolt.Utils.ParserHelpMessages import index_help, meth_help, sim_help, variant_help, genotypeMatrix_help
 
 
 parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.5.0',
@@ -24,6 +24,8 @@ sort_parser = subparsers.add_parser('Sort', help='BAM Sort')
 bam_index = subparsers.add_parser('BamIndex', help='BAM Index')
 variant_parser = subparsers.add_parser('CallVariation', help="Genetic Variation Calling", 
                                         add_help=False, usage=variant_help)
+genotypeMatrix_parser = subparsers.add_parser('GenotypeMatrix', help='Variant Bed Matrix Aggregatio', add_help=False,
+                                             usage=genotypeMatrix_help)
 # Add Alignment Parser Commands
 
 align_parser.add_argument('-F1', type=str, default=None, help='path to fastq 1', required=True)
@@ -274,3 +276,27 @@ variant_parser.add_argument('-BR', type=str, default=None, help='Regions to call
 variant_parser.add_argument('-OR', action='store_true', help='Output calls for bases without observed variation')
 variant_parser.add_argument('-MP', type=float, default=0.001, help='Minimum genotype call p value '
                                                                    'to output, default 0.001')
+
+# Add Genotype Matrix Aggregation Parser Args
+
+genotypeMatrix_parser.add_argument('-F', type=lambda file: [file_path for file_path in file.split(',')], required=True,
+                           help='Comma separated list of Variant BED file paths, or '
+                                'path to text file with list of line separated '
+                                'Variant BED file paths')
+genotypeMatrix_parser.add_argument('-S', type=lambda sample_labels: [sample for sample in sample_labels.split(',')],
+                           default=None,
+                           help='Comma separated list of samples labels. '
+                                'If sample labels are not provided sample labels '
+                                'are extracted from Variant BED file paths. '
+                                'Can also pass path to txt for line separated sample '
+                                'labels.')
+genotypeMatrix_parser.add_argument('-min-log-pvalue', type=int, default=5, help='Minimum log p-value for a '
+                                                                       'site to be included in the aggregate matrix')
+genotypeMatrix_parser.add_argument('-min-sample', type=float, default=0.80,
+                           help='Proportion of samples that must have a valid site '
+                                '(above minimum coverage threshold), for a site to be'
+                                'included in the aggregate matrix.')
+genotypeMatrix_parser.add_argument('-O', type=str, default=None, required=True, help='Aggregate matrix output path')
+genotypeMatrix_parser.add_argument('-verbose', action="store_true", default=False, help='Verbose aggregation')
+genotypeMatrix_parser.add_argument('-t', type=int, default=1, help='Number of threads to use when assembling matrix')
+genotypeMatrix_parser.add_argument("-E",action="store_true",default=False, help="Output encoded matrix, default=False" )

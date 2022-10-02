@@ -8,6 +8,7 @@ from bsbolt.Impute.kNN_Impute import ImputeMissingValues
 from bsbolt.Index.RRBSIndex import RRBSBuild
 from bsbolt.Index.WholeGenomeIndex import WholeGenomeBuild
 from bsbolt.Matrix.MatrixAggregator import AggregateMatrix
+from bsbolt.GenotypeMatrix.GenotypeMatrixAggregator import GenotypeAggregateMatrix
 from bsbolt.Simulate import SimulateMethylatedReads
 from bsbolt.Utils.UtilityFunctions import index_bam, get_external_paths, sort_bam
 
@@ -212,6 +213,28 @@ def launch_variant_call(arguments):
     var_call.process_contigs()
     var_call.watch_pool()
 
+def launch_genotype_matrix(arguments):
+    #add and test -S argument compatability
+    #add and test -F text file of line seperated paths
+    def get_sample_info(file_path):
+        file_list = []
+        with open(file_path, 'r') as file:
+            for line in file:
+                file_list.append(line.replace('\n', ''))
+        return file_list
+
+    if len(arguments.F) == 1:
+        arguments.F = get_sample_info(arguments.F[0])
+
+    genotypeMatrix= GenotypeAggregateMatrix(file_list=arguments.F,
+                                            sample_list=arguments.S,
+                                            min_site_log_pvalue=arguments.min_log_pvalue,
+                                            site_proportion_threshold=arguments.min_sample,
+                                            output_path=arguments.O,
+                                            verbose=arguments.verbose,
+                                            threads=arguments.t,
+                                            encoding=arguments.E)
+    genotypeMatrix.aggregate_matrix()
 
 bsb_launch = {'Index': launch_index,
               'Align': launch_alignment,
@@ -221,4 +244,5 @@ bsb_launch = {'Index': launch_index,
               'Impute': launch_imputation,
               'Sort': launch_sort_bam,
               'BamIndex': launch_index_bam,
-              'CallVariation':launch_variant_call}
+              'CallVariation':launch_variant_call,
+              'GenotypeMatrix': launch_genotype_matrix}
