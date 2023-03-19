@@ -987,18 +987,22 @@ void mem_aln2sam(const mem_opt_t *opt, const bntseq_t *bns, kstring_t *str, bseq
 			if (s->subsitution_pattern){
 				kputsn("C_G2A", 5, str);
 				s->mapped = 1;
+				kputsn("\tXG:Z:GA", 8, str);
 			}
 			else {
 				kputsn("C_C2T", 5, str);
 				s->mapped = 2;
+				kputsn("\tXG:Z:GA", 8, str);
 			}
 		} else {
 			if (s->subsitution_pattern){
 				kputsn("W_G2A", 5, str);
 				s->mapped = 3;
+				kputsn("\tXG:Z:CT", 8, str);
 			} else {
 				kputsn("W_C2T", 5, str);
 				s->mapped = 4;
+				kputsn("\tXG:Z:CT", 8, str);
 			}
 		}
 	}
