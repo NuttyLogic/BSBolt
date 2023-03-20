@@ -4,7 +4,7 @@ from bsbolt.Utils.ParserHelpMessages import aggregate_help, alignment_help, impu
 from bsbolt.Utils.ParserHelpMessages import index_help, meth_help, sim_help, variant_help
 
 
-parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.5.0',
+parser = argparse.ArgumentParser(description='BiSulfite Bolt v1.6.0',
                                  usage='bsbolt Module {Module Arguments}')
 
 subparsers = parser.add_subparsers(description='Please invoke bsbolt module for help,'
@@ -31,7 +31,9 @@ align_parser.add_argument('-F2', type=str, default=None, help='path to fastq 2')
 align_parser.add_argument('-UN', action="store_true", default=False,
                           help='library undirectional, ie. consider PCR products of bisulfite converted DNA',
                           required=False)
-align_parser.add_argument('-O', type=str, default=None, help='output Prefix', required=True)
+align_parser.add_argument('-O', type=str, default=None, help='output Prefix', required=False)
+align_parser.add_argument('-OS', action='store_true', default=False,
+                          help='Output alignment to stdout', required=False)
 align_parser.add_argument('-DB', type=str, default=None, help='path to bsbolt database', required=True)
 align_parser.add_argument('-CP', type=float, default=0.5, help='CH conversion proportion threshold [0.5]',
                           required=False)
