@@ -16,7 +16,8 @@ will always be assigned a mapping quality of zero.
 |XB    |Z (string)| Read bisulfite conversion position and context | 5zz1x3z11zZ15z8zZ6z2z11z3xz3z13Xz2|
 |XC    |i (int)| Bisulfite conversion status, 1 if not fully converted, 0 if converted | XC:i:0|  
 |YC    |i (integer)| Bisulfite ambiguous, 1 if ambiguous, not reported if non-ambiguous| YC:i:1 |
-|YS    |Z (string)| Mapping strand (C=Crick, W=Watson) and alignment conversion pattern (C2T or G2A) | YS:Z:W_C2T (ie. Watson_Cytosine.to.Thymine)|  
+|YS    |Z (string)| Mapping strand (C=Crick, W=Watson) and alignment conversion pattern (C2T or G2A) | YS:Z:W_C2T (ie. Watson_Cytosine.to.Thymine)|
+|XG | Z (string) | Mapping strand for MethylDackel compatibility (Crick=GA, Watson=CT)| XG:Z:CT |
 
 ### **MD and XB Tags**
 
