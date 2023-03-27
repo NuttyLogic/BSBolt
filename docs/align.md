@@ -33,6 +33,7 @@ Input / Output Options:
   -F1 File     path to fastq 1
   -F2 File     path to fastq 2 [null]
   -O File      output Prefix
+  -OS          output to stdout [False]
   -OT Int      number of bam output threads [1]
   -DB File     path to bsbolt database
   -R Str       read group header line such as '@RG ID:foo SM:bar' [null]

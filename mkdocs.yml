@@ -29,6 +29,7 @@ nav:
     - Imputation: imputation_api.md
     - Simulation: simulation_api.md
     - Utilities: utils_api.md
+    - Variant Calling: variant_api.md
   #- Tutorial: tutorial.md
   #- Pipelines: pipelines.md
 
