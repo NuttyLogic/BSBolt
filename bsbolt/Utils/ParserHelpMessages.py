@@ -189,3 +189,21 @@ Options
   -BR File     Regions to call variation in bed format
   -MR Float    Minimum genotype call p value to output, default 0.00
 '''
+
+genotypeMatrix_help = '''
+bsbolt GenotypeMatrix -F {file1.CGmap,file2.CGmap,...} -O {output_matrix.txt}
+
+-h, --help              show this help message and exit
+
+Options:
+  -F File,File,.        comma separated list of Variant BED files, 
+                        or path to text file with list of line separated Variant BED files
+  -S Str,Str,.          comma separated list of samples labels. If sample labels are not provided sample labels 
+                        are extracted from Variant BED files. Can also pass path to txt for line separated sample labels.
+  -min-log-pvalue Int   minimum site log p-value
+  -min-sample Float     proportion of samples that must have a valid site (above minimum coverage threshold)
+  -O File               Aggregate matrix output path
+  -verbose              Verbose aggregation
+  -t Int                Number of threads to use when assembling matrix
+  -E                    Output matrix in 0,1,2 encoding (0=homozygous reference, 1=heterozygous, 2=homozygous alternate), default=False
+'''
