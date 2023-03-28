@@ -1,5 +1,5 @@
 {% set name = "bsbolt" %}
-{% set version = "1.4.8" %}
+{% set version = "1.6.0" %}
 
 package:
   name: bsbolt
@@ -7,7 +7,7 @@ package:
 
 source:
   url: "https://github.com/NuttyLogic/BSBolt/releases/download/{{ version }}/{{ name}}-{{ version }}.tar.gz"
-  sha256: "ec8ef6d199be163d8b0e985d1cefe56ee5b02773d343d25902f1452a83519460"
+  sha256: ""
 
 
 build:
