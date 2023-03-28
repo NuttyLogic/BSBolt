@@ -1,4 +1,4 @@
-class CallVariant:
-
-    def __init__(self, nucleotides: dict = None):
-        self.nucleotides = nucleotides
+from bsbolt.Variant.CallVariants import CallRegionVariation
+from bsbolt.Variant.BayesVariant import generate_log_likelihood_matrix, predict_bayes_genotype
+from bsbolt.Variant.VariantCall import CallVariant
+from bsbolt.Variant.ProcessVariantRegions import ProcessVarContigs

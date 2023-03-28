@@ -18,12 +18,12 @@ BSBolt is released under the MIT license.
 doi:10.1101/2020.10.06.328559](https://academic.oup.com/gigascience/article/10/5/giab033/6272610)
 
 ## Release Notes
-- v1.6.0
-  - MethyDackel compatibility 
-  - Option to output alignment to stdout
-- v1.5.0
-  - Improved thread handling for methylation / variant calling.
-  - Experimental bisulfite aware SNP caller. 
+- v1.6.0 
+    - MethyDackel compatibility 
+    - Option to output alignment to stdout
+- v1.5.0 
+    - Improved thread handling for methylation / variant calling. 
+    - Experimental bisulfite aware SNP caller. 
 - v1.4.8
     - Fixed bug ending alignment when the reference template end greater than reference boundary.
 - v1.4.7

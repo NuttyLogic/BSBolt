@@ -1,15 +1,19 @@
-::: bsbolt.Variant.CallVariants
+::: bsbolt.Variant.CallRegionVariation
     :docstring:
     :members:
     
-::: bsbolt.Variant.BayesVariant
+::: bsbolt.Variant.generate_log_likelihood_matrix
     :docstring:
     :members:
     
-::: bsbolt.Variant.ProcessVariantRegions
+::: bsbolt.Variant.predict_bayes_genotype
     :docstring:
     :members:
 
-::: bsbolt.Variant.VariantCall
+::: bsbolt.Variant.ProcessVarContigs
+    :docstring:
+    :members:
+
+::: bsbolt.Variant.CallVariant
     :docstring:
     :members:
