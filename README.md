@@ -115,14 +115,27 @@ python3 -m bsbolt
 ```
 
 ```shell
-bsbolt Module
+usage: bsbolt Module {Module Arguments}
 
-Align               Alignment
-Index               Index Generation
-CallMethylation     Methylation Calling
-AggregateMatrix     CGmap Matrix Aggregation
-Simulate            bsbolt Illumina Read Simulation
-Impute              kNN Imputation
-Sort                Sort BAM File
-BamIndex            Index BAM file
+BiSulfite Bolt v1.6.0
+
+options:
+  -h, --help            show this help message and exit
+
+subcommands:
+  Please invoke bsbolt module for help, see bsbolt.readthedocs.io for detailed
+  documentation
+
+  Index, Align, CallMethylation, AggregateMatrix, Simulate, Impute
+    Align               Alignment
+    Index               Index Generation
+    CallMethylation     Methylation Calling
+    AggregateMatrix     CGmap Matrix Aggregation
+    Simulate            Read Simulation
+    Impute              kNN Imputation
+    Sort                BAM Sort
+    BamIndex            BAM Index
+    CallVariation       Genetic Variation Calling
+    GenotypeMatrix      Variant Bed Matrix Aggregation
+
 ```

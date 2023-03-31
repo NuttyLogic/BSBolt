@@ -24,7 +24,7 @@ sort_parser = subparsers.add_parser('Sort', help='BAM Sort')
 bam_index = subparsers.add_parser('BamIndex', help='BAM Index')
 variant_parser = subparsers.add_parser('CallVariation', help="Genetic Variation Calling", 
                                         add_help=False, usage=variant_help)
-genotypeMatrix_parser = subparsers.add_parser('GenotypeMatrix', help='Variant Bed Matrix Aggregatio', add_help=False,
+genotypeMatrix_parser = subparsers.add_parser('GenotypeMatrix', help='Variant Bed Matrix Aggregation', add_help=False,
                                              usage=genotypeMatrix_help)
 # Add Alignment Parser Commands
 
